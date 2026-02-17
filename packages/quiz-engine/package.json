@@ -1,0 +1,14 @@
+{
+  "name": "quiz-engine",
+  "module": "index.ts",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.ts",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
