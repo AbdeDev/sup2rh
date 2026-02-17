@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./apps/web" },
+    { "path": "./apps/admin" },
+    { "path": "./packages/quiz-engine" },
+    { "path": "./packages/types" },
+    { "path": "./packages/ui" }
+  ]
+}
