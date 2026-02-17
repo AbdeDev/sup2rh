@@ -15,12 +15,9 @@ security:
         main:
             lazy: true
             provider: users_in_memory
-
-            # Activate different ways to authenticate:
-            # https://symfony.com/doc/current/security.html#the-firewall
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+            custom_authenticators:
+                - App\Security\SupabaseAuthenticator
+            stateless: true
 
     # Note: Only the *first* matching rule is applied
     access_control:

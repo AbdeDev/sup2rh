@@ -29,16 +29,7 @@ final class AuthListener
             return;
         }
 
-        // 4) Vérification Bearer token
-        $auth = $request->headers->get('Authorization');
-        if (!$auth || !preg_match('/^Bearer\s+(.+)$/i', $auth, $m)) {
-            throw new UnauthorizedHttpException('Bearer', 'Missing bearer token');
-        }
-
-        $token = $m[1];
-
-        // Pour l'instant: on ne valide pas encore le JWT ici (étape suivante)
-        // On stocke le token en attribut pour les controllers/services
-        $request->attributes->set('access_token', $token);
+        // 4) La vérification du token est maintenant gérée par SupabaseAuthenticator
+        // On laisse Symfony Security gérer l'authentification
     }
 }

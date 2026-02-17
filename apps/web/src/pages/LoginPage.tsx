@@ -1,88 +1,38 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { Sparkles } from "lucide-react";
 
-import { supabase } from "../lib/supabase";
-import { Button } from "../../../web/src/components/ui/button";
-import { Input } from "../../../web/src/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../../../web/src/components/ui/card";
+import { LoginForm } from "../components/login-form";
 
 export function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const navigate = useNavigate();
-
-  async function sendMagicLink(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setSent(false);
-    setLoading(true);
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: true,
-        emailRedirectTo: "http://localhost:5173/auth/callback",
-      },
-    });
-
-    setLoading(false);
-
-    if (error) {
-      setError(error.message);
-      return;
-    }
-
-    setSent(true);
-    navigate(`/check-email?email=${encodeURIComponent(email)}`);
-  }
+  const fromResult =
+    typeof window !== "undefined" &&
+    sessionStorage.getItem("redirectAfterLogin")?.startsWith("/result");
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Connexion</CardTitle>
-          <CardDescription>Entre ton email, on t’envoie un lien magique.</CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          <form className="space-y-3" onSubmit={sendMagicLink}>
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="email">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="ton@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-
-            {error && <div className="text-sm text-red-600">{error}</div>}
-
-            {sent && !error && (
-              <div className="text-sm text-muted-foreground">
-                Lien envoyé. Vérifie ta boîte mail (et tes spams).
-              </div>
-            )}
-
-            <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? "Envoi…" : "Envoyer le lien"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-500">
+      <div className="w-full max-w-md animate-in slide-in-from-bottom-4 duration-500">
+        <div className="text-center mb-8">
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-primary/20 border border-primary/30 mb-4 transition-transform duration-200 hover:scale-105">
+            <Sparkles className="h-7 w-7 text-primary" />
+          </div>
+          <h1 className="text-xl font-heading font-semibold text-foreground mb-2">Sup2RH</h1>
+          <p className="text-xs text-muted-foreground">Découvre ton métier RH idéal</p>
+          {fromResult && (
+            <p className="text-xs text-primary mt-2">
+              Connecte-toi pour accéder à la page résultat.
+            </p>
+          )}
+        </div>
+        <LoginForm />
+        <div className="mt-6 text-center">
+          <Link
+            to="/quiz"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
+          >
+            Accéder au quiz
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
