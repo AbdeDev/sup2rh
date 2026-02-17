@@ -1,0 +1,57 @@
+{
+  "name": "sup2rh",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "version": "0.0.1",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/bun": "latest",
+    "eslint": "^10.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "typescript-eslint": "^8.56.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "backend/*"
+  ],
+  "scripts": {
+    "dev:web": "bun --cwd apps/web dev",
+    "dev:admin": "bun --cwd apps/admin dev",
+    "dev:landing": "bun --cwd apps/landing dev",
+    "dev": "bun run dev:web",
+    "build:web": "bun --cwd apps/web build",
+    "build:admin": "bun --cwd apps/admin build",
+    "build:landing": "bun --cwd apps/landing build",
+    "dev:api": "cd backend/api && symfony server:start -d",
+    "stop:api": "cd backend/api && symfony server:stop",
+    "install:all": "bun install",
+    "lint": "eslint .",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "typecheck:web": "bun --cwd apps/web tsc -p tsconfig.json --noEmit",
+    "typecheck:admin": "bun --cwd apps/admin tsc -p tsconfig.json --noEmit",
+    "typecheck:packages": "tsc -p tsconfig.packages.json --noEmit",
+    "typecheck": "bun run typecheck:packages && bun run typecheck:web && bun run typecheck:admin",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{md,json,yml,yaml}": [
+      "prettier --write"
+    ]
+  }
+}

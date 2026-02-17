@@ -1,0 +1,14 @@
+{
+  "name": "ui",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "main": "src/index.ts",
+  "version": "0.0.1",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
