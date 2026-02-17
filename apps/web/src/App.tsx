@@ -3,7 +3,12 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { RequireAuth } from "./auth/RequireAuth";
 import { CheckEmailPage } from "./pages/CheckEmailPage";
 import { LoginPage } from "./pages/LoginPage";
-import { QuizPage } from "./pages/QuizPage";
+import { QuizLandingPage } from "./pages/QuizLandingPage";
+import { QuizStartPage } from "./pages/QuizStartPage";
+import { ResultPage } from "./pages/ResultPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { VerifyPage } from "./pages/VerifyPage";
+import { SessionsPage } from "./pages/SessionsPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 
 export default function App() {
@@ -14,6 +19,7 @@ export default function App() {
       {/* Public */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/check-email" element={<CheckEmailPage />} />
+      <Route path="/verify" element={<VerifyPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
 
       {/* Private */}
@@ -21,7 +27,39 @@ export default function App() {
         path="/quiz"
         element={
           <RequireAuth>
-            <QuizPage />
+            <QuizLandingPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/quiz/start"
+        element={
+          <RequireAuth>
+            <QuizStartPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/result/:id"
+        element={
+          <RequireAuth>
+            <ResultPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <RequireAuth>
+            <ProfilePage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/sessions"
+        element={
+          <RequireAuth>
+            <SessionsPage />
           </RequireAuth>
         }
       />
