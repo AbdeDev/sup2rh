@@ -3,6 +3,10 @@ import importPlugin from "eslint-plugin-import";
 import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import tseslint from "typescript-eslint";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default [
   {
@@ -23,6 +27,11 @@ export default [
 
   {
     files: ["**/*.{ts,tsx,js,jsx}"],
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: __dirname,
+      },
+    },
     plugins: {
       import: importPlugin,
       react: reactPlugin,
