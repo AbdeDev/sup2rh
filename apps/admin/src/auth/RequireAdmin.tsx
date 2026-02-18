@@ -10,18 +10,20 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const { hasAdminToken } = useSession();
+
   useEffect(() => {
-    if (session && !sessionLoading) {
+    if ((session || hasAdminToken) && !sessionLoading) {
       getMe()
         .then((user) => {
           setIsAdmin(user.role === "ADMIN");
         })
         .catch(() => setIsAdmin(false))
         .finally(() => setLoading(false));
-    } else if (!session && !sessionLoading) {
+    } else if (!session && !hasAdminToken && !sessionLoading) {
       setLoading(false);
     }
-  }, [session, sessionLoading]);
+  }, [session, sessionLoading, hasAdminToken]);
 
   if (loading || sessionLoading) {
     return (
@@ -33,7 +35,7 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!session) {
+  if (!session && !hasAdminToken) {
     return <Navigate to="/login" replace />;
   }
 

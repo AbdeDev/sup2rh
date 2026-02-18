@@ -2,6 +2,8 @@
 
 namespace App\Security;
 
+use App\Services\AdminTokenService;
+use App\Services\ProfileService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +17,9 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
 final class SupabaseAuthenticator extends AbstractAuthenticator
 {
     public function __construct(
-        private readonly SupabaseJwtVerifier $jwtVerifier
+        private readonly SupabaseJwtVerifier $jwtVerifier,
+        private readonly ProfileService $profileService,
+        private readonly AdminTokenService $adminTokenService
     ) {}
 
     public function supports(Request $request): ?bool
@@ -26,8 +30,10 @@ final class SupabaseAuthenticator extends AbstractAuthenticator
         if ($path === '/api/health' || $request->getMethod() === 'OPTIONS') {
             return false;
         }
-        
-        // Authentifier toutes les routes API
+        if (str_starts_with($path, '/api/admin/login') || str_starts_with($path, '/api/debug')) {
+            return false;
+        }
+
         return str_starts_with($path, '/api');
     }
 
@@ -41,20 +47,41 @@ final class SupabaseAuthenticator extends AbstractAuthenticator
 
         $token = $matches[1];
 
+        $adminPayload = $this->adminTokenService->verify($token);
+        if ($adminPayload !== null) {
+            $user = new AuthUser(
+                id: $adminPayload['sub'],
+                email: $adminPayload['email'],
+                claims: [],
+                roles: ['ROLE_USER', 'ROLE_ADMIN']
+            );
+
+            return new SelfValidatingPassport(
+                new UserBadge($adminPayload['sub'], fn () => $user)
+            );
+        }
+
         try {
             $decoded = $this->jwtVerifier->verify($token);
         } catch (\Exception $e) {
             throw new AuthenticationException('Invalid token: ' . $e->getMessage());
         }
 
+        $userId = $decoded['user_id'];
+        $email = $decoded['email'] ?? null;
+        $profile = $this->profileService->ensureProfile($userId, $email);
+        // Accès admin : on vérifie uniquement le rôle en BDD (pas d’email ni d’invitation spécifique)
+        $roles = $profile->getRole() === 'ADMIN' ? ['ROLE_USER', 'ROLE_ADMIN'] : ['ROLE_USER'];
+
         $user = new AuthUser(
-            id: $decoded['user_id'],
-            email: $decoded['email'] ?? null,
-            claims: $decoded['raw'] ?? []
+            id: $userId,
+            email: $email,
+            claims: $decoded['raw'] ?? [],
+            roles: $roles
         );
 
         return new SelfValidatingPassport(
-            new UserBadge($decoded['user_id'], fn() => $user)
+            new UserBadge($userId, fn () => $user)
         );
     }
 

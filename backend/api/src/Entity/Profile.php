@@ -17,6 +17,7 @@ class Profile
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $email = null;
 
+    /** Un seul rôle par utilisateur pour l’instant (USER ou ADMIN). Plusieurs rôles = étendre en JSON/table. */
     #[ORM\Column(type: Types::STRING, length: 50, options: ['default' => 'USER'])]
     private string $role = 'USER';
 

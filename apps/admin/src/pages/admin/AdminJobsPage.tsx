@@ -100,27 +100,27 @@ export function AdminJobsPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {jobs.map((job, index) => (
               <Card
                 key={job.id}
-                className="border border-border bg-card hover:border-primary/50 transition-all duration-300 cursor-pointer group animate-in fade-in slide-in-from-bottom-4"
+                className="rounded-xl border border-border bg-card shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300 ease-out cursor-pointer group animate-in fade-in slide-in-from-bottom-4 overflow-hidden"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold text-foreground truncate mb-1 group-hover:text-primary transition-colors duration-200">
+                      <h3 className="text-base font-semibold text-foreground truncate mb-1.5 group-hover:text-primary transition-colors duration-200">
                         {job.name}
                       </h3>
                       {job.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-2">
+                        <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
                           {job.description}
                         </p>
                       )}
                     </div>
                   </div>
-                  <div className="space-y-2 mb-3">
+                  <div className="space-y-2 mb-4">
                     {job.salary && (
                       <div className="text-xs">
                         <span className="text-muted-foreground">Salaire :</span>{" "}
@@ -140,11 +140,11 @@ export function AdminJobsPage() {
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 pt-1">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 text-xs flex-1 border-border text-muted-foreground hover:text-foreground transition-all duration-200"
+                      className="h-9 text-xs flex-1 rounded-lg border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-200"
                       onClick={() => handleEdit(job)}
                     >
                       <Edit2 className="h-3.5 w-3.5 mr-1.5" />
@@ -153,7 +153,7 @@ export function AdminJobsPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 text-xs border-destructive/30 text-destructive hover:bg-destructive/10 transition-all duration-200"
+                      className="h-9 text-xs rounded-lg border-destructive/30 text-destructive hover:bg-destructive/10 transition-all duration-200"
                       onClick={() => handleDelete(job.id)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />

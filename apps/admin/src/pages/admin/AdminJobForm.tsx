@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, Plus, Trash2 } from "lucide-react";
 
 import {
   createJob,
@@ -7,12 +7,26 @@ import {
   type Job,
   type CreateJobRequest,
   type UpdateJobRequest,
+  type JobIndicator,
 } from "../../lib/api";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Card, CardContent, CardHeader } from "../../components/ui/card";
 import { Textarea } from "../../components/ui/textarea";
+
+function parseIndicators(
+  indicators: JobIndicator[] | Record<string, unknown> | undefined,
+): JobIndicator[] {
+  if (!indicators) return [];
+  if (Array.isArray(indicators)) {
+    return indicators.filter((i) => i && typeof i.label === "string");
+  }
+  return Object.entries(indicators).map(([label, value]) => ({
+    label,
+    value: typeof value === "number" ? value : String(value ?? ""),
+  }));
+}
 
 interface AdminJobFormProps {
   job?: Job;
@@ -30,7 +44,7 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
     hiringRate: "",
     turnoverRate: "",
     videoUrl: "",
-    indicators: "",
+    indicators: [] as JobIndicator[],
   });
 
   useEffect(() => {
@@ -43,10 +57,40 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
         hiringRate: job.hiringRate?.toString() || "",
         turnoverRate: job.turnoverRate?.toString() || "",
         videoUrl: job.videoUrl || "",
-        indicators: job.indicators ? JSON.stringify(job.indicators, null, 2) : "",
+        indicators: parseIndicators(
+          job.indicators as JobIndicator[] | Record<string, unknown> | undefined,
+        ),
       });
     }
   }, [job]);
+
+  function addIndicator() {
+    setFormData((prev) => ({
+      ...prev,
+      indicators: [...prev.indicators, { label: "", value: "" }],
+    }));
+  }
+
+  function removeIndicator(index: number) {
+    setFormData((prev) => ({
+      ...prev,
+      indicators: prev.indicators.filter((_, i) => i !== index),
+    }));
+  }
+
+  function updateIndicator(index: number, field: "label" | "value", val: string) {
+    setFormData((prev) => ({
+      ...prev,
+      indicators: prev.indicators.map((item, i) =>
+        i !== index
+          ? item
+          : {
+              ...item,
+              [field]: field === "value" && /^-?[\d.]+$/.test(val) ? parseFloat(val) || val : val,
+            },
+      ),
+    }));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,7 +98,9 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
     setLoading(true);
 
     try {
-      const indicators = formData.indicators ? JSON.parse(formData.indicators) : undefined;
+      const indicators = formData.indicators
+        .filter((i) => i.label.trim() !== "")
+        .map((i) => ({ label: i.label.trim(), value: i.value }));
 
       if (job) {
         const updateData: UpdateJobRequest = {
@@ -64,7 +110,7 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
           hiringRate: formData.hiringRate ? parseFloat(formData.hiringRate) : undefined,
           turnoverRate: formData.turnoverRate ? parseFloat(formData.turnoverRate) : undefined,
           videoUrl: formData.videoUrl || undefined,
-          indicators,
+          indicators: indicators.length ? indicators : undefined,
         };
         await updateJob(job.id, updateData);
       } else {
@@ -79,7 +125,7 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
           hiringRate: formData.hiringRate ? parseFloat(formData.hiringRate) : undefined,
           turnoverRate: formData.turnoverRate ? parseFloat(formData.turnoverRate) : undefined,
           videoUrl: formData.videoUrl || undefined,
-          indicators,
+          indicators: indicators.length ? indicators : undefined,
         };
         await createJob(createData);
       }
@@ -92,9 +138,9 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-border bg-card animate-in scale-in duration-200">
-        <CardHeader className="flex items-center justify-between pb-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 dark:bg-black/60 backdrop-blur-sm">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-border bg-card text-card-foreground shadow-xl dark:shadow-2xl dark:border-border animate-in scale-in duration-200">
+        <CardHeader className="flex items-center justify-between pb-3 border-b border-border">
           <h2 className="text-lg font-semibold text-foreground">
             {job ? "Modifier la fiche métier" : "Nouvelle fiche métier"}
           </h2>
@@ -219,20 +265,55 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="indicators" className="text-xs text-muted-foreground">
-                Indicateurs supplémentaires (JSON)
-              </Label>
-              <Textarea
-                id="indicators"
-                value={formData.indicators}
-                onChange={(e) => setFormData({ ...formData, indicators: e.target.value })}
-                placeholder='{"tauxCroissance": 5.2, "satisfaction": 4.5}'
-                rows={3}
-                className="text-xs font-mono"
-              />
-              <p className="text-[10px] text-muted-foreground">
-                Format JSON pour des indicateurs personnalisés
-              </p>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs text-muted-foreground">
+                  Indicateurs supplémentaires (chiffre ou texte)
+                </Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs gap-1 border-border"
+                  onClick={addIndicator}
+                >
+                  <Plus className="h-3 w-3" />
+                  Ajouter
+                </Button>
+              </div>
+              <div className="space-y-2 rounded-lg border border-border bg-muted/40 dark:bg-muted/60 p-3">
+                {formData.indicators.length === 0 ? (
+                  <p className="text-[11px] text-muted-foreground py-1">
+                    Aucun indicateur. Cliquez sur &quot;Ajouter&quot; pour en saisir (ex. Taux de
+                    pénurie, Évolution…).
+                  </p>
+                ) : (
+                  formData.indicators.map((item, index) => (
+                    <div key={index} className="flex gap-2 items-center">
+                      <Input
+                        placeholder="Libellé (ex. Taux de pénurie)"
+                        value={item.label}
+                        onChange={(e) => updateIndicator(index, "label", e.target.value)}
+                        className="h-8 text-sm flex-1"
+                      />
+                      <Input
+                        placeholder="Valeur (ex. 12% ou 5.2)"
+                        value={String(item.value)}
+                        onChange={(e) => updateIndicator(index, "value", e.target.value)}
+                        className="h-8 text-sm w-28"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                        onClick={() => removeIndicator(index)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
 
             <div className="flex gap-3 pt-2">

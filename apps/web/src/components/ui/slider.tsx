@@ -35,14 +35,14 @@ export function Slider({
             width: `${percentage}%`,
             background:
               value === 1
-                ? "#008c54"
+                ? "#f37021"
                 : value === 2
-                  ? "#22c55e"
+                  ? "#f97316"
                   : value === 3
                     ? "#6b7280"
                     : value === 4
-                      ? "#f97316"
-                      : "#f37021",
+                      ? "#22c55e"
+                      : "#008c54",
           }}
         />
         <input

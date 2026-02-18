@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Sparkles,
@@ -9,14 +9,17 @@ import {
   User,
   LogOut,
   Calendar,
+  CalendarRange as CalendarRangeIcon,
   Plus,
 } from "lucide-react";
 
 import { supabase } from "../lib/supabase";
 import { getQuizSessions, type QuizSession } from "../lib/api";
+import { DateRangeFilter } from "../components/DateRangeFilter";
 import { Button } from "../components/ui/button";
 import { Separator } from "../components/ui/separator";
 import { Card, CardContent } from "../components/ui/card";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function SessionsPage() {
   const navigate = useNavigate();
@@ -24,6 +27,9 @@ export function SessionsPage() {
   const [sessions, setSessions] = useState<QuizSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
     loadSessions();
@@ -94,8 +100,18 @@ export function SessionsPage() {
     return id.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
-  const completedSessions = sessions.filter((s) => s.finalJobId);
-  const inProgressSessions = sessions.filter((s) => !s.finalJobId);
+  const filteredSessions = useMemo(() => {
+    if (!dateFrom && !dateTo) return sessions;
+    const fromTime = dateFrom ? new Date(dateFrom + "T00:00:00").getTime() : 0;
+    const toTime = dateTo ? new Date(dateTo + "T23:59:59").getTime() : Number.MAX_SAFE_INTEGER;
+    return sessions.filter((s) => {
+      const t = new Date(s.createdAt).getTime();
+      return t >= fromTime && t <= toTime;
+    });
+  }, [sessions, dateFrom, dateTo]);
+
+  const completedSessions = filteredSessions.filter((s) => s.finalJobId);
+  const inProgressSessions = filteredSessions.filter((s) => !s.finalJobId);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -116,7 +132,8 @@ export function SessionsPage() {
             </div>
             <span className="text-xs font-medium text-foreground truncate">Mes sessions</span>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
+            <ThemeToggle />
             <div className="relative" ref={userMenuRef}>
               <Button
                 variant="ghost"
@@ -158,25 +175,52 @@ export function SessionsPage() {
         <div className="max-w-6xl mx-auto p-4 md:p-6 lg:p-8">
           {/* Header section */}
           <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
               <div>
                 <h1 className="text-2xl font-heading font-semibold text-foreground mb-2">
                   Mes sessions de quiz
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {sessions.length === 0
-                    ? "Aucune session pour le moment"
-                    : `${sessions.length} session${sessions.length > 1 ? "s" : ""} au total`}
+                  {filteredSessions.length === sessions.length
+                    ? sessions.length === 0
+                      ? "Aucune session pour le moment"
+                      : `${sessions.length} session${sessions.length > 1 ? "s" : ""} au total`
+                    : `${filteredSessions.length} sur ${sessions.length} session${sessions.length > 1 ? "s" : ""}`}
                 </p>
               </div>
-              <Button
-                onClick={() => navigate("/quiz/start")}
-                className="h-9 px-4 text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:scale-105"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nouveau quiz
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 text-xs border-border"
+                  onClick={() => setFilterOpen((o) => !o)}
+                >
+                  <CalendarRangeIcon className="h-3.5 w-3.5 mr-1.5" />
+                  Filtrer par date
+                </Button>
+                <Button
+                  onClick={() => navigate("/quiz/start")}
+                  className="h-9 px-4 text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:scale-105"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouveau quiz
+                </Button>
+              </div>
             </div>
+            {filterOpen && (
+              <div className="mb-4 p-4 rounded-lg border border-border bg-card animate-in fade-in slide-in-from-top-2 duration-200">
+                <DateRangeFilter
+                  dateFrom={dateFrom}
+                  dateTo={dateTo}
+                  onDateFromChange={setDateFrom}
+                  onDateToChange={setDateTo}
+                  onClear={() => {
+                    setDateFrom("");
+                    setDateTo("");
+                  }}
+                />
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -268,7 +312,7 @@ export function SessionsPage() {
                         key={session.id}
                         className="border border-border bg-card hover:border-orange/50 transition-all duration-300 cursor-pointer group animate-in fade-in slide-in-from-bottom-4"
                         style={{ animationDelay: `${(completedSessions.length + index) * 50}ms` }}
-                        onClick={() => navigate("/quiz/start")}
+                        onClick={() => navigate(`/quiz/start?sessionId=${session.id}`)}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
