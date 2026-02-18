@@ -67,6 +67,6 @@ Si un métier t’intéresse, tu peux demander à être contacté par l’équip
 
 ## Licence
 
-Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour les détails.
+Ce projet est sous licence. Voir le fichier [LICENSE](LICENSE) pour les détails.
 
 Voir également [DISTRIBUTION_LICENSE.md](DISTRIBUTION_LICENSE.md).
