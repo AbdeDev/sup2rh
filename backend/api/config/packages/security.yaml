@@ -9,8 +9,11 @@ security:
 
     firewalls:
         dev:
-            # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
+            security: false
+        # Routes API sans auth : login admin + debug (dev)
+        public_api:
+            pattern: ^/api/(admin/login|debug)
             security: false
         main:
             lazy: true
@@ -21,9 +24,14 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
+        - { path: ^/api/admin/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/debug, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/admin, roles: ROLE_ADMIN }
         - { path: ^/api/me, roles: ROLE_USER }
         - { path: ^/api/quiz, roles: ROLE_USER }
-        # - { path: ^/admin, roles: ROLE_ADMIN }
+        - { path: ^/api/contact, roles: ROLE_USER }
+        - { path: ^/api/jobs, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/feedback, roles: ROLE_USER }
 
 when@test:
     security:

@@ -5,8 +5,17 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-
 import { supabase } from "../lib/supabase";
+
+function isRateLimitError(error: { message?: string; status?: number }): boolean {
+  const msg = (error?.message ?? "").toLowerCase();
+  return (
+    error?.status === 429 ||
+    msg.includes("rate limit") ||
+    msg.includes("too many") ||
+    msg.includes("trop de requêtes")
+  );
+}
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const [email, setEmail] = useState("");
@@ -17,10 +26,11 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    const trimmed = email.trim();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
+    const { error: err } = await supabase.auth.signInWithOtp({
+      email: trimmed,
       options: {
         shouldCreateUser: true,
         emailRedirectTo: `${window.location.origin}/auth/callback`,
@@ -29,12 +39,22 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
     setLoading(false);
 
-    if (error) {
-      setError(error.message);
+    if (err) {
+      if (isRateLimitError(err)) {
+        setError(
+          "Trop de demandes. Vérifie ta boîte mail (et les spams), puis réessaie dans un moment.",
+        );
+      } else {
+        const msg =
+          (err as { message?: string; error_description?: string }).message ||
+          (err as { error_description?: string }).error_description ||
+          "Impossible d'envoyer le lien. Vérifie ta config SMTP dans Supabase (Resend, etc.) ou réessaie plus tard.";
+        setError(msg);
+      }
       return;
     }
 
-    navigate(`/check-email?email=${encodeURIComponent(email)}`);
+    navigate(`/check-email?email=${encodeURIComponent(trimmed)}`);
   }
 
   return (

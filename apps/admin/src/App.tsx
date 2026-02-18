@@ -9,6 +9,8 @@ import { AdminIndexPage } from "./pages/admin/AdminIndexPage";
 import { AdminJobsPage } from "./pages/admin/AdminJobsPage";
 import { AdminQuizzesPage } from "./pages/admin/AdminQuizzesPage";
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
+import { AdminContactRequestsPage } from "./pages/admin/AdminContactRequestsPage";
+import { AdminFeedbacksPage } from "./pages/admin/AdminFeedbacksPage";
 
 export default function App() {
   return (
@@ -57,6 +59,26 @@ export default function App() {
           <RequireAuth>
             <RequireAdmin>
               <AdminUsersPage />
+            </RequireAdmin>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/contact-requests"
+        element={
+          <RequireAuth>
+            <RequireAdmin>
+              <AdminContactRequestsPage />
+            </RequireAdmin>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/feedbacks"
+        element={
+          <RequireAuth>
+            <RequireAdmin>
+              <AdminFeedbacksPage />
             </RequireAdmin>
           </RequireAuth>
         }

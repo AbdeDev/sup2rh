@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { X, Loader2, Plus, Trash2 } from "lucide-react";
 
-import { createQuiz, type QuizDefinition, type Job, type CreateQuizRequest } from "../../lib/api";
+import {
+  createQuiz,
+  updateQuiz,
+  type QuizDefinition,
+  type Job,
+  type CreateQuizRequest,
+} from "../../lib/api";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -31,6 +37,17 @@ export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
     Array<{ id: string; text: string; answers: Array<{ id: string; label: string }> }>
   >([]);
 
+  const defaultQuestion = () => [
+    {
+      id: "q1",
+      text: "",
+      answers: [
+        { id: "a1", label: "" },
+        { id: "a2", label: "" },
+      ],
+    },
+  ];
+
   useEffect(() => {
     if (quiz) {
       setFormData({
@@ -39,18 +56,19 @@ export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
       });
       setQuestions(quiz.questions);
     } else {
-      setQuestions([
-        {
-          id: "q1",
-          text: "",
-          answers: [
-            { id: "a1", label: "" },
-            { id: "a2", label: "" },
-          ],
-        },
-      ]);
+      setFormData((prev) => ({
+        ...prev,
+        jobId: prev.jobId || (jobs.length > 0 ? jobs[0].id : ""),
+      }));
+      setQuestions((prev) => (prev.length ? prev : defaultQuestion()));
     }
   }, [quiz]);
+
+  useEffect(() => {
+    if (!quiz && jobs.length > 0) {
+      setFormData((prev) => ({ ...prev, jobId: prev.jobId || jobs[0].id }));
+    }
+  }, [quiz, jobs]);
 
   function addQuestion() {
     const qNum = questions.length + 1;
@@ -137,9 +155,9 @@ export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
 
     setLoading(true);
     try {
-      const createData: CreateQuizRequest = {
+      const payload = {
         jobId: formData.jobId,
-        name: formData.name,
+        name: formData.name.trim() || "Sans titre",
         questions: questions.map((q) => ({
           id: q.id,
           text: q.text,
@@ -149,7 +167,11 @@ export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
           })),
         })),
       };
-      await createQuiz(createData);
+      if (quiz) {
+        await updateQuiz(quiz.id, payload);
+      } else {
+        await createQuiz(payload);
+      }
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erreur lors de l'enregistrement");
@@ -159,9 +181,9 @@ export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-      <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-border bg-card animate-in scale-in duration-200">
-        <CardHeader className="flex items-center justify-between pb-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 dark:bg-black/60 backdrop-blur-sm">
+      <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-border bg-card text-card-foreground shadow-xl dark:shadow-2xl dark:border-border animate-in scale-in duration-200">
+        <CardHeader className="flex items-center justify-between pb-3 border-b border-border">
           <h2 className="text-lg font-semibold text-foreground">
             {quiz ? "Modifier le quiz" : "Nouveau quiz"}
           </h2>

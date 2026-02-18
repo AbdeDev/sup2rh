@@ -5,13 +5,17 @@ import { ArrowLeft, Loader2, User, Mail, Sparkles, CheckCircle2 } from "lucide-r
 import {
   getQuizSession,
   analyzeQuiz,
+  submitContactRequest,
+  getJobs,
   type AnalysisResult,
   type QuizSessionWithAnswers,
+  type JobFiche,
   getMe,
 } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function ResultPage() {
   const { id } = useParams<{ id: string }>();
@@ -26,23 +30,36 @@ export function ResultPage() {
   const [contactLoading, setContactLoading] = useState(false);
 
   useEffect(() => {
-    if (id && !session) {
-      setLoading(true);
-      getQuizSession(id)
-        .then((s) => {
-          setSession(s);
-          if (!analysis && s.finalJobId) {
-            return analyzeQuiz(id);
+    if (!id) return;
+    if (session && analysis) return;
+    setLoading(true);
+    getQuizSession(id!)
+      .then(async (s) => {
+        setSession(s);
+        let result: AnalysisResult | null = null;
+        try {
+          if (s.finalJobId) result = await analyzeQuiz(id!);
+        } catch {
+          // Fallback: session a déjà finalJobId, récupérer la fiche depuis /jobs
+          if (s.finalJobId && s.scores) {
+            const { items } = await getJobs();
+            const job = items.find((j) => j.id === s.finalJobId!) as JobFiche | undefined;
+            if (job) {
+              result = {
+                jobId: s.finalJobId,
+                confidence: Math.max(...Object.values(s.scores), 0.5),
+                explanation: `Vos réponses indiquent une affinité avec le profil « ${job.name} ».`,
+                scores: s.scores,
+                job,
+              };
+            }
           }
-          return null;
-        })
-        .then((result) => {
-          if (result) setAnalysis(result);
-        })
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    }
-  }, [id, session, analysis]);
+        }
+        if (result) setAnalysis(result);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [id]);
 
   useEffect(() => {
     getMe()
@@ -51,13 +68,22 @@ export function ResultPage() {
   }, []);
 
   async function handleContact() {
+    if (!session || !analysis) return;
     setContactLoading(true);
-    // TODO: Implémenter l'appel API pour contacter Sup2RH
-    setTimeout(() => {
-      setContactLoading(false);
-      // Pour l'instant, on affiche juste un message
+    try {
+      await submitContactRequest({
+        sessionId: session.id,
+        email: user?.email,
+        jobId: analysis.jobId,
+        explanation: analysis.explanation,
+        scores: analysis.scores,
+      });
       alert("Demande de contact envoyée ! L'équipe Sup2RH te contactera bientôt.");
-    }, 1000);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Erreur lors de l'envoi");
+    } finally {
+      setContactLoading(false);
+    }
   }
 
   if (loading) {
@@ -90,9 +116,10 @@ export function ResultPage() {
   }
 
   const jobLabel = (id: string) => id.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-
-  const topJobLabel = jobLabel(analysis.jobId);
+  const topJobLabel =
+    analysis.job?.name ?? (analysis.jobId ? jobLabel(analysis.jobId) : "Métier RH");
   const confidencePercent = Math.round(analysis.confidence * 100);
+  const fiche = analysis.job;
 
   return (
     <div className="h-screen bg-background flex flex-col overflow-hidden">
@@ -108,6 +135,9 @@ export function ResultPage() {
           </Button>
           <Separator orientation="vertical" className="h-4 mx-1" />
           <span className="text-xs text-muted-foreground">Résultat</span>
+          <div className="ml-auto">
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
@@ -160,7 +190,7 @@ export function ResultPage() {
                 </div>
               </div>
 
-              {/* Fiche métier */}
+              {/* Fiche métier RH */}
               <Card
                 className="border border-border bg-card mb-6 flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500"
                 style={{ animationDelay: "100ms" }}
@@ -172,27 +202,86 @@ export function ResultPage() {
                   </div>
                   <Separator className="bg-border mb-4" />
                   <div className="space-y-4 flex-1">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-                        Description
-                      </p>
-                      <p className="text-sm text-foreground leading-relaxed">
-                        {analysis.explanation}
-                      </p>
-                    </div>
+                    {fiche?.description && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                          Description du métier
+                        </p>
+                        <p className="text-sm text-foreground leading-relaxed">
+                          {fiche.description}
+                        </p>
+                      </div>
+                    )}
+                    {(fiche?.salary ?? fiche?.hiringRate ?? fiche?.turnoverRate) && (
+                      <>
+                        {fiche?.description && <Separator className="bg-border" />}
+                        <div className="grid gap-2 text-sm">
+                          {fiche?.salary && (
+                            <p>
+                              <span className="text-muted-foreground">Salaire (France) :</span>{" "}
+                              <span className="text-foreground">{fiche.salary}</span>
+                            </p>
+                          )}
+                          {fiche?.hiringRate != null && (
+                            <p>
+                              <span className="text-muted-foreground">Taux d&apos;embauche :</span>{" "}
+                              <span className="text-foreground">{fiche.hiringRate} %</span>
+                            </p>
+                          )}
+                          {fiche?.turnoverRate != null && (
+                            <p>
+                              <span className="text-muted-foreground">Taux de turnover :</span>{" "}
+                              <span className="text-foreground">{fiche.turnoverRate} %</span>
+                            </p>
+                          )}
+                        </div>
+                      </>
+                    )}
                     <Separator className="bg-border" />
                     <div>
                       <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
                         Pourquoi ce métier te correspond
                       </p>
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        Basé sur tes {session.answers.length} réponses au quiz, l&apos;IA a
-                        identifié que le métier de{" "}
-                        <span className="font-medium text-foreground">{topJobLabel}</span>{" "}
-                        correspond le mieux à ton profil. Tes réponses montrent un intérêt et des
-                        compétences alignées avec ce rôle dans le domaine des ressources humaines.
+                        {analysis.explanation}
                       </p>
                     </div>
+                    {Array.isArray(fiche?.indicators) && fiche.indicators.length > 0 && (
+                      <>
+                        <Separator className="bg-border" />
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                            Autres indicateurs (France)
+                          </p>
+                          <ul className="space-y-1 text-sm">
+                            {fiche.indicators.map((ind, i) => (
+                              <li key={i}>
+                                <span className="text-muted-foreground">{ind.label} :</span>{" "}
+                                <span className="text-foreground">{String(ind.value)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </>
+                    )}
+                    {fiche?.videoUrl && (
+                      <>
+                        <Separator className="bg-border" />
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
+                            Vidéo explicative
+                          </p>
+                          <a
+                            href={fiche.videoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline"
+                          >
+                            Voir la vidéo du métier →
+                          </a>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>

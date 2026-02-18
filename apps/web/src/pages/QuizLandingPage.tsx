@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function QuizLandingPage() {
   const navigate = useNavigate();
@@ -38,7 +39,8 @@ export function QuizLandingPage() {
             </div>
             <span className="text-xs font-medium text-foreground truncate">Sup2RH</span>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
+            <ThemeToggle />
             <div className="relative" ref={userMenuRef}>
               <Button
                 variant="ghost"
@@ -86,7 +88,7 @@ export function QuizLandingPage() {
               Quel métier RH est fait pour toi ?
             </h1>
             <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
-              Réponds à 15 questions et découvre ton profil parmi : Recrutement, Paie, QVCT,
+              Réponds à quelques questions et découvre ton profil parmi : Recrutement, Paie, QVCT,
               Assistant RH ou Formation.
             </p>
             <Button
@@ -99,28 +101,30 @@ export function QuizLandingPage() {
             <p className="text-xs text-muted-foreground mt-3">
               Gratuit · Sans inscription · Résultat immédiat
             </p>
-            <button
-              onClick={() => navigate("/sessions")}
-              className="mt-4 text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 mx-auto transition-colors duration-200"
-            >
-              <Clock className="h-3 w-3" />
-              Voir mes sessions
-            </button>
+            <div className="mt-4 flex items-center justify-center">
+              <button
+                onClick={() => navigate("/sessions")}
+                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors duration-200"
+              >
+                <Clock className="h-3 w-3" />
+                Mes sessions
+              </button>
+            </div>
           </div>
 
           {/* Étapes */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-            <Card className="border border-border bg-card">
-              <CardContent className="p-4 text-center space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
+            <Card className="rounded-xl border border-border bg-card shadow-sm hover:shadow-md hover:border-primary/40 hover:-translate-y-0.5 transition-all duration-300 ease-out">
+              <CardContent className="p-5 text-center space-y-3">
                 <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 border border-primary/30 text-primary font-semibold text-sm">
                   1
                 </div>
                 <p className="text-sm text-foreground font-medium">Tu fais le quiz</p>
-                <p className="text-xs text-muted-foreground">15 questions rapides</p>
+                <p className="text-xs text-muted-foreground">Questions rapides</p>
               </CardContent>
             </Card>
-            <Card className="border border-border bg-card">
-              <CardContent className="p-4 text-center space-y-3">
+            <Card className="rounded-xl border border-border bg-card shadow-sm hover:shadow-md hover:border-success/40 hover:-translate-y-0.5 transition-all duration-300 ease-out">
+              <CardContent className="p-5 text-center space-y-3">
                 <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-success/20 border border-success/30 text-success font-semibold text-sm">
                   2
                 </div>
@@ -128,8 +132,8 @@ export function QuizLandingPage() {
                 <p className="text-xs text-muted-foreground">Résultat personnalisé</p>
               </CardContent>
             </Card>
-            <Card className="border border-border bg-card">
-              <CardContent className="p-4 text-center space-y-3">
+            <Card className="rounded-xl border border-border bg-card shadow-sm hover:shadow-md hover:border-orange/40 hover:-translate-y-0.5 transition-all duration-300 ease-out">
+              <CardContent className="p-5 text-center space-y-3">
                 <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-orange/20 border border-orange/30 text-orange font-semibold text-sm">
                   3
                 </div>
@@ -140,8 +144,8 @@ export function QuizLandingPage() {
           </div>
 
           {/* Sections info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="border border-border bg-card">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <Card className="rounded-xl border border-border bg-card shadow-sm hover:shadow-md hover:border-primary/30 transition-all duration-300 ease-out">
               <CardContent className="p-5 space-y-3">
                 <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4 text-primary" />
@@ -168,7 +172,7 @@ export function QuizLandingPage() {
               </CardContent>
             </Card>
 
-            <Card className="border border-border bg-card">
+            <Card className="rounded-xl border border-border bg-card shadow-sm hover:shadow-md hover:border-success/30 transition-all duration-300 ease-out">
               <CardContent className="p-5 space-y-3">
                 <h2 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Play className="h-4 w-4 text-success" />

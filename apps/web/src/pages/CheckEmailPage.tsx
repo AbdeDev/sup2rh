@@ -1,12 +1,37 @@
+import { useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Mail, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
+import { supabase } from "../lib/supabase";
 
 export function CheckEmailPage() {
   const [searchParams] = useSearchParams();
   const email = searchParams.get("email") || "";
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
+
+  async function handleResend() {
+    if (!email.trim()) return;
+    setResendError(null);
+    setResendLoading(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+    setResendLoading(false);
+    if (error) {
+      const msg =
+        (error as { message?: string; error_description?: string }).message ||
+        (error as { error_description?: string }).error_description ||
+        "Impossible d'envoyer le lien. Réessaie plus tard.";
+      setResendError(msg);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-500">
@@ -42,6 +67,29 @@ export function CheckEmailPage() {
                 💡 Pense à vérifier les spams si tu ne vois pas le mail.
               </p>
             </div>
+            {email && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-9 text-sm border-border text-foreground hover:bg-accent transition-all duration-200"
+                disabled={resendLoading}
+                onClick={handleResend}
+              >
+                {resendLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Envoi…
+                  </>
+                ) : (
+                  "Renvoyer le lien"
+                )}
+              </Button>
+            )}
+            {resendError && (
+              <div className="p-3 rounded-md border border-destructive/30 bg-destructive/10 text-xs text-destructive">
+                {resendError}
+              </div>
+            )}
             <Button
               asChild
               variant="outline"

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
+import { getAdminToken } from "../lib/api";
 
 export function useSession() {
   const [session, setSession] = useState<Session | null>(null);
@@ -22,5 +23,7 @@ export function useSession() {
     return () => subscription.unsubscribe();
   }, []);
 
-  return { session, loading };
+  const hasAdminToken = !!getAdminToken();
+
+  return { session, loading, hasAdminToken };
 }

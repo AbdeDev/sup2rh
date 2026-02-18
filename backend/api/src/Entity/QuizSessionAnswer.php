@@ -24,6 +24,14 @@ class QuizSessionAnswer
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
     private ?string $answerId = null;
 
+    /** ID de la fiche métier à laquelle la question est liée (depuis le quiz) */
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $jobId = null;
+
+    /** Texte de la question (pour l'analyse IA) */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $questionText = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $textValue = null;
 
@@ -76,6 +84,28 @@ class QuizSessionAnswer
     public function setAnswerId(?string $answerId): static
     {
         $this->answerId = $answerId;
+        return $this;
+    }
+
+    public function getJobId(): ?string
+    {
+        return $this->jobId;
+    }
+
+    public function setJobId(?string $jobId): static
+    {
+        $this->jobId = $jobId;
+        return $this;
+    }
+
+    public function getQuestionText(): ?string
+    {
+        return $this->questionText;
+    }
+
+    public function setQuestionText(?string $questionText): static
+    {
+        $this->questionText = $questionText;
         return $this;
     }
 

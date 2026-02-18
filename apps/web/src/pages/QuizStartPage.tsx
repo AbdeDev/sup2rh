@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, ArrowLeft, Loader2, Sparkles } from "lucide-react";
 
 import {
   createQuizSession,
   getQuizSession,
+  getQuizQuestions,
   submitAnswer,
   analyzeQuiz,
   type QuizSessionWithAnswers,
+  type QuizQuestion,
 } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Slider } from "../components/ui/slider";
+import { ThemeToggle } from "../components/ThemeToggle";
 
-// Questions exemple - à remplacer par les vraies questions depuis l'API
-const QUESTIONS = [
+// Questions par défaut si aucun quiz en BDD
+const FALLBACK_QUESTIONS: QuizQuestion[] = [
   { id: "q1", text: "J'aime travailler en équipe" },
   { id: "q2", text: "Je suis organisé et méthodique" },
   { id: "q3", text: "Je préfère les tâches administratives" },
@@ -32,30 +35,75 @@ const QUESTIONS = [
   { id: "q15", text: "Je préfère les environnements structurés" },
 ];
 
-const QUESTIONS_PER_PAGE = 5;
-
 export function QuizStartPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const sessionIdParam = searchParams.get("sessionId");
   const [session, setSession] = useState<QuizSessionWithAnswers | null>(null);
+  const [questions, setQuestions] = useState<QuizQuestion[]>(FALLBACK_QUESTIONS);
   const [currentPage, setCurrentPage] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [questionsPerPage, setQuestionsPerPage] = useState(5);
 
   useEffect(() => {
-    startQuiz();
+    loadQuestions();
   }, []);
 
-  async function startQuiz() {
+  /** Reprend une session en cours : charge la session et restaure les réponses. */
+  useEffect(() => {
+    if (!sessionIdParam || questions.length === 0) return;
+    setLoading(true);
+    getQuizSession(sessionIdParam)
+      .then((s) => {
+        if (s.finalJobId) {
+          navigate(`/result/${s.id}`);
+          return;
+        }
+        setSession(s);
+        const restored: Record<string, number> = {};
+        const labels: Record<string, number> = { a1: 1, a2: 2, a3: 3, a4: 4, a5: 5 };
+        s.answers.forEach((a) => {
+          const val = a.answerId ? labels[a.answerId] : 3;
+          if (val) restored[a.questionId] = val;
+        });
+        setAnswers((prev) => ({ ...prev, ...restored }));
+        const answeredCount = s.answers.length;
+        const nextPage = Math.min(
+          Math.ceil(answeredCount / questionsPerPage),
+          Math.ceil(questions.length / questionsPerPage) - 1,
+        );
+        setCurrentPage(Math.max(0, nextPage));
+      })
+      .catch(() => setError("Session introuvable"))
+      .finally(() => setLoading(false));
+  }, [sessionIdParam, questions.length, questionsPerPage, navigate]);
+
+  /** Charge les questions sans créer de session. La session n'est créée qu'au premier clic sur Suivant. */
+  async function loadQuestions() {
     setLoading(true);
     setError(null);
     try {
-      const newSession = await createQuizSession();
-      const fullSession = await getQuizSession(newSession.id);
-      setSession(fullSession);
-      // Initialiser les réponses à 3 (neutre)
+      const questionsRes = await getQuizQuestions().catch(() => ({
+        questions: FALLBACK_QUESTIONS,
+        questionsPerPage: 5,
+      }));
+      const loadedQuestions =
+        questionsRes.questions?.length > 0
+          ? questionsRes.questions.map((q) => ({
+              id: q.id,
+              text: q.text,
+              answers: q.answers,
+              jobId: q.jobId ?? null,
+            }))
+          : FALLBACK_QUESTIONS;
+      setQuestions(loadedQuestions);
+      setQuestionsPerPage(
+        questionsRes.questionsPerPage ?? Math.max(1, Math.ceil(loadedQuestions.length / 3)),
+      );
       const initialAnswers: Record<string, number> = {};
-      QUESTIONS.forEach((q) => {
+      loadedQuestions.forEach((q) => {
         initialAnswers[q.id] = 3;
       });
       setAnswers(initialAnswers);
@@ -71,36 +119,42 @@ export function QuizStartPage() {
   }
 
   async function handleNext() {
-    if (!session) return;
-
-    const currentQuestions = QUESTIONS.slice(
-      currentPage * QUESTIONS_PER_PAGE,
-      (currentPage + 1) * QUESTIONS_PER_PAGE,
+    const currentQuestions = questions.slice(
+      currentPage * questionsPerPage,
+      (currentPage + 1) * questionsPerPage,
     );
 
     setLoading(true);
     setError(null);
 
     try {
-      // Sauvegarder les réponses de la page actuelle
+      let sessionToUse = session;
+      if (!sessionToUse) {
+        const newSession = await createQuizSession();
+        const fullSession = await getQuizSession(newSession.id);
+        setSession(fullSession);
+        sessionToUse = fullSession;
+      }
+
       for (const q of currentQuestions) {
         const answerValue = answers[q.id];
-        // Convertir slider (1-5) en answerId (a1 = pas d'accord, a5 = d'accord)
         const answerId = `a${answerValue}`;
-        await submitAnswer(session.id, {
+        await submitAnswer(sessionToUse!.id, {
           questionId: q.id,
           answerId,
+          jobId: q.jobId ?? undefined,
+          questionText: q.text ?? undefined,
         });
       }
 
-      // Charger la session mise à jour
-      const updatedSession = await getQuizSession(session.id);
+      const updatedSession = await getQuizSession(sessionToUse!.id);
       setSession(updatedSession);
 
-      // Si dernière page, analyser
-      if (currentPage === Math.ceil(QUESTIONS.length / QUESTIONS_PER_PAGE) - 1) {
-        const result = await analyzeQuiz(session.id);
-        navigate(`/result/${session.id}`, { state: { analysis: result, session: updatedSession } });
+      if (currentPage === Math.ceil(questions.length / questionsPerPage) - 1) {
+        const result = await analyzeQuiz(sessionToUse!.id);
+        navigate(`/result/${sessionToUse!.id}`, {
+          state: { analysis: result, session: updatedSession },
+        });
       } else {
         setCurrentPage((p) => p + 1);
       }
@@ -117,7 +171,7 @@ export function QuizStartPage() {
     }
   }
 
-  if (loading && !session) {
+  if (loading && questions.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -125,14 +179,28 @@ export function QuizStartPage() {
     );
   }
 
-  if (!session) {
-    return null;
+  if (questions.length === 0 && !loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+        <p className="text-sm text-muted-foreground mb-4 text-center">
+          {error || "Impossible de démarrer le quiz."}
+        </p>
+        <Button
+          variant="outline"
+          className="h-9 text-sm border-border"
+          onClick={() => navigate("/quiz")}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Retour au quiz
+        </Button>
+      </div>
+    );
   }
 
-  const totalPages = Math.ceil(QUESTIONS.length / QUESTIONS_PER_PAGE);
-  const startIdx = currentPage * QUESTIONS_PER_PAGE;
-  const endIdx = startIdx + QUESTIONS_PER_PAGE;
-  const currentQuestions = QUESTIONS.slice(startIdx, endIdx);
+  const totalPages = Math.ceil(questions.length / questionsPerPage);
+  const startIdx = currentPage * questionsPerPage;
+  const endIdx = startIdx + questionsPerPage;
+  const currentQuestions = questions.slice(startIdx, endIdx);
   const isLastPage = currentPage === totalPages - 1;
   const canProceed = currentQuestions.every((q) => answers[q.id] !== undefined);
 
@@ -146,6 +214,9 @@ export function QuizStartPage() {
             </div>
             <span className="text-xs font-medium text-foreground truncate">Sup2RH</span>
           </div>
+          <div className="ml-auto">
+            <ThemeToggle />
+          </div>
         </div>
       </header>
       <div className="flex-1 overflow-y-auto">
@@ -154,7 +225,7 @@ export function QuizStartPage() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                Question {startIdx + 1}-{Math.min(endIdx, QUESTIONS.length)} sur {QUESTIONS.length}
+                Question {startIdx + 1}-{Math.min(endIdx, questions.length)} sur {questions.length}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -197,15 +268,27 @@ export function QuizStartPage() {
 
           {/* Navigation */}
           <div className="flex items-center justify-between gap-3">
-            <Button
-              variant="outline"
-              onClick={handlePrevious}
-              disabled={currentPage === 0 || loading}
-              className="h-9 text-xs border-border text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1.5" />
-              Précédent
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={currentPage === 0 || loading}
+                className="h-9 text-xs border-border text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft className="h-4 w-4 mr-1.5" />
+                Précédent
+              </Button>
+              {session && (
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate("/sessions")}
+                  disabled={loading}
+                  className="h-9 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Quitter
+                </Button>
+              )}
+            </div>
             <Button
               onClick={handleNext}
               disabled={!canProceed || loading}

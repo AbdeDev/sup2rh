@@ -2,11 +2,13 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { RequireAuth } from "./auth/RequireAuth";
 import { CheckEmailPage } from "./pages/CheckEmailPage";
+import { HomeRedirect } from "./pages/HomeRedirect";
 import { LoginPage } from "./pages/LoginPage";
 import { QuizLandingPage } from "./pages/QuizLandingPage";
 import { QuizStartPage } from "./pages/QuizStartPage";
 import { ResultPage } from "./pages/ResultPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { FichesPage } from "./pages/FichesPage";
 import { VerifyPage } from "./pages/VerifyPage";
 import { SessionsPage } from "./pages/SessionsPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
@@ -14,7 +16,7 @@ import AuthCallbackPage from "./pages/AuthCallbackPage";
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/quiz" replace />} />
+      <Route path="/" element={<HomeRedirect />} />
 
       {/* Public */}
       <Route path="/login" element={<LoginPage />} />
@@ -63,6 +65,7 @@ export default function App() {
           </RequireAuth>
         }
       />
+      <Route path="/fiches" element={<FichesPage />} />
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/login" replace />} />

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 
-import { supabase } from "../lib/supabase";
+import { adminLogin, setAdminToken } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -20,19 +20,11 @@ export function LoginPage() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) throw error;
-
-      navigate(`/check-email?email=${encodeURIComponent(email)}`);
+      const res = await adminLogin(email);
+      setAdminToken(res.token);
+      navigate("/admin", { replace: true });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erreur lors de l'envoi");
+      setError(e instanceof Error ? e.message : "Cet email n'a pas les droits administrateur.");
     } finally {
       setLoading(false);
     }
@@ -46,7 +38,9 @@ export function LoginPage() {
             <Sparkles className="h-7 w-7 text-primary" />
           </div>
           <h1 className="text-xl font-heading font-semibold text-foreground mb-2">Admin Sup2RH</h1>
-          <p className="text-xs text-muted-foreground">Connexion administrateur</p>
+          <p className="text-xs text-muted-foreground">
+            Connexion administrateur (email uniquement)
+          </p>
         </div>
         <Card className="border border-border bg-card">
           <CardContent className="p-5">
@@ -76,7 +70,7 @@ export function LoginPage() {
                 className="w-full h-10 text-sm bg-primary text-primary-foreground hover:bg-primary/90"
                 disabled={loading}
               >
-                {loading ? "Envoi…" : "Envoyer le lien magique"}
+                {loading ? "Connexion…" : "Accéder au dashboard"}
               </Button>
             </form>
           </CardContent>

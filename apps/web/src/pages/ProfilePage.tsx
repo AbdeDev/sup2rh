@@ -7,6 +7,7 @@ import { getMe } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function ProfilePage() {
   const navigate = useNavigate();
@@ -50,6 +51,9 @@ export function ProfilePage() {
           </Button>
           <Separator orientation="vertical" className="h-4 mx-1" />
           <span className="text-xs text-muted-foreground">Profil</span>
+          <div className="ml-auto">
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

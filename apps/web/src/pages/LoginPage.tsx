@@ -1,15 +1,20 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Sparkles } from "lucide-react";
 
 import { LoginForm } from "../components/login-form";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function LoginPage() {
+  const navigate = useNavigate();
   const fromResult =
     typeof window !== "undefined" &&
     sessionStorage.getItem("redirectAfterLogin")?.startsWith("/result");
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-500">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 md:p-6 animate-in fade-in duration-500 relative">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md animate-in slide-in-from-bottom-4 duration-500">
         <div className="text-center mb-8">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-primary/20 border border-primary/30 mb-4 transition-transform duration-200 hover:scale-105">
@@ -24,14 +29,18 @@ export function LoginPage() {
           )}
         </div>
         <LoginForm />
-        <div className="mt-6 text-center">
-          <Link
-            to="/quiz"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors duration-200"
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          Connecte-toi pour accéder au quiz et découvrir ton métier RH.
+        </p>
+        <p className="mt-2 text-center">
+          <button
+            type="button"
+            onClick={() => navigate("/fiches")}
+            className="text-xs text-primary hover:underline"
           >
-            Accéder au quiz
-          </Link>
-        </div>
+            Voir les fiches métiers sans connexion →
+          </button>
+        </p>
       </div>
     </div>
   );

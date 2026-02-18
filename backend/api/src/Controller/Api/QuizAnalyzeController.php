@@ -2,7 +2,9 @@
 
 namespace App\Controller\Api;
 
+use App\Entity\Job;
 use App\Entity\QuizSession;
+use App\Repository\JobRepository;
 use App\Repository\QuizSessionRepository;
 use App\Security\AuthUser;
 use App\Services\AiAnalyzer;
@@ -20,6 +22,7 @@ final class QuizAnalyzeController extends AbstractController
     public function analyze(
         string $sessionId,
         QuizSessionRepository $sessionRepository,
+        JobRepository $jobRepository,
         AiAnalyzer $aiAnalyzer,
         EntityManagerInterface $em
     ): JsonResponse {
@@ -27,37 +30,63 @@ final class QuizAnalyzeController extends AbstractController
         $user = $this->getUser();
         $userId = $user->getUserIdentifier();
 
-        // Récupérer la session
         $session = $sessionRepository->find($sessionId);
 
         if (!$session) {
             return $this->json(['message' => 'Session not found'], 404);
         }
 
-        // Vérifier que la session appartient à l'utilisateur
         if ($session->getUserId() !== $userId) {
             return $this->json(['message' => 'Access denied'], 403);
         }
 
-        // Vérifier qu'il y a des réponses
         if ($session->getAnswers()->isEmpty()) {
             return $this->json(['message' => 'No answers found for this session'], 422);
         }
 
-        // Analyser avec l'IA
-        $analysisResult = $aiAnalyzer->analyze($session);
+        try {
+            $analysisResult = $aiAnalyzer->analyze($session);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'message' => 'Erreur d\'analyse : ' . $e->getMessage(),
+            ], 500);
+        }
 
-        // Sauvegarder le résultat dans la session
-        $session->setFinalJobId($analysisResult->jobId);
+        $session->setFinalJobId($analysisResult->jobId ?: null);
         $session->setScores($analysisResult->scores);
 
         $em->flush();
 
-        return $this->json([
+        $payload = [
             'jobId' => $analysisResult->jobId,
             'confidence' => $analysisResult->confidence,
             'explanation' => $analysisResult->explanation,
             'scores' => $analysisResult->scores,
-        ], 200);
+        ];
+
+        if ($analysisResult->jobId !== '') {
+            $job = $jobRepository->find($analysisResult->jobId);
+            if ($job instanceof Job) {
+                $payload['job'] = $this->jobToArray($job);
+            }
+        }
+
+        return $this->json($payload, 200);
+    }
+
+    /** @return array<string, mixed> */
+    private function jobToArray(Job $job): array
+    {
+        return [
+            'id' => $job->getId(),
+            'name' => $job->getName(),
+            'description' => $job->getDescription(),
+            'salary' => $job->getSalary(),
+            'hiringRate' => $job->getHiringRate(),
+            'turnoverRate' => $job->getTurnoverRate(),
+            'indicators' => $job->getIndicators(),
+            'videoUrl' => $job->getVideoUrl(),
+            'createdAt' => $job->getCreatedAt()->format(DATE_ATOM),
+        ];
     }
 }

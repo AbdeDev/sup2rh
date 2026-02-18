@@ -1,15 +1,33 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Briefcase, FileQuestion, Users, LogOut, User, Sparkles } from "lucide-react";
+import {
+  Briefcase,
+  FileQuestion,
+  Users,
+  LogOut,
+  User,
+  Sparkles,
+  Mail,
+  MessageSquare,
+} from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 import { supabase } from "../../lib/supabase";
+import { clearAdminToken } from "../../lib/api";
 import { Button } from "../../components/ui/button";
+import { ThemeToggle } from "../../components/ThemeToggle";
 //import { Separator } from "../../components/ui/separator";
 
 const navItems = [
   { id: "jobs", label: "Fiches métier", icon: Briefcase, path: "/admin/jobs" },
   { id: "quizzes", label: "Quiz", icon: FileQuestion, path: "/admin/quizzes" },
   { id: "users", label: "Utilisateurs", icon: Users, path: "/admin/users" },
+  {
+    id: "contact-requests",
+    label: "Demandes de contact",
+    icon: Mail,
+    path: "/admin/contact-requests",
+  },
+  { id: "feedbacks", label: "Avis utilisateurs", icon: MessageSquare, path: "/admin/feedbacks" },
 ];
 
 export function AdminDashboard({ children }: { children: React.ReactNode }) {
@@ -31,6 +49,7 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
   }, [userMenuOpen]);
 
   async function logout() {
+    clearAdminToken();
     await supabase.auth.signOut();
     navigate("/login");
   }
@@ -47,7 +66,8 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
             </div>
             <span className="text-xs font-medium text-foreground truncate">Admin Sup2RH</span>
           </div>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
+            <ThemeToggle />
             <div className="relative" ref={userMenuRef}>
               <Button
                 variant="ghost"
