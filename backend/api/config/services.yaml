@@ -10,6 +10,7 @@
 parameters:
     supabase_project_url: "%env(SUPABASE_PROJECT_URL)%"
     supabase_jwt_aud: "%env(string:SUPABASE_JWT_AUD)%"
+    groq_api_key: "%env(default::GROQ_API_KEY)%"
     openrouter_api_key: "%env(default::OPENROUTER_API_KEY)%"
     huggingface_api_key: "%env(default::HUGGINGFACE_API_KEY)%"
 
@@ -32,5 +33,10 @@ services:
 
     App\Services\AiAnalyzer:
         arguments:
+            $groqApiKey: "%groq_api_key%"
             $openRouterApiKey: "%openrouter_api_key%"
             $huggingFaceApiKey: "%huggingface_api_key%"
+
+    App\Services\AdminTokenService:
+        arguments:
+            $secret: "%env(APP_SECRET)%"

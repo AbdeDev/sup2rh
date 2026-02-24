@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api";
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000") + "/api";
 
 export interface ApiError {
   message: string;
@@ -47,6 +47,63 @@ export async function getMe() {
   return request<{ id: string; email: string; role: string }>("/me");
 }
 
+// Quiz (parcours avec questions)
+export interface QuizQuestion {
+  id: string;
+  text: string;
+  answers?: Array<{ id: string; label: string }>;
+  jobId?: string | null;
+}
+
+export interface QuizDefinition {
+  id: string;
+  jobId: string;
+  name: string;
+  questions: QuizQuestion[];
+  createdAt: string;
+}
+
+export async function getDefaultQuiz(): Promise<QuizDefinition> {
+  return request<QuizDefinition>("/quiz/default");
+}
+
+export interface QuizQuestionsResponse {
+  questions: QuizQuestion[];
+  questionsPerPage: number;
+}
+
+export async function getQuizQuestions(): Promise<QuizQuestionsResponse> {
+  return request<QuizQuestionsResponse>("/quiz/questions");
+}
+
+export async function submitContactRequest(data: {
+  sessionId: string;
+  email?: string;
+  jobId?: string;
+  explanation?: string;
+  scores?: Record<string, number>;
+}): Promise<{ id: string; message: string }> {
+  return request<{ id: string; message: string }>("/contact", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getJobs(): Promise<{ items: JobFiche[] }> {
+  return request<{ items: JobFiche[] }>("/jobs");
+}
+
+export async function submitFeedback(data: {
+  message: string;
+  email?: string;
+  rating?: number;
+}): Promise<{ id: string; message: string }> {
+  return request<{ id: string; message: string }>("/feedback", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
 // Quiz Sessions
 export interface QuizSession {
   id: string;
@@ -86,6 +143,8 @@ export interface SubmitAnswerRequest {
   questionId: string;
   answerId?: string | null;
   textValue?: string | null;
+  jobId?: string | null;
+  questionText?: string | null;
 }
 
 export interface QuizAnswer {
@@ -106,12 +165,32 @@ export async function submitAnswer(
   });
 }
 
+// Fiche métier RH (retournée avec le résultat d’analyse)
+export interface JobFicheIndicator {
+  label: string;
+  value: string | number;
+}
+
+export interface JobFiche {
+  id: string;
+  name: string;
+  description?: string;
+  salary?: string;
+  hiringRate?: number;
+  turnoverRate?: number;
+  indicators?: JobFicheIndicator[];
+  videoUrl?: string;
+  createdAt: string;
+}
+
 // Analysis
 export interface AnalysisResult {
   jobId: string;
   confidence: number;
   explanation: string;
   scores: Record<string, number>;
+  /** Fiche RH du métier recommandé (si disponible) */
+  job?: JobFiche;
 }
 
 export async function analyzeQuiz(sessionId: string): Promise<AnalysisResult> {

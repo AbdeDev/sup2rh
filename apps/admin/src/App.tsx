@@ -1,31 +1,91 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { Navigate, Route, Routes } from "react-router-dom";
 
-function App() {
-  const [count, setCount] = useState(0);
+import { RequireAuth } from "./auth/RequireAuth";
+import { RequireAdmin } from "./auth/RequireAdmin";
+import { LoginPage } from "./pages/LoginPage";
+import { CheckEmailPage } from "./pages/CheckEmailPage";
+import AuthCallbackPage from "./pages/AuthCallbackPage";
+import { AdminIndexPage } from "./pages/admin/AdminIndexPage";
+import { AdminJobsPage } from "./pages/admin/AdminJobsPage";
+import { AdminQuizzesPage } from "./pages/admin/AdminQuizzesPage";
+import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
+import { AdminContactRequestsPage } from "./pages/admin/AdminContactRequestsPage";
+import { AdminFeedbacksPage } from "./pages/admin/AdminFeedbacksPage";
 
+export default function App() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>count is {count}</button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">Click on the Vite and React logos to learn more</p>
-    </>
+    <Routes>
+      <Route path="/" element={<Navigate to="/admin" replace />} />
+
+      {/* Public */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/check-email" element={<CheckEmailPage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
+
+      {/* Admin */}
+      <Route
+        path="/admin"
+        element={
+          <RequireAuth>
+            <RequireAdmin>
+              <AdminIndexPage />
+            </RequireAdmin>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/jobs"
+        element={
+          <RequireAuth>
+            <RequireAdmin>
+              <AdminJobsPage />
+            </RequireAdmin>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/quizzes"
+        element={
+          <RequireAuth>
+            <RequireAdmin>
+              <AdminQuizzesPage />
+            </RequireAdmin>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <RequireAuth>
+            <RequireAdmin>
+              <AdminUsersPage />
+            </RequireAdmin>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/contact-requests"
+        element={
+          <RequireAuth>
+            <RequireAdmin>
+              <AdminContactRequestsPage />
+            </RequireAdmin>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin/feedbacks"
+        element={
+          <RequireAuth>
+            <RequireAdmin>
+              <AdminFeedbacksPage />
+            </RequireAdmin>
+          </RequireAuth>
+        }
+      />
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
   );
 }
-
-export default App;

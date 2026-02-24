@@ -15,4 +15,15 @@ class ProfileRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Profile::class);
     }
+
+    /** Trouve un profil par email (insensible à la casse). */
+    public function findOneByEmail(string $email): ?Profile
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->where('LOWER(p.email) = LOWER(:email)')
+            ->setParameter('email', trim($email))
+            ->setMaxResults(1);
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
 }

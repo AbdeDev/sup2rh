@@ -1,0 +1,264 @@
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000") + "/api";
+
+const ADMIN_TOKEN_KEY = "supdesrh_admin_token";
+
+export interface ApiError {
+  message: string;
+  errors?: string[];
+}
+
+export function getAdminToken(): string | null {
+  return localStorage.getItem(ADMIN_TOKEN_KEY);
+}
+
+export function setAdminToken(token: string): void {
+  localStorage.setItem(ADMIN_TOKEN_KEY, token);
+}
+
+export function clearAdminToken(): void {
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+}
+
+async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const adminToken = getAdminToken();
+  let token: string | null = adminToken;
+
+  if (!token) {
+    const { supabase } = await import("./supabase");
+    const {
+      data: { session: authSession },
+    } = await supabase.auth.getSession();
+    token = authSession?.access_token ?? null;
+  }
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string>),
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const error: ApiError = await response.json().catch(() => ({
+      message: `HTTP ${response.status}: ${response.statusText}`,
+    }));
+    throw new Error(error.message || `HTTP ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/** Connexion admin par email seul. Lance si l’email n’a pas le rôle ADMIN. */
+export async function adminLogin(
+  email: string,
+): Promise<{ token: string; user: { id: string; email: string; role: string } }> {
+  const res = await fetch(`${API_BASE_URL}/admin/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: email.trim() }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message || "Accès refusé");
+  }
+  return res.json();
+}
+
+// User
+export async function getMe() {
+  return request<{ id: string; email: string; role: string }>("/me");
+}
+
+// Indicateur supplémentaire : libellé + valeur (chiffre ou texte)
+export interface JobIndicator {
+  label: string;
+  value: string | number;
+}
+
+// Admin - Jobs (Fiches métier RH)
+export interface Job {
+  id: string;
+  name: string;
+  description?: string;
+  salary?: string;
+  hiringRate?: number;
+  turnoverRate?: number;
+  indicators?: JobIndicator[];
+  videoUrl?: string;
+  createdAt: string;
+}
+
+export interface CreateJobRequest {
+  id: string;
+  name: string;
+  description?: string;
+  salary?: string;
+  hiringRate?: number;
+  turnoverRate?: number;
+  indicators?: JobIndicator[];
+  videoUrl?: string;
+}
+
+export interface UpdateJobRequest {
+  name?: string;
+  description?: string;
+  salary?: string;
+  hiringRate?: number;
+  turnoverRate?: number;
+  indicators?: JobIndicator[];
+  videoUrl?: string;
+}
+
+export async function getJobs(): Promise<{ items: Job[] }> {
+  return request<{ items: Job[] }>("/admin/jobs");
+}
+
+export async function getJob(id: string): Promise<Job> {
+  return request<Job>(`/admin/jobs/${id}`);
+}
+
+export async function createJob(job: CreateJobRequest): Promise<Job> {
+  return request<Job>("/admin/jobs", {
+    method: "POST",
+    body: JSON.stringify(job),
+  });
+}
+
+export async function updateJob(id: string, job: UpdateJobRequest): Promise<Job> {
+  return request<Job>(`/admin/jobs/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(job),
+  });
+}
+
+export async function deleteJob(id: string): Promise<void> {
+  return request<void>(`/admin/jobs/${id}`, {
+    method: "DELETE",
+  });
+}
+
+// Admin - Quiz Definitions
+export interface QuizDefinition {
+  id: string;
+  jobId: string;
+  name: string;
+  questions: Array<{
+    id: string;
+    text: string;
+    answers: Array<{
+      id: string;
+      label: string;
+    }>;
+  }>;
+  createdAt: string;
+}
+
+export interface CreateQuizRequest {
+  jobId: string;
+  name: string;
+  questions: Array<{
+    id: string;
+    text: string;
+    answers: Array<{
+      id: string;
+      label: string;
+    }>;
+  }>;
+}
+
+export async function getQuizzes(): Promise<{ items: QuizDefinition[] }> {
+  return request<{ items: QuizDefinition[] }>("/admin/quizzes");
+}
+
+export async function getQuiz(id: string): Promise<QuizDefinition> {
+  return request<QuizDefinition>(`/admin/quizzes/${id}`);
+}
+
+export async function createQuiz(quiz: CreateQuizRequest): Promise<QuizDefinition> {
+  return request<QuizDefinition>("/admin/quizzes", {
+    method: "POST",
+    body: JSON.stringify(quiz),
+  });
+}
+
+export interface UpdateQuizRequest {
+  name?: string;
+  jobId?: string;
+  questions?: CreateQuizRequest["questions"];
+}
+
+export async function updateQuiz(id: string, data: UpdateQuizRequest): Promise<QuizDefinition> {
+  return request<QuizDefinition>(`/admin/quizzes/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteQuiz(id: string): Promise<void> {
+  return request<void>(`/admin/quizzes/${id}`, {
+    method: "DELETE",
+  });
+}
+
+// Admin - Users
+export interface AdminUser {
+  id: string;
+  email: string;
+  role: "USER" | "ADMIN";
+  createdAt: string;
+}
+
+export async function getUsers(): Promise<{ items: AdminUser[] }> {
+  return request<{ items: AdminUser[] }>("/admin/users");
+}
+
+export async function updateUserRole(userId: string, role: "USER" | "ADMIN"): Promise<AdminUser> {
+  return request<AdminUser>(`/admin/users/${userId}/role`, {
+    method: "PUT",
+    body: JSON.stringify({ role }),
+  });
+}
+
+// Admin - Demandes de contact (1 card par user avec toutes ses sessions)
+export interface ContactRequestUserItem {
+  email: string;
+  userId: string;
+  contactRequestedAt: string;
+  sessions: Array<{
+    id: string;
+    answerCount: number;
+    answers: Array<{
+      questionId: string;
+      answerId: string | null;
+      textValue: string | null;
+    }>;
+    finalJobId: string | null;
+    jobName: string | null;
+    scores: Record<string, number> | null;
+    createdAt: string;
+  }>;
+}
+
+export async function getContactRequests(): Promise<{ items: ContactRequestUserItem[] }> {
+  return request<{ items: ContactRequestUserItem[] }>("/admin/contact-requests");
+}
+
+// Admin - Avis utilisateurs
+export interface FeedbackItem {
+  id: string;
+  email: string;
+  userId: string;
+  message: string;
+  rating: number | null;
+  createdAt: string;
+}
+
+export async function getFeedbacks(): Promise<{ items: FeedbackItem[] }> {
+  return request<{ items: FeedbackItem[] }>("/admin/feedbacks");
+}
