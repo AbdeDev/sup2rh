@@ -59,6 +59,84 @@ Si un métier t’intéresse, tu peux demander à être contacté par l’équip
 
 ---
 
+## Données et base de données
+
+### Backend (API)
+
+Le backend Symfony doit être connecté à la **même base Postgres que Supabase** pour que les données (profiles, jobs, quiz, sessions) soient accessibles.
+
+1. `cd backend/api && composer install` (si `vendor/` n'existe pas)
+2. Crée `backend/api/.env` à partir de `backend/api/.env.example`
+3. Remplis `DATABASE_URL` avec l’URL de connexion Supabase :
+   - Supabase Dashboard → **Settings** → **Database** → **Connection string** (URI)
+   - Exemple : `postgresql://postgres.[ref]:[MOT_DE_PASSE]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres?serverVersion=15&charset=utf8`
+4. Remplis `SUPABASE_PROJECT_URL` et `SUPABASE_JWT_AUD` (Settings → API)
+5. Lance les migrations : `cd backend/api && php bin/console doctrine:migrations:migrate`
+6. Démarre l’API : `bun run dev:api`
+
+Si tu ne récupères pas les fiches métiers, les questions de quiz ou les sessions : vérifie que `DATABASE_URL` pointe bien vers la base Supabase et que les migrations ont été exécutées.
+
+---
+
+## Connexion Admin
+
+L’admin utilise une **connexion par email uniquement** (pas de magic link) :
+
+1. Va sur `http://localhost:5174/login` (ou l’URL de l’app admin)
+2. Saisis ton **email**
+3. Clique sur « Accéder au dashboard »
+
+**Conditions :**
+
+- Ton email doit exister dans la table `profiles` (créée automatiquement à la première connexion web via Supabase)
+- La colonne `role` de ton profil doit être `ADMIN`
+
+**Pour donner les droits admin à un utilisateur :**
+
+```sql
+-- Dans la base Supabase (ou celle utilisée par le backend)
+UPDATE profiles SET role = 'ADMIN' WHERE email = 'ton@email.com';
+```
+
+Le backend doit utiliser la même base que Supabase (`DATABASE_URL` dans `backend/api/.env`).
+
+**Si "Failed to fetch" ou "L'API ne répond pas"** : exécute `cd backend/api && composer install` puis `bun run dev:api`.
+
+---
+
+## Connexion Web (magic link)
+
+1. Va sur `http://localhost:5173/login`
+2. Saisis ton email
+3. Clique sur le lien reçu par mail (dans le même navigateur)
+4. Tu es redirigé vers la page quiz
+
+Si tu vois « Une erreur s'est produite » après le clic, vérifie que les variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` sont bien configurées dans `apps/web/.env`, et que les URLs de redirection Supabase incluent `http://localhost:5173/auth/callback`.
+
+**Si la page résultat affiche une erreur** : vérifie que `VITE_API_URL` pointe vers l'API (ex. `http://127.0.0.1:8000`), que l'API est démarrée (`bun run dev:api`), et que tu es bien connecté avec le compte qui a passé le quiz. Dans l'onglet **Network** (F12), regarde les requêtes vers ton API (`/api/quiz/session/...`) — ignore les 404 vers `trustpilot.com` (provenant de l'extension Trustpilot du navigateur).
+
+---
+
+## Admin – Sessions de quiz
+
+L'admin peut consulter **Sessions de quiz** pour voir :
+
+- Quels utilisateurs ont fait des quiz
+- Combien de quiz par utilisateur
+- Les dates et résultats (métier recommandé)
+- Le détail complet d'une session (bouton « Voir le résultat »)
+
+---
+
+## Déploiement (prod)
+
+1. **Variables d'environnement** : configure `VITE_API_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` pour chaque app (web, admin, landing).
+2. **API** : déploie le backend Symfony (PHP) avec `DATABASE_URL` pointant vers la base Supabase.
+3. **CORS** : configure les origines autorisées dans l'API pour les domaines de prod.
+4. **Supabase** : ajoute les URLs de redirection de prod dans Authentication → URL Configuration.
+
+---
+
 ## Documentation
 
 - [**Fonctionnement technique**](docs/FONCTIONNEMENT_PROJET.md) : architecture, mécanismes, flux des données (pour développeurs / contributeurs).

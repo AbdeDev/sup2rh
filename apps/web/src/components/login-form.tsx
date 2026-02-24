@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Loader2, Mail, Sparkles } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
@@ -48,7 +49,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
         const msg =
           (err as { message?: string; error_description?: string }).message ||
           (err as { error_description?: string }).error_description ||
-          "Impossible d'envoyer le lien. Vérifie ta config SMTP dans Supabase (Resend, etc.) ou réessaie plus tard.";
+          "Impossible d'envoyer le lien. Vérifie ta config SMTP dans Supabase ou réessaie plus tard.";
         setError(msg);
       }
       return;
@@ -59,46 +60,72 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
   return (
     <div className={cn("flex flex-col gap-5", className)} {...props}>
-      <Card className="border border-border bg-card">
-        <CardContent className="p-5">
+      <Card className="border border-border bg-card rounded-2xl shadow-lg">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-border">
+            <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-foreground">Connexion rapide</p>
+              <p className="text-[10px] text-muted-foreground">Un lien magique envoyé par email</p>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-xs text-muted-foreground">
-                Email
+              <Label htmlFor="email" className="text-xs font-medium text-muted-foreground">
+                Adresse email
               </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-                className="h-10 text-sm border-border bg-background"
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="ton.email@exemple.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="h-11 text-sm pl-10 border-border bg-background rounded-xl"
+                />
+              </div>
             </div>
             {error && (
-              <div className="p-3 rounded-md border border-destructive/30 bg-destructive/10 text-xs text-destructive">
+              <div className="p-3.5 rounded-xl border border-destructive/30 bg-destructive/5 text-xs text-destructive">
                 {error}
               </div>
             )}
             <Button
               type="submit"
-              className="w-full h-10 text-sm bg-primary text-primary-foreground hover:bg-primary/90"
+              className="w-full h-11 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-semibold transition-all duration-200 hover:scale-[1.01] shadow-sm"
               disabled={loading}
             >
-              {loading ? "Envoi…" : "Envoyer le lien magique"}
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Envoi en cours…
+                </>
+              ) : (
+                "Recevoir le lien magique"
+              )}
             </Button>
           </form>
         </CardContent>
       </Card>
-      <p className="text-center text-[11px] text-muted-foreground [&_a]:underline [&_a]:underline-offset-2 [&_a]:hover:text-foreground transition-colors">
+      <p className="text-center text-[11px] text-muted-foreground leading-relaxed">
         En continuant, tu acceptes nos{" "}
-        <a href="#" className="hover:text-primary">
+        <a
+          href="/legal/conditions"
+          className="underline underline-offset-2 hover:text-primary transition-colors"
+        >
           Conditions d&apos;utilisation
         </a>{" "}
         et notre{" "}
-        <a href="#" className="hover:text-primary">
+        <a
+          href="/legal/confidentialite"
+          className="underline underline-offset-2 hover:text-primary transition-colors"
+        >
           Politique de confidentialité
         </a>
         .

@@ -1,23 +1,109 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr" class="light">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>Sup des RH · Découvre ton métier RH</title>
+		<meta
+			name="description"
+			content="Découvre le métier RH qui te correspond : Recrutement, Paie, QVCT, Assistant RH, Formation."
+		/>
 	</head>
 	<body>
 		<slot />
+		<script>
+			(function () {
+				const KEY = "supdesrh-theme";
+				const root = document.documentElement;
+
+				function applyTheme(theme) {
+					root.classList.remove("light", "dark");
+					root.classList.add(theme);
+					try {
+						localStorage.setItem(KEY, theme);
+					} catch (e) {}
+				}
+
+				let theme = "light";
+				try {
+					const stored = localStorage.getItem(KEY);
+					if (stored === "light" || stored === "dark") {
+						theme = stored;
+					} else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+						theme = "dark";
+					}
+				} catch (e) {}
+
+				applyTheme(theme);
+
+				window.supdesrhToggleTheme = function () {
+					theme = theme === "dark" ? "light" : "dark";
+					applyTheme(theme);
+				};
+			})();
+		</script>
 	</body>
 </html>
 
-<style>
+<style is:global>
+	:root,
+	html.light {
+		--landing-bg: #f8fafc;
+		--landing-bg-soft: #ffffff;
+		--landing-card: #ffffff;
+		--landing-border: #e2e8f0;
+		--landing-text: #0f172a;
+		--landing-muted: #64748b;
+		--landing-accent: #004080;
+		--landing-accent-2: #0d5aa7;
+		--landing-green: #16a34a;
+		--landing-green-light: #22c55e;
+	}
+
+	html.dark {
+		--landing-bg: #020617;
+		--landing-bg-soft: #0f172a;
+		--landing-card: #1e293b;
+		--landing-border: #334155;
+		--landing-text: #f8fafc;
+		--landing-muted: #94a3b8;
+		--landing-accent: #38bdf8;
+		--landing-accent-2: #0ea5e9;
+		--landing-green: #22c55e;
+		--landing-green-light: #4ade80;
+	}
+
+	*,
+	*::before,
+	*::after {
+		box-sizing: border-box;
+	}
+
 	html,
 	body {
 		margin: 0;
 		width: 100%;
-		height: 100%;
+		min-height: 100%;
+		font-family: "Montserrat", "Figtree", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+		background: var(--landing-bg);
+		color: var(--landing-text);
+		transition: background 0.3s ease, color 0.3s ease;
+	}
+
+	body {
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* Fond dégradé subtil pour toute la page */
+	html.light body {
+		background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+	}
+
+	html.dark body {
+		background: linear-gradient(180deg, #020617 0%, #0f172a 50%, #1e293b 100%);
 	}
 </style>

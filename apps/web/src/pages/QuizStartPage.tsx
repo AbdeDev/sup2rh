@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowRight, ArrowLeft, Loader2, Sparkles } from "lucide-react";
 
@@ -15,8 +15,8 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Slider } from "../components/ui/slider";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { AppLogo } from "../components/AppLogo";
 
-// Questions par défaut si aucun quiz en BDD
 const FALLBACK_QUESTIONS: QuizQuestion[] = [
   { id: "q1", text: "J'aime travailler en équipe" },
   { id: "q2", text: "Je suis organisé et méthodique" },
@@ -35,6 +35,29 @@ const FALLBACK_QUESTIONS: QuizQuestion[] = [
   { id: "q15", text: "Je préfère les environnements structurés" },
 ];
 
+const MASCOTT_LOGOS = [
+  "/logo-1.png",
+  "/logo-2.png",
+  "/logo-3.png",
+  "/logo-4.png",
+  "/logo-5.png",
+  "/logo-6.png",
+  "/logo-7.png",
+  "/logo-8.png",
+];
+
+function useRandomLogoIndices(questionIds: string[]) {
+  const idsKey = questionIds.join(",");
+  return useMemo(() => {
+    const map: Record<string, number> = {};
+    questionIds.forEach((id) => {
+      map[id] = Math.floor(Math.random() * MASCOTT_LOGOS.length);
+    });
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey]);
+}
+
 export function QuizStartPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -47,11 +70,13 @@ export function QuizStartPage() {
   const [error, setError] = useState<string | null>(null);
   const [questionsPerPage, setQuestionsPerPage] = useState(5);
 
+  const questionIds = useMemo(() => questions.map((q) => q.id), [questions]);
+  const logoIndices = useRandomLogoIndices(questionIds);
+
   useEffect(() => {
     loadQuestions();
   }, []);
 
-  /** Reprend une session en cours : charge la session et restaure les réponses. */
   useEffect(() => {
     if (!sessionIdParam || questions.length === 0) return;
     setLoading(true);
@@ -80,7 +105,6 @@ export function QuizStartPage() {
       .finally(() => setLoading(false));
   }, [sessionIdParam, questions.length, questionsPerPage, navigate]);
 
-  /** Charge les questions sans créer de session. La session n'est créée qu'au premier clic sur Suivant. */
   async function loadQuestions() {
     setLoading(true);
     setError(null);
@@ -123,10 +147,8 @@ export function QuizStartPage() {
       currentPage * questionsPerPage,
       (currentPage + 1) * questionsPerPage,
     );
-
     setLoading(true);
     setError(null);
-
     try {
       let sessionToUse = session;
       if (!sessionToUse) {
@@ -135,7 +157,6 @@ export function QuizStartPage() {
         setSession(fullSession);
         sessionToUse = fullSession;
       }
-
       for (const q of currentQuestions) {
         const answerValue = answers[q.id];
         const answerId = `a${answerValue}`;
@@ -146,10 +167,8 @@ export function QuizStartPage() {
           questionText: q.text ?? undefined,
         });
       }
-
       const updatedSession = await getQuizSession(sessionToUse!.id);
       setSession(updatedSession);
-
       if (currentPage === Math.ceil(questions.length / questionsPerPage) - 1) {
         const result = await analyzeQuiz(sessionToUse!.id);
         navigate(`/result/${sessionToUse!.id}`, {
@@ -166,28 +185,27 @@ export function QuizStartPage() {
   }
 
   function handlePrevious() {
-    if (currentPage > 0) {
-      setCurrentPage((p) => p - 1);
-    }
+    if (currentPage > 0) setCurrentPage((p) => p - 1);
   }
 
   if (loading && questions.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3">
+        <Loader2 className="h-7 w-7 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Chargement du quiz…</p>
       </div>
     );
   }
 
   if (questions.length === 0 && !loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
-        <p className="text-sm text-muted-foreground mb-4 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 gap-4">
+        <p className="text-sm text-muted-foreground text-center">
           {error || "Impossible de démarrer le quiz."}
         </p>
         <Button
           variant="outline"
-          className="h-9 text-sm border-border"
+          className="h-10 text-sm rounded-xl"
           onClick={() => navigate("/quiz")}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -203,37 +221,66 @@ export function QuizStartPage() {
   const currentQuestions = questions.slice(startIdx, endIdx);
   const isLastPage = currentPage === totalPages - 1;
   const canProceed = currentQuestions.every((q) => answers[q.id] !== undefined);
+  const progress = ((currentPage + 1) / totalPages) * 100;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="flex h-11 shrink-0 items-center border-b border-border bg-card/95 backdrop-blur">
-        <div className="flex w-full items-center gap-2 px-3 md:px-5">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="h-6 w-6 rounded bg-primary flex items-center justify-center shrink-0">
-              <Sparkles className="h-3 w-3 text-primary-foreground" />
+      <header className="flex h-14 shrink-0 items-center border-b border-border bg-card/95 backdrop-blur-md sticky top-0 z-50">
+        <div className="flex w-full items-center gap-2.5 px-4 lg:px-6">
+          <button
+            type="button"
+            onClick={() => navigate("/quiz")}
+            className="flex items-center gap-2.5 min-w-0 hover:opacity-80 transition-opacity"
+            aria-label="Accueil"
+          >
+            <AppLogo className="h-9 w-9 shrink-0 object-contain" />
+            <div className="hidden sm:block">
+              <p className="text-sm font-heading font-bold text-foreground leading-tight">
+                SupdesRH
+              </p>
+              <p className="text-[10px] text-muted-foreground leading-tight">Quiz d'orientation</p>
             </div>
-            <span className="text-xs font-medium text-foreground truncate">SupdesRH</span>
-          </div>
-          <div className="ml-auto">
+          </button>
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-xs text-muted-foreground hidden sm:block">
+              {currentPage + 1}/{totalPages}
+            </span>
             <ThemeToggle />
           </div>
         </div>
       </header>
+
+      {/* Progress bar */}
+      <div className="h-1 bg-muted">
+        <div
+          className="h-full bg-gradient-to-r from-primary to-[#008c54] transition-all duration-500 ease-out rounded-r-full"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-4 py-6 md:py-8">
-          {/* Header */}
+        <div
+          key={currentPage}
+          className="max-w-2xl mx-auto px-4 py-6 md:py-10 animate-in fade-in duration-200"
+        >
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">
-                Question {startIdx + 1}-{Math.min(endIdx, questions.length)} sur {questions.length}
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium text-foreground">
+                Questions {startIdx + 1}–{Math.min(endIdx, questions.length)}
               </span>
+              <span className="text-xs text-muted-foreground">sur {questions.length}</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {Array.from({ length: totalPages }).map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1.5 w-8 rounded-full transition-colors ${
-                    i === currentPage ? "bg-primary" : i < currentPage ? "bg-success" : "bg-muted"
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    i === currentPage
+                      ? "w-8 bg-primary"
+                      : i < currentPage
+                        ? "w-2 bg-success"
+                        : "w-2 bg-muted"
                   }`}
                 />
               ))}
@@ -241,19 +288,37 @@ export function QuizStartPage() {
           </div>
 
           {error && (
-            <div className="mb-4 p-3 rounded-md border border-border bg-card text-destructive text-xs">
+            <div className="mb-4 p-3.5 rounded-xl border border-destructive/20 bg-destructive/5 text-destructive text-xs">
               {error}
             </div>
           )}
 
-          {/* Questions */}
-          <div className="space-y-4 mb-6">
+          <div className="space-y-4 mb-8">
             {currentQuestions.map((question, idx) => (
-              <Card key={question.id} className="border border-border bg-card">
-                <CardContent className="p-4 space-y-3">
-                  <p className="text-sm text-foreground font-medium">
-                    {startIdx + idx + 1}. {question.text}
-                  </p>
+              <Card
+                key={question.id}
+                className="border border-border bg-card rounded-2xl overflow-hidden transition-all duration-300 ease-out hover:border-primary/40 hover:shadow-md animate-in fade-in slide-in-from-bottom-2"
+                style={{ animationDelay: `${idx * 60}ms` }}
+              >
+                <CardContent className="p-5 space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="h-7 w-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
+                        {startIdx + idx + 1}
+                      </div>
+                      <p className="text-sm text-foreground font-medium pt-0.5 leading-relaxed">
+                        {question.text}
+                      </p>
+                    </div>
+                    <div className="h-10 w-10 shrink-0 flex items-center justify-center">
+                      <img
+                        src={MASCOTT_LOGOS[logoIndices[question.id] ?? 0]}
+                        alt=""
+                        className="h-10 w-10 object-contain logo-theme-safe"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
                   <Slider
                     value={answers[question.id] ?? 3}
                     onChange={(value) => handleSliderChange(question.id, value)}
@@ -266,14 +331,13 @@ export function QuizStartPage() {
             ))}
           </div>
 
-          {/* Navigation */}
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 onClick={handlePrevious}
                 disabled={currentPage === 0 || loading}
-                className="h-9 text-xs border-border text-muted-foreground hover:text-foreground"
+                className="h-10 text-xs border-border rounded-xl"
               >
                 <ArrowLeft className="h-4 w-4 mr-1.5" />
                 Précédent
@@ -283,7 +347,7 @@ export function QuizStartPage() {
                   variant="ghost"
                   onClick={() => navigate("/sessions")}
                   disabled={loading}
-                  className="h-9 text-xs text-muted-foreground hover:text-foreground"
+                  className="h-10 text-xs text-muted-foreground"
                 >
                   Quitter
                 </Button>
@@ -292,13 +356,13 @@ export function QuizStartPage() {
             <Button
               onClick={handleNext}
               disabled={!canProceed || loading}
-              className="h-9 px-6 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+              className="h-10 px-6 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-semibold transition-all duration-200 active:scale-[0.98] shadow-sm"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
               ) : (
                 <>
-                  {isLastPage ? "Terminer" : "Suivant"}
+                  {isLastPage ? "Terminer le quiz" : "Suivant"}
                   <ArrowRight className="h-4 w-4 ml-1.5" />
                 </>
               )}

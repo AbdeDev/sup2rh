@@ -26,15 +26,31 @@ final class SupabaseAuthenticator extends AbstractAuthenticator
     {
         $path = $request->getPathInfo();
         
-        // Ne pas authentifier les routes publiques
-        if ($path === '/api/health' || $request->getMethod() === 'OPTIONS') {
-            return false;
-        }
-        if (str_starts_with($path, '/api/admin/login') || str_starts_with($path, '/api/debug')) {
+        if ($request->getMethod() === 'OPTIONS') {
             return false;
         }
 
-        return str_starts_with($path, '/api');
+        // Routes publiques : pas d'authentification requise
+        if ($path === '/api/health'
+            || str_starts_with($path, '/api/admin/login')
+            || str_starts_with($path, '/api/debug')
+            || str_starts_with($path, '/api/jobs')
+        ) {
+            return false;
+        }
+
+        if (!str_starts_with($path, '/api')) {
+            return false;
+        }
+
+        // Si pas de header Authorization, ne pas déclencher l'authenticator
+        // (laisser Symfony gérer via access_control / IS_AUTHENTICATED_ANONYMOUSLY)
+        $authHeader = $request->headers->get('Authorization');
+        if (!$authHeader || !preg_match('/^Bearer\s+.+$/i', $authHeader)) {
+            return false;
+        }
+
+        return true;
     }
 
     public function authenticate(Request $request): Passport

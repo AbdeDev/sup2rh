@@ -53,5 +53,8 @@
     "*.{md,json,yml,yaml}": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "recharts": "^3.7.0"
   }
 }

@@ -4,6 +4,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Logos : couleurs fixes, non impactés par dark/light mode */
+.logo-theme-safe {
+  filter: none !important;
+  -webkit-filter: none !important;
+  color-scheme: only light;
+  forced-color-adjust: none;
+}
+
 :root {
   --font-body: "Montserrat", system-ui, sans-serif;
   --font-heading: "Figtree", "Gotham", system-ui, sans-serif;
