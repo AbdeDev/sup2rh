@@ -4,6 +4,8 @@ import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 
 import { supabase } from "../lib/supabase";
 import { Card, CardContent } from "../components/ui/card";
+import { AppLogo } from "../components/AppLogo";
+import { Button } from "../components/ui/button";
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -27,7 +29,7 @@ export default function AuthCallbackPage() {
 
         if (!data.session) {
           setError(
-            "Session introuvable. Assure-toi que le lien s&apos;ouvre dans le même navigateur et que les URLs de redirection Supabase sont configurées.",
+            "Session introuvable. Assure-toi que le lien s'ouvre dans le même navigateur et que les URLs de redirection Supabase sont configurées.",
           );
           return;
         }
@@ -39,7 +41,6 @@ export default function AuthCallbackPage() {
             { onConflict: "id" },
           );
         if (upsertError) {
-          // Ne pas bloquer : la table profiles peut être absente ou RLS restreindre
           console.warn("[Auth] profiles upsert:", upsertError.message);
         }
 
@@ -50,9 +51,9 @@ export default function AuthCallbackPage() {
         if (redirect) sessionStorage.removeItem("redirectAfterLogin");
         setTimeout(() => {
           navigate(redirect || "/quiz", { replace: true });
-        }, 1500);
+        }, 1200);
       } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : "Erreur d&apos;authentification.";
+        const message = e instanceof Error ? e.message : "Erreur d'authentification.";
         setError(message);
         setStatus("Erreur");
       }
@@ -60,44 +61,58 @@ export default function AuthCallbackPage() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-500">
-      <div className="w-full max-w-md animate-in slide-in-from-bottom-4 duration-500">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6">
+      <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="text-center mb-6">
           {success ? (
-            <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-success/20 border border-success/30 mb-4 transition-transform duration-200 hover:scale-105 animate-in scale-in duration-300">
-              <CheckCircle2 className="h-7 w-7 text-success" />
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-success/15 border border-success/25 mb-5 animate-in scale-in duration-300">
+              <CheckCircle2 className="h-8 w-8 text-success" />
             </div>
           ) : error ? (
-            <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-destructive/20 border border-destructive/30 mb-4 transition-transform duration-200 animate-in scale-in duration-300">
-              <XCircle className="h-7 w-7 text-destructive" />
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/15 border border-destructive/25 mb-5 animate-in scale-in duration-300">
+              <XCircle className="h-8 w-8 text-destructive" />
             </div>
           ) : (
-            <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-primary/20 border border-primary/30 mb-4 transition-transform duration-200">
-              <Loader2 className="h-7 w-7 text-primary animate-spin" />
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 border border-primary/25 mb-5">
+              <AppLogo className="h-10 w-10 object-contain" />
             </div>
           )}
-          <h1 className="text-lg font-heading font-semibold text-foreground mb-2">
-            {success ? "Connecté !" : error ? "Erreur" : "Connexion"}
+          <h1 className="text-xl font-heading font-bold text-foreground mb-2">
+            {success ? "Bienvenue !" : error ? "Erreur" : "Connexion en cours"}
           </h1>
         </div>
-        <Card className="border border-border bg-card transition-all duration-200 hover:border-primary/50">
-          <CardContent className="p-6 text-center space-y-3">
+
+        <Card className="border border-border bg-card rounded-2xl shadow-lg">
+          <CardContent className="p-6 text-center space-y-4">
+            {!success && !error && (
+              <Loader2 className="h-7 w-7 animate-spin text-primary mx-auto" />
+            )}
             <p
-              className={`text-sm transition-colors duration-200 ${
+              className={`text-sm font-medium ${
                 error ? "text-destructive" : success ? "text-success" : "text-muted-foreground"
               }`}
             >
               {status}
             </p>
             {error && (
-              <div className="p-3 rounded-md border border-destructive/30 bg-destructive/10 text-xs text-destructive text-left animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="p-3.5 rounded-xl border border-destructive/30 bg-destructive/5 text-xs text-destructive text-left">
                 {error}
               </div>
             )}
             {success && (
-              <p className="text-xs text-muted-foreground animate-in fade-in duration-300">
-                Redirection en cours…
-              </p>
+              <div className="flex items-center justify-center gap-2">
+                <div className="h-1 w-1 rounded-full bg-success animate-pulse" />
+                <p className="text-xs text-muted-foreground">Redirection en cours…</p>
+              </div>
+            )}
+            {error && (
+              <Button
+                variant="outline"
+                className="h-10 text-sm rounded-xl"
+                onClick={() => navigate("/login")}
+              >
+                Retour à la connexion
+              </Button>
             )}
           </CardContent>
         </Card>

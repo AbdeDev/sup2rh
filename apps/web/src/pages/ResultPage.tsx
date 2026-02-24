@@ -224,11 +224,9 @@ export function ResultPage() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-background">
-        <div className="text-center animate-in fade-in duration-300">
-          <Loader2 className="h-6 w-6 animate-spin mx-auto mb-3 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Chargement…</p>
-        </div>
+      <div className="h-screen flex flex-col items-center justify-center bg-background gap-3">
+        <Loader2 className="h-7 w-7 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Chargement des résultats…</p>
       </div>
     );
   }
@@ -236,12 +234,15 @@ export function ResultPage() {
   if (!analysis || !session) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
-        <div className="text-center space-y-5 animate-in fade-in duration-300 max-w-md">
-          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
-            <p className="text-sm font-medium text-foreground mb-1">
+        <div className="text-center space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-md">
+          <div className="h-16 w-16 mx-auto rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center mb-2">
+            <Sparkles className="h-8 w-8 text-destructive" />
+          </div>
+          <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-5">
+            <p className="text-sm font-heading font-bold text-foreground mb-1.5">
               {error || "Résultats indisponibles"}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Vérifie que tu es connecté avec le bon compte et que l&apos;API est démarrée.
             </p>
           </div>
@@ -250,7 +251,7 @@ export function ResultPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-9 text-sm border-border"
+                className="h-9 text-sm rounded-xl"
                 onClick={loadResult}
               >
                 Réessayer
@@ -259,15 +260,14 @@ export function ResultPage() {
             <Button
               variant="outline"
               size="sm"
-              className="h-9 text-sm border-border"
+              className="h-9 text-sm rounded-xl"
               onClick={() => navigate("/sessions")}
             >
               Mes sessions
             </Button>
             <Button
-              variant="outline"
               size="sm"
-              className="h-9 text-sm border-primary text-primary hover:bg-primary/10"
+              className="h-9 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl"
               onClick={() => navigate("/quiz")}
             >
               Accueil quiz
@@ -280,24 +280,27 @@ export function ResultPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-card/95 backdrop-blur sticky top-0 z-50">
-        <div className="flex w-full items-center gap-2 px-4 lg:px-6">
+      <header className="flex h-14 shrink-0 items-center border-b border-border bg-card/95 backdrop-blur-md sticky top-0 z-50">
+        <div className="flex w-full items-center gap-2.5 px-4 lg:px-6">
           <button
             type="button"
             onClick={() => navigate("/quiz")}
-            className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity -ml-0.5"
+            className="flex items-center gap-2.5 min-w-0 hover:opacity-80 transition-opacity"
             aria-label="Accueil"
           >
-            <AppLogo className="h-10 w-10 object-contain transition-transform duration-200 hover:scale-110" />
-            <span className="text-sm font-semibold text-foreground truncate hidden sm:inline">
-              Résultat
-            </span>
+            <AppLogo className="h-9 w-9 object-contain" />
+            <div className="hidden sm:block">
+              <p className="text-sm font-heading font-bold text-foreground leading-tight">
+                Quiz SupdesRH
+              </p>
+              <p className="text-[10px] text-muted-foreground leading-tight">Résultat</p>
+            </div>
           </button>
           <div className="ml-auto flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="h-8 text-xs border-border"
+              className="h-8 text-xs border-border rounded-xl"
               onClick={() => navigate("/sessions")}
             >
               Mes sessions
