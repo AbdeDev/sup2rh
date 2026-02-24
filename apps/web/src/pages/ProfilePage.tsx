@@ -79,7 +79,7 @@ export function ProfilePage() {
                   <User className="h-8 w-8 text-primary" />
                 </div>
                 <p className="text-sm font-medium text-foreground">Mon compte</p>
-                <p className="text-xs text-muted-foreground mt-1">Sup2RH</p>
+                <p className="text-xs text-muted-foreground mt-1">SupdesRH</p>
               </CardHeader>
               <CardContent className="space-y-3 pt-0">
                 <div className="rounded-lg border border-border bg-muted/30 p-4 transition-all duration-200 hover:bg-muted/50 hover:border-primary/30">

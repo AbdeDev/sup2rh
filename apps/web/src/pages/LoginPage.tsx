@@ -20,7 +20,7 @@ export function LoginPage() {
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-primary/20 border border-primary/30 mb-4 transition-transform duration-200 hover:scale-105">
             <Sparkles className="h-7 w-7 text-primary" />
           </div>
-          <h1 className="text-xl font-heading font-semibold text-foreground mb-2">Sup2RH</h1>
+          <h1 className="text-xl font-heading font-semibold text-foreground mb-2">SupdesRH</h1>
           <p className="text-xs text-muted-foreground">Découvre ton métier RH idéal</p>
           {fromResult && (
             <p className="text-xs text-primary mt-2">

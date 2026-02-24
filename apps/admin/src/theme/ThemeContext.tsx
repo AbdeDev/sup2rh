@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-const STORAGE_KEY = "sup2rh-admin-theme";
+const STORAGE_KEY = "supdesrh-admin-theme";
 
 type Theme = "light" | "dark";
 

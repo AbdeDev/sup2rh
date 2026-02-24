@@ -1,14 +1,14 @@
-# Sup2RH
+# SupdesRH
 
 > Découvre ton métier RH idéal en quelques minutes
 
 ---
 
-## C'est quoi Sup2RH ?
+## C'est quoi SupdesRH ?
 
-Sup2RH est une application qui t’aide à **trouver le métier des Ressources Humaines qui te correspond** le mieux. Tu réponds à un quiz court et personnalisé, et tu reçois une recommandation basée sur tes réponses, avec des fiches métiers et des infos pour t’orienter.
+SupdesRH est une application qui t’aide à **trouver le métier des Ressources Humaines qui te correspond** le mieux. Tu réponds à un quiz court et personnalisé, et tu reçois une recommandation basée sur tes réponses, avec des fiches métiers et des infos pour t’orienter.
 
-L’objectif : te guider vers les métiers RH (Recrutement, Paie, QVCT, Formation, etc.) et te mettre en relation avec l’équipe Sup2RH pour une alternance ou un stage.
+L’objectif : te guider vers les métiers RH (Recrutement, Paie, QVCT, Formation, etc.) et te mettre en relation avec l’équipe SupdesRH pour une alternance ou un stage.
 
 ---
 
@@ -35,7 +35,7 @@ Par exemple : _« J’aime travailler en équipe »_ → tu choisis entre « Pas
 
 ### 4. Tu peux prendre contact
 
-Si un métier t’intéresse, tu peux demander à être contacté par l’équipe Sup2RH pour en savoir plus sur les alternances, stages et possibilités d’orientation.
+Si un métier t’intéresse, tu peux demander à être contacté par l’équipe SupdesRH pour en savoir plus sur les alternances, stages et possibilités d’orientation.
 
 ---
 

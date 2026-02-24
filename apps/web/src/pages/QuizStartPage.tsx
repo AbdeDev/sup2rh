@@ -212,7 +212,7 @@ export function QuizStartPage() {
             <div className="h-6 w-6 rounded bg-primary flex items-center justify-center shrink-0">
               <Sparkles className="h-3 w-3 text-primary-foreground" />
             </div>
-            <span className="text-xs font-medium text-foreground truncate">Sup2RH</span>
+            <span className="text-xs font-medium text-foreground truncate">SupdesRH</span>
           </div>
           <div className="ml-auto">
             <ThemeToggle />

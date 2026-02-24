@@ -78,7 +78,7 @@ export function ResultPage() {
         explanation: analysis.explanation,
         scores: analysis.scores,
       });
-      alert("Demande de contact envoyée ! L'équipe Sup2RH te contactera bientôt.");
+      alert("Demande de contact envoyée ! L'équipe SupdesRH te contactera bientôt.");
     } catch (e) {
       alert(e instanceof Error ? e.message : "Erreur lors de l'envoi");
     } finally {
@@ -297,7 +297,7 @@ export function ResultPage() {
                       Intéressé par ce métier ?
                     </h3>
                     <p className="text-xs text-muted-foreground mb-4 max-w-md mx-auto">
-                      L&apos;équipe Sup2RH peut t&apos;aider à trouver une alternance ou un stage
+                      L&apos;équipe SupdesRH peut t&apos;aider à trouver une alternance ou un stage
                       dans ce domaine.
                     </p>
                     <Button
@@ -311,7 +311,7 @@ export function ResultPage() {
                           Envoi…
                         </>
                       ) : (
-                        "Être contacté par Sup2RH"
+                        "Être contacté par SupdesRH"
                       )}
                     </Button>
                   </CardContent>

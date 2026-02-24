@@ -90,7 +90,7 @@ export function FeedbackButton() {
                   </div>
                 </div>
                 <Textarea
-                  placeholder="Ton avis sur Sup2RH…"
+                  placeholder="Ton avis sur SupdesRH…"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows={4}

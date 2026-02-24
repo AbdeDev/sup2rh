@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "sup2rh",
+      "name": "supdesrh",
       "devDependencies": {
         "@eslint/js": "^10.0.1",
         "@types/bun": "latest",

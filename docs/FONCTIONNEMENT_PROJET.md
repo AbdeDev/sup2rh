@@ -1,4 +1,4 @@
-# Fonctionnement technique du projet Sup2RH
+# Fonctionnement technique du projet SupdesRH
 
 Ce document décrit les mécanismes et l’architecture du projet, de façon technique mais accessible.
 
@@ -6,7 +6,7 @@ Ce document décrit les mécanismes et l’architecture du projet, de façon tec
 
 ## Vue d’ensemble de l’architecture
 
-Sup2RH est composé de **Cinq applications** qui communiquent entre elles :
+SupdesRH est composé de **Cinq applications** qui communiquent entre elles :
 
 | Application      | Rôle                                                                                                                                                                                           |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -54,7 +54,7 @@ Deux étapes distinctes :
 ### 5. Résultat et suite
 
 - Le résultat (métier, pourcentage, fiche, explication) est affiché.
-- L’utilisateur peut demander à être contacté par l’équipe Sup2RH.
+- L’utilisateur peut demander à être contacté par l’équipe SupdesRH.
 - Les sessions et résultats restent consultables dans « Mes sessions ».
 
 ---

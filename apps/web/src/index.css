@@ -239,7 +239,7 @@ html {
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Palette Sup2RH — Bleu #162728, Blanc #FFFFFF, Bleu #004080, Vert #008C54, Orange #F37021, Gris #6B7280 */
+/* Palette SupdesRH — Bleu #162728, Blanc #FFFFFF, Bleu #004080, Vert #008C54, Orange #F37021, Gris #6B7280 */
 .dark {
   color-scheme: dark;
   --background: #0f172a;
