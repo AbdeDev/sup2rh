@@ -17,7 +17,6 @@ import {
 
 import { supabase } from "../lib/supabase";
 import {
-  createQuizSession,
   getQuizSession,
   getQuizSessions,
   submitAnswer,
@@ -31,6 +30,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Separator } from "../components/ui/separator";
 import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter } from "../components/ui/sidebar";
+import { AppLogo } from "../components/AppLogo";
 
 export function QuizPage() {
   const navigate = useNavigate();
@@ -71,22 +71,6 @@ export function QuizPage() {
       console.error("Erreur lors du chargement des sessions:", e);
     } finally {
       setLoadingSessions(false);
-    }
-  }
-
-  async function createSession() {
-    setLoading(true);
-    setError(null);
-    try {
-      const newSession = await createQuizSession();
-      const fullSession = await getQuizSession(newSession.id);
-      setCurrentSession(fullSession);
-      setAnalysis(null);
-      await loadPreviousSessions();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Erreur lors de la création");
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -184,10 +168,15 @@ export function QuizPage() {
           </Button>
           <Separator orientation="vertical" className="h-3.5 mx-0.5 lg:hidden" />
           <div className="flex items-center gap-2 min-w-0">
-            <div className="h-6 w-6 rounded bg-primary flex items-center justify-center shrink-0">
-              <Sparkles className="h-3 w-3 text-primary-foreground" />
-            </div>
-            <span className="text-xs font-medium text-foreground truncate">SupdesRH</span>
+            <button
+              type="button"
+              onClick={() => navigate("/quiz")}
+              className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity -ml-0.5"
+              aria-label="Accueil"
+            >
+              <AppLogo className="h-10 w-10 shrink-0 object-contain transition-transform duration-200 hover:scale-110" />
+              <span className="text-xs font-medium text-foreground truncate">Quizz SupDesRh</span>
+            </button>
           </div>
           <div className="ml-auto">
             <div className="relative" ref={userMenuRef}>

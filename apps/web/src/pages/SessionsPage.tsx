@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Sparkles,
   Loader2,
   Clock,
   Trophy,
@@ -11,15 +10,17 @@ import {
   Calendar,
   CalendarRange as CalendarRangeIcon,
   Plus,
+  Square,
+  Check,
 } from "lucide-react";
 
 import { supabase } from "../lib/supabase";
-import { getQuizSessions, type QuizSession } from "../lib/api";
+import { deleteQuizSession, getQuizSessions, type QuizSession } from "../lib/api";
 import { DateRangeFilter } from "../components/DateRangeFilter";
 import { Button } from "../components/ui/button";
-import { Separator } from "../components/ui/separator";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { AppLogo } from "../components/AppLogo";
 
 export function SessionsPage() {
   const navigate = useNavigate();
@@ -30,6 +31,9 @@ export function SessionsPage() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [deleting, setDeleting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     loadSessions();
@@ -49,13 +53,67 @@ export function SessionsPage() {
 
   async function loadSessions() {
     setLoading(true);
+    setLoadError(null);
     try {
       const { items } = await getQuizSessions();
       setSessions(items);
+      setSelectedIds([]);
     } catch (e) {
       console.error("Erreur lors du chargement des sessions:", e);
+      setLoadError(
+        e instanceof Error
+          ? e.message
+          : "Impossible de charger les sessions. Vérifie ta connexion.",
+      );
     } finally {
       setLoading(false);
+    }
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((sessionId) => sessionId !== id) : [...prev, id],
+    );
+  }
+
+  function isSelected(id: string) {
+    return selectedIds.includes(id);
+  }
+
+  function selectAll() {
+    const allIds = [...completedSessions, ...inProgressSessions].map((s) => s.id);
+    setSelectedIds(allIds);
+  }
+
+  function deselectAll() {
+    setSelectedIds([]);
+  }
+
+  async function handleDeleteSelected() {
+    if (selectedIds.length === 0 || deleting) return;
+
+    if (
+      !confirm(
+        `Supprimer ${selectedIds.length} session${
+          selectedIds.length > 1 ? "s" : ""
+        } de quiz ? Cette action est définitive.`,
+      )
+    ) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      for (const id of selectedIds) {
+        try {
+          await deleteQuizSession(id);
+        } catch (e) {
+          console.error("Erreur lors de la suppression de la session", id, e);
+        }
+      }
+      await loadSessions();
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -117,19 +175,15 @@ export function SessionsPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 transition-colors sticky top-0 z-50">
         <div className="flex w-full items-center gap-2 px-4 lg:px-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="-ml-1.5 h-8 w-8 transition-all duration-200 hover:bg-accent"
-            onClick={() => navigate("/quiz")}
-          >
-            <ArrowRight className="h-4 w-4 text-muted-foreground rotate-180" />
-          </Button>
-          <Separator orientation="vertical" className="h-4 mx-1" />
           <div className="flex items-center gap-2 min-w-0">
-            <div className="h-6 w-6 rounded bg-primary flex items-center justify-center shrink-0 transition-transform duration-200 hover:scale-105">
-              <Sparkles className="h-3 w-3 text-primary-foreground" />
-            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/quiz")}
+              className="shrink-0 hover:opacity-80 transition-opacity p-0.5 -ml-0.5 rounded"
+              aria-label="Accueil"
+            >
+              <AppLogo className="h-10 w-10 object-contain transition-transform duration-200 hover:scale-110" />
+            </button>
             <span className="text-xs font-medium text-foreground truncate">Mes sessions</span>
           </div>
           <div className="ml-auto flex items-center gap-1">
@@ -188,7 +242,50 @@ export function SessionsPage() {
                     : `${filteredSessions.length} sur ${sessions.length} session${sessions.length > 1 ? "s" : ""}`}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {filteredSessions.length > 0 && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 text-xs border-border"
+                      onClick={selectAll}
+                    >
+                      Tout sélectionner
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 text-xs border-border"
+                      onClick={deselectAll}
+                    >
+                      Tout désélectionner
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 text-xs border-destructive/40 text-destructive hover:text-destructive hover:bg-destructive/5"
+                      disabled={selectedIds.length === 0 || deleting}
+                      onClick={handleDeleteSelected}
+                    >
+                      {deleting ? (
+                        <>
+                          <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                          Suppression…
+                        </>
+                      ) : (
+                        <>
+                          Supprimer
+                          {selectedIds.length > 0 && (
+                            <span className="ml-1.5 rounded-full bg-destructive/10 px-1.5 py-0.5 text-[10px]">
+                              {selectedIds.length}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </Button>
+                  </>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -227,6 +324,13 @@ export function SessionsPage() {
             <div className="flex items-center justify-center py-20 animate-in fade-in duration-300">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
+          ) : loadError ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center space-y-3">
+              <p className="text-sm text-destructive">{loadError}</p>
+              <Button variant="outline" size="sm" onClick={loadSessions}>
+                Réessayer
+              </Button>
+            </div>
           ) : sessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="h-16 w-16 rounded-xl bg-muted border border-border flex items-center justify-center mb-4">
@@ -262,9 +366,15 @@ export function SessionsPage() {
                     {completedSessions.map((session, index) => (
                       <Card
                         key={session.id}
-                        className="border border-border bg-card hover:border-primary/50 transition-all duration-300 cursor-pointer group animate-in fade-in slide-in-from-bottom-4"
+                        className={`border bg-card transition-all duration-300 cursor-pointer group animate-in fade-in slide-in-from-bottom-4 ${
+                          isSelected(session.id)
+                            ? "border-primary/60 ring-2 ring-primary/40"
+                            : "border-border hover:border-primary/50"
+                        }`}
                         style={{ animationDelay: `${index * 50}ms` }}
-                        onClick={() => navigate(`/result/${session.id}`)}
+                        onClick={() =>
+                          navigate(`/result/${session.id}`, { state: { sessionSummary: session } })
+                        }
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">
@@ -283,11 +393,35 @@ export function SessionsPage() {
                             </div>
                             <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all duration-200 shrink-0 opacity-0 group-hover:opacity-100" />
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Calendar className="h-3.5 w-3.5 shrink-0" />
-                            <span className="truncate" title={formatFullDate(session.createdAt)}>
-                              {formatDate(session.createdAt)}
-                            </span>
+                          <div className="flex items-center justify-between mt-1">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Calendar className="h-3.5 w-3.5 shrink-0" />
+                              <span className="truncate" title={formatFullDate(session.createdAt)}>
+                                {formatDate(session.createdAt)}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSelected(session.id);
+                              }}
+                              className={`ml-2 h-5 w-5 shrink-0 rounded border-2 flex items-center justify-center transition-colors ${
+                                isSelected(session.id)
+                                  ? "border-primary bg-primary text-primary-foreground"
+                                  : "border-border bg-background hover:border-primary/50"
+                              }`}
+                              aria-pressed={isSelected(session.id)}
+                              aria-label={
+                                isSelected(session.id) ? "Désélectionner" : "Sélectionner"
+                              }
+                            >
+                              {isSelected(session.id) ? (
+                                <Check className="h-3 w-3 text-primary-foreground" />
+                              ) : (
+                                <Square className="h-3 w-3 text-muted-foreground" />
+                              )}
+                            </button>
                           </div>
                         </CardContent>
                       </Card>
@@ -310,7 +444,11 @@ export function SessionsPage() {
                     {inProgressSessions.map((session, index) => (
                       <Card
                         key={session.id}
-                        className="border border-border bg-card hover:border-orange/50 transition-all duration-300 cursor-pointer group animate-in fade-in slide-in-from-bottom-4"
+                        className={`border bg-card transition-all duration-300 cursor-pointer group animate-in fade-in slide-in-from-bottom-4 ${
+                          isSelected(session.id)
+                            ? "border-orange/60 ring-2 ring-orange/30"
+                            : "border-border hover:border-orange/50"
+                        }`}
                         style={{ animationDelay: `${(completedSessions.length + index) * 50}ms` }}
                         onClick={() => navigate(`/quiz/start?sessionId=${session.id}`)}
                       >
@@ -331,11 +469,28 @@ export function SessionsPage() {
                             </div>
                             <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-orange group-hover:translate-x-0.5 transition-all duration-200 shrink-0 opacity-0 group-hover:opacity-100" />
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Calendar className="h-3.5 w-3.5 shrink-0" />
-                            <span className="truncate" title={formatFullDate(session.createdAt)}>
-                              {formatDate(session.createdAt)}
-                            </span>
+                          <div className="flex items-center justify-between mt-1">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Calendar className="h-3.5 w-3.5 shrink-0" />
+                              <span className="truncate" title={formatFullDate(session.createdAt)}>
+                                {formatDate(session.createdAt)}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleSelected(session.id);
+                              }}
+                              className={`ml-2 h-5 w-5 shrink-0 rounded-md border text-[10px] flex items-center justify-center transition-colors ${
+                                isSelected(session.id)
+                                  ? "border-orange bg-orange text-white"
+                                  : "border-border bg-card text-muted-foreground hover:bg-muted"
+                              }`}
+                              aria-pressed={isSelected(session.id)}
+                            >
+                              {isSelected(session.id) ? "✓" : ""}
+                            </button>
                           </div>
                         </CardContent>
                       </Card>

@@ -94,11 +94,11 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       </Card>
       <p className="text-center text-[11px] text-muted-foreground [&_a]:underline [&_a]:underline-offset-2 [&_a]:hover:text-foreground transition-colors">
         En continuant, tu acceptes nos{" "}
-        <a href="#" className="hover:text-primary">
+        <a href="/legal/conditions" className="hover:text-primary">
           Conditions d&apos;utilisation
         </a>{" "}
         et notre{" "}
-        <a href="#" className="hover:text-primary">
+        <a href="/legal/confidentialite" className="hover:text-primary">
           Politique de confidentialité
         </a>
         .

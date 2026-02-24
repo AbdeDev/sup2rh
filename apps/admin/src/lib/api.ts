@@ -262,3 +262,59 @@ export interface FeedbackItem {
 export async function getFeedbacks(): Promise<{ items: FeedbackItem[] }> {
   return request<{ items: FeedbackItem[] }>("/admin/feedbacks");
 }
+
+// Admin - Sessions par utilisateur (quiz, résultats, dates)
+export interface AdminUserSession {
+  userId: string;
+  email: string;
+  sessionCount: number;
+  sessions: Array<{
+    id: string;
+    answerCount: number;
+    finalJobId: string | null;
+    jobName: string | null;
+    scores: Record<string, number> | null;
+    createdAt: string;
+  }>;
+}
+
+export async function getAdminSessions(): Promise<{ items: AdminUserSession[] }> {
+  return request<{ items: AdminUserSession[] }>("/admin/sessions");
+}
+
+export interface AdminSessionDetail {
+  session: {
+    id: string;
+    userId: string;
+    createdAt: string;
+    finalJobId: string | null;
+    scores: Record<string, number> | null;
+    answers: Array<{
+      questionId: string;
+      answerId: string | null;
+      textValue: string | null;
+      jobId: string | null;
+      createdAt: string;
+    }>;
+  };
+  user: { id: string; email: string };
+  analysis: {
+    jobId: string;
+    confidence: number;
+    explanation: string;
+    scores: Record<string, number>;
+    job: {
+      id: string;
+      name: string;
+      description?: string;
+      salary?: string;
+      hiringRate?: number;
+      turnoverRate?: number;
+      createdAt: string;
+    } | null;
+  } | null;
+}
+
+export async function getAdminSessionDetail(sessionId: string): Promise<AdminSessionDetail> {
+  return request<AdminSessionDetail>(`/admin/sessions/${sessionId}`);
+}

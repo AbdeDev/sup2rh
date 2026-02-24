@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { Sparkles, CheckCircle2, Play, ArrowRight, User, LogOut, Clock } from "lucide-react";
+import { CheckCircle2, Play, ArrowRight, User, LogOut, Clock } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 import { supabase } from "../lib/supabase";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { AppLogo } from "../components/AppLogo";
 
 export function QuizLandingPage() {
   const navigate = useNavigate();
@@ -33,12 +34,15 @@ export function QuizLandingPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="flex h-11 shrink-0 items-center border-b border-border bg-card/95 backdrop-blur">
         <div className="flex w-full items-center gap-2 px-3 md:px-5">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="h-6 w-6 rounded bg-primary flex items-center justify-center shrink-0">
-              <Sparkles className="h-3 w-3 text-primary-foreground" />
-            </div>
-            <span className="text-xs font-medium text-foreground truncate">SupdesRH</span>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/quiz")}
+            className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity -ml-0.5"
+            aria-label="Accueil"
+          >
+            <AppLogo className="h-10 w-10 shrink-0 object-contain transition-transform duration-200 hover:scale-110" />
+            <span className="text-xs font-medium text-foreground truncate">Quizz SupDesRh</span>
+          </button>
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />
             <div className="relative" ref={userMenuRef}>
@@ -81,8 +85,8 @@ export function QuizLandingPage() {
         <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
           {/* Hero */}
           <div className="text-center mb-12 md:mb-16">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/20 border border-primary/30 mb-4">
-              <Sparkles className="h-8 w-8 text-primary" />
+            <div className="inline-flex h-24 w-24 items-center justify-center mb-5 transition-transform duration-300 hover:scale-110">
+              <AppLogo className="h-20 w-20 object-contain" />
             </div>
             <h1 className="text-2xl md:text-3xl font-heading font-semibold text-foreground mb-3">
               Quel métier RH est fait pour toi ?

@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, ArrowLeft, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2 } from "lucide-react";
 
 import {
   createQuizSession,
@@ -15,6 +15,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Slider } from "../components/ui/slider";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { AppLogo } from "../components/AppLogo";
 
 // Questions par défaut si aucun quiz en BDD
 const FALLBACK_QUESTIONS: QuizQuestion[] = [
@@ -35,6 +36,29 @@ const FALLBACK_QUESTIONS: QuizQuestion[] = [
   { id: "q15", text: "Je préfère les environnements structurés" },
 ];
 
+const MASCOTT_LOGOS = [
+  "/logo-1.png",
+  "/logo-2.png",
+  "/logo-3.png",
+  "/logo-4.png",
+  "/logo-5.png",
+  "/logo-6.png",
+  "/logo-7.png",
+  "/logo-8.png",
+];
+
+function useRandomLogoIndices(questionIds: string[]) {
+  const idsKey = questionIds.join(",");
+  return useMemo(() => {
+    const map: Record<string, number> = {};
+    questionIds.forEach((id) => {
+      map[id] = Math.floor(Math.random() * MASCOTT_LOGOS.length);
+    });
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- idsKey triggers recompute when questions change
+  }, [idsKey]);
+}
+
 export function QuizStartPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -46,6 +70,9 @@ export function QuizStartPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [questionsPerPage, setQuestionsPerPage] = useState(5);
+
+  const questionIds = useMemo(() => questions.map((q) => q.id), [questions]);
+  const logoIndices = useRandomLogoIndices(questionIds);
 
   useEffect(() => {
     loadQuestions();
@@ -208,19 +235,25 @@ export function QuizStartPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="flex h-11 shrink-0 items-center border-b border-border bg-card/95 backdrop-blur">
         <div className="flex w-full items-center gap-2 px-3 md:px-5">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="h-6 w-6 rounded bg-primary flex items-center justify-center shrink-0">
-              <Sparkles className="h-3 w-3 text-primary-foreground" />
-            </div>
-            <span className="text-xs font-medium text-foreground truncate">SupdesRH</span>
-          </div>
+          <button
+            type="button"
+            onClick={() => navigate("/quiz")}
+            className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity -ml-0.5"
+            aria-label="Accueil"
+          >
+            <AppLogo className="h-10 w-10 shrink-0 object-contain transition-transform duration-200 hover:scale-110" />
+            <span className="text-xs font-medium text-foreground truncate">Quizz SupDesRh</span>
+          </button>
           <div className="ml-auto">
             <ThemeToggle />
           </div>
         </div>
       </header>
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-4 py-6 md:py-8">
+        <div
+          key={currentPage}
+          className="max-w-2xl mx-auto px-4 py-6 md:py-8 animate-in fade-in duration-200"
+        >
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
@@ -249,11 +282,24 @@ export function QuizStartPage() {
           {/* Questions */}
           <div className="space-y-4 mb-6">
             {currentQuestions.map((question, idx) => (
-              <Card key={question.id} className="border border-border bg-card">
+              <Card
+                key={question.id}
+                className="border border-border bg-card relative overflow-hidden transition-all duration-300 ease-out hover:border-primary/40 hover:shadow-md"
+              >
                 <CardContent className="p-4 space-y-3">
-                  <p className="text-sm text-foreground font-medium">
-                    {startIdx + idx + 1}. {question.text}
-                  </p>
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-sm text-foreground font-medium pr-10">
+                      {startIdx + idx + 1}. {question.text}
+                    </p>
+                    <div className="relative h-9 w-9 shrink-0 flex items-center justify-center">
+                      <img
+                        src={MASCOTT_LOGOS[logoIndices[question.id] ?? 0]}
+                        alt="Lamascott, mascotte du quiz"
+                        className="h-10 w-10 object-contain logo-theme-safe"
+                        loading="lazy"
+                      />
+                    </div>
+                  </div>
                   <Slider
                     value={answers[question.id] ?? 3}
                     onChange={(value) => handleSliderChange(question.id, value)}
@@ -292,7 +338,7 @@ export function QuizStartPage() {
             <Button
               onClick={handleNext}
               disabled={!canProceed || loading}
-              className="h-9 px-6 text-xs bg-primary text-primary-foreground hover:bg-primary/90"
+              className="h-9 px-6 text-xs bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 active:scale-[0.98]"
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />

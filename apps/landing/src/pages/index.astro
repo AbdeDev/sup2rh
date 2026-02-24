@@ -1,11 +1,886 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+type JobCard = {
+	id: string;
+	name: string;
+	description?: string | null;
+	salary?: string | null;
+	hiringRate?: number | null;
+	turnoverRate?: number | null;
+	indicators?: Array<{ label: string; value: string | number }> | null;
+	videoUrl?: string | null;
+	createdAt?: string;
+};
+
+const API_BASE_URL =
+	(import.meta.env.PUBLIC_API_URL || "http://127.0.0.1:8000") + "/api";
+const WEB_APP_URL = import.meta.env.PUBLIC_WEB_URL || "http://localhost:5173";
+
+let jobs: JobCard[] = [];
+let fetchError: string | null = null;
+
+try {
+	const res = await fetch(`${API_BASE_URL}/jobs`, {
+		headers: { Accept: "application/json" },
+	});
+	if (res.ok) {
+		const data = await res.json();
+		const items = data?.items;
+		jobs = Array.isArray(items)
+			? items.map((j: Record<string, unknown>) => ({
+					id: String(j.id ?? ""),
+					name: String(j.name ?? ""),
+					description: j.description != null ? String(j.description) : null,
+					salary: j.salary != null ? String(j.salary) : null,
+					hiringRate: typeof j.hiringRate === "number" ? j.hiringRate : null,
+					turnoverRate: typeof j.turnoverRate === "number" ? j.turnoverRate : null,
+					indicators: Array.isArray(j.indicators) ? j.indicators : null,
+					videoUrl: j.videoUrl != null ? String(j.videoUrl) : null,
+					createdAt: j.createdAt != null ? String(j.createdAt) : undefined,
+				}))
+			: [];
+	} else {
+		fetchError = `API ${res.status}`;
+	}
+} catch (e) {
+	fetchError = e instanceof Error ? e.message : "Erreur de chargement";
+}
 ---
 
 <Layout>
-	<Welcome />
+	<div class="page">
+		<header class="site-header">
+			<div class="logo-wrap">
+				<img src="/lamascott-hero.png" alt="Sup des RH" class="logo-img logo-theme-safe" width="56" height="56" />
+				<div class="brand-text">
+					<p class="brand">Sup des RH</p>
+					<p class="brand-sub">Orientation métiers RH</p>
+				</div>
+			</div>
+			<div class="header-actions">
+				<button type="button" class="btn-theme" id="theme-toggle" aria-label="Changer le thème">
+					<svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+					<svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+				</button>
+				<a href={WEB_APP_URL + "/login"} class="btn-connect">Se connecter</a>
+			</div>
+		</header>
+
+		<main class="main">
+			<section class="hero">
+				<div class="hero-badge">Quiz d'orientation RH</div>
+				<h1 class="hero-title">
+					Trouve le <span class="highlight">métier RH</span><br/>qui te ressemble
+				</h1>
+				<p class="hero-sub">
+					Réponds à un quiz personnalisé et découvre les métiers des Ressources Humaines faits pour toi : Recrutement, Paie, QVCT, Formation…
+				</p>
+				<div class="hero-actions">
+					<a href={WEB_APP_URL + "/login"} class="btn-primary">
+						Faire le quiz gratuitement
+					</a>
+					<a href="#metiers" class="btn-secondary">
+						Voir les fiches métiers ↓
+					</a>
+				</div>
+				<div class="hero-stats">
+					<div class="stat">
+						<span class="stat-number">{jobs.length || "5+"}</span>
+						<span class="stat-label">Fiches métiers</span>
+					</div>
+					<div class="stat-divider"></div>
+					<div class="stat">
+						<span class="stat-number">15</span>
+						<span class="stat-label">Questions</span>
+					</div>
+					<div class="stat-divider"></div>
+					<div class="stat">
+						<span class="stat-number">3 min</span>
+						<span class="stat-label">Durée du quiz</span>
+					</div>
+				</div>
+			</section>
+
+			<section id="metiers" class="section-metiers">
+				<div class="section-header">
+					<div class="section-badge">Découvrir</div>
+					<h2 class="section-title">Fiches métiers RH</h2>
+					<p class="section-desc">Parcours les métiers RH sans créer de compte. Connecte-toi pour obtenir une recommandation personnalisée.</p>
+				</div>
+
+				<div class="jobs-grid">
+					{fetchError && (
+						<p class="jobs-empty jobs-error">
+							Impossible de charger les fiches ({fetchError}). Vérifie que l'API backend tourne et que <code>PUBLIC_API_URL</code> est bien défini dans <code>.env</code>.
+						</p>
+					)}
+					{!fetchError && jobs.length === 0 && (
+						<p class="jobs-empty">Aucune fiche métier pour le moment. Démarre l'API backend si besoin.</p>
+					)}
+					{!fetchError && jobs.map((job, idx) => (
+						<article class="job-card" id={`job-${job.id}`} style={`animation-delay: ${idx * 60}ms`}>
+							<div class="job-head">
+								<span class="job-badge">RH</span>
+								<h3 class="job-name">{job.name}</h3>
+							</div>
+							<p class="job-desc">
+								{job.description
+									? job.description.length > 200
+										? job.description.slice(0, 200) + "…"
+										: job.description
+									: "Fiche détaillée disponible après connexion au quiz."}
+							</p>
+							<div class="job-tags">
+								{job.salary && <span class="tag tag-salary">{job.salary}</span>}
+								{job.hiringRate != null && (
+									<span class="tag tag-green">{Number(job.hiringRate).toFixed(0)}% embauche</span>
+								)}
+								{job.turnoverRate != null && (
+									<span class="tag tag-muted">{Number(job.turnoverRate).toFixed(0)}% turnover</span>
+								)}
+							</div>
+						</article>
+					))}
+				</div>
+
+				<div class="section-cta">
+					<a href={WEB_APP_URL + "/fiches"} class="link-app">Voir toutes les fiches dans l'app →</a>
+				</div>
+			</section>
+
+			<section class="section-how">
+				<div class="section-header">
+					<div class="section-badge">Comment ça marche</div>
+					<h2 class="section-title">En 3 étapes simples</h2>
+				</div>
+				<div class="steps-grid">
+					<div class="step-card">
+						<div class="step-number" style="background: rgba(0,64,128,0.12); color: #004080; border-color: rgba(0,64,128,0.25);">1</div>
+						<h3 class="step-title">Connecte-toi</h3>
+						<p class="step-desc">Crée un compte en 10 secondes avec ton email. Pas de mot de passe, juste un lien magique.</p>
+					</div>
+					<div class="step-card">
+						<div class="step-number" style="background: rgba(0,140,84,0.12); color: #008c54; border-color: rgba(0,140,84,0.25);">2</div>
+						<h3 class="step-title">Fais le quiz</h3>
+						<p class="step-desc">15 questions rapides pour cerner ton profil. Dis si tu es d'accord ou pas, c'est tout.</p>
+					</div>
+					<div class="step-card">
+						<div class="step-number" style="background: rgba(243,112,33,0.12); color: #f37021; border-color: rgba(243,112,33,0.25);">3</div>
+						<h3 class="step-title">Découvre ton résultat</h3>
+						<p class="step-desc">Reçois une recommandation personnalisée avec fiche métier, salaire et taux d'embauche.</p>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<footer class="footer">
+			<div class="footer-inner">
+				<div class="footer-top">
+					<div class="footer-brand-wrap">
+						<img src="/lamascott-hero.png" alt="" class="footer-logo logo-theme-safe" width="32" height="32" />
+						<p class="footer-brand">Sup des RH</p>
+					</div>
+					<p class="footer-tagline">Orientation métiers RH, en toute confiance.</p>
+				</div>
+				<nav class="footer-links">
+					<a href={WEB_APP_URL + "/legal/conditions"}>Conditions d'utilisation</a>
+					<a href={WEB_APP_URL + "/legal/confidentialite"}>Politique de confidentialité</a>
+					<a href={WEB_APP_URL + "/login"}>Accéder au quiz</a>
+				</nav>
+				<p class="footer-copy">© {new Date().getFullYear()} Sup des RH — Tous droits réservés</p>
+			</div>
+		</footer>
+	</div>
 </Layout>
+
+<script>
+	const btn = document.getElementById("theme-toggle");
+	if (btn) {
+		btn.addEventListener("click", () => {
+			// @ts-expect-error - défini par Layout.astro
+			if (typeof window.supdesrhToggleTheme === "function") window.supdesrhToggleTheme();
+		});
+	}
+</script>
+
+<style>
+	.page {
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* Header */
+	.site-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.9rem 1.5rem;
+		background: var(--landing-card);
+		border-bottom: 1px solid var(--landing-border);
+		backdrop-filter: blur(16px);
+		position: sticky;
+		top: 0;
+		z-index: 50;
+		transition: background 0.3s, border-color 0.3s;
+	}
+
+	.logo-wrap {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.logo-img {
+		width: 48px;
+		height: 48px;
+		object-fit: contain;
+	}
+
+	.logo-theme-safe {
+		filter: none !important;
+		-webkit-filter: none !important;
+		color-scheme: only light;
+		forced-color-adjust: none;
+		opacity: 1 !important;
+	}
+	html.dark .logo-theme-safe {
+		filter: none !important;
+		-webkit-filter: none !important;
+	}
+
+	.brand-text {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.brand {
+		margin: 0;
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: var(--landing-accent);
+		line-height: 1.2;
+		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
+	}
+
+	.brand-sub {
+		margin: 0;
+		font-size: 0.7rem;
+		color: var(--landing-muted);
+		letter-spacing: 0.02em;
+	}
+
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.btn-theme {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		border: 1px solid var(--landing-border);
+		background: var(--landing-bg-soft);
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: transform 0.2s, background 0.2s;
+	}
+
+	.btn-theme:hover {
+		background: var(--landing-border);
+		transform: scale(1.05);
+	}
+
+	.icon-moon { display: none; }
+	.icon-sun, .icon-moon { color: var(--landing-text); }
+	html.dark .icon-sun { display: none; }
+	html.dark .icon-moon { display: block; }
+
+	.btn-connect {
+		padding: 0.55rem 1.25rem;
+		border-radius: 999px;
+		background: #004080;
+		color: #fff;
+		font-weight: 600;
+		font-size: 0.85rem;
+		text-decoration: none;
+		box-shadow: 0 4px 14px rgba(0, 64, 128, 0.3);
+		transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+	}
+
+	.btn-connect:hover {
+		transform: translateY(-1px);
+		background: #003366;
+		box-shadow: 0 6px 20px rgba(0, 64, 128, 0.4);
+	}
+
+	/* Main */
+	.main {
+		flex: 1;
+		max-width: 960px;
+		margin: 0 auto;
+		width: 100%;
+		padding: 0 1.5rem;
+	}
+
+	/* Hero */
+	.hero {
+		text-align: center;
+		padding: 4rem 0 3rem;
+		animation: heroFadeIn 0.6s ease-out;
+	}
+
+	@keyframes heroFadeIn {
+		from { opacity: 0; transform: translateY(20px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.hero-badge {
+		display: inline-block;
+		padding: 0.35rem 1rem;
+		border-radius: 999px;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		background: rgba(0, 64, 128, 0.1);
+		color: #004080;
+		border: 1px solid rgba(0, 64, 128, 0.2);
+		margin-bottom: 1.5rem;
+	}
+	html.dark .hero-badge {
+		background: rgba(56, 189, 248, 0.1);
+		color: #38bdf8;
+		border-color: rgba(56, 189, 248, 0.2);
+	}
+
+	.hero-title {
+		font-size: clamp(2rem, 5vw, 2.75rem);
+		font-weight: 800;
+		line-height: 1.15;
+		margin: 0 0 1rem;
+		color: var(--landing-text);
+		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
+	}
+
+	.hero-title .highlight {
+		background: linear-gradient(120deg, #004080, #008c54);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+	html.dark .hero-title .highlight {
+		background: linear-gradient(120deg, #38bdf8, #4ade80);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.hero-sub {
+		color: var(--landing-muted);
+		font-size: 1.05rem;
+		max-width: 32rem;
+		margin: 0 auto 2rem;
+		line-height: 1.6;
+	}
+
+	.hero-actions {
+		display: flex;
+		justify-content: center;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		margin-bottom: 2.5rem;
+	}
+
+	.btn-primary {
+		display: inline-block;
+		padding: 0.75rem 1.75rem;
+		border-radius: 999px;
+		background: #004080;
+		color: #fff;
+		font-weight: 700;
+		font-size: 0.95rem;
+		text-decoration: none;
+		box-shadow: 0 4px 20px rgba(0, 64, 128, 0.35);
+		transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+	}
+
+	.btn-primary:hover {
+		transform: translateY(-2px);
+		background: #003366;
+		box-shadow: 0 8px 28px rgba(0, 64, 128, 0.45);
+	}
+
+	.btn-secondary {
+		display: inline-block;
+		padding: 0.75rem 1.75rem;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--landing-text);
+		font-weight: 600;
+		font-size: 0.95rem;
+		text-decoration: none;
+		border: 1px solid var(--landing-border);
+		transition: all 0.15s ease;
+	}
+
+	.btn-secondary:hover {
+		background: var(--landing-bg-soft);
+		border-color: var(--landing-accent);
+	}
+
+	.hero-stats {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 1.5rem;
+	}
+
+	.stat {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.stat-number {
+		font-size: 1.35rem;
+		font-weight: 800;
+		color: var(--landing-text);
+		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
+	}
+
+	.stat-label {
+		font-size: 0.7rem;
+		color: var(--landing-muted);
+		letter-spacing: 0.02em;
+	}
+
+	.stat-divider {
+		width: 1px;
+		height: 28px;
+		background: var(--landing-border);
+	}
+
+	/* Section headers */
+	.section-header {
+		text-align: center;
+		margin-bottom: 2rem;
+	}
+
+	.section-badge {
+		display: inline-block;
+		padding: 0.3rem 0.8rem;
+		border-radius: 999px;
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		background: rgba(0, 140, 84, 0.1);
+		color: #008c54;
+		border: 1px solid rgba(0, 140, 84, 0.2);
+		margin-bottom: 0.75rem;
+	}
+	html.dark .section-badge {
+		background: rgba(34, 197, 94, 0.1);
+		color: #22c55e;
+		border-color: rgba(34, 197, 94, 0.2);
+	}
+
+	.section-title {
+		font-size: 1.5rem;
+		font-weight: 800;
+		margin: 0 0 0.5rem;
+		color: var(--landing-text);
+		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
+	}
+
+	.section-desc {
+		color: var(--landing-muted);
+		font-size: 0.95rem;
+		margin: 0;
+		max-width: 28rem;
+		margin-left: auto;
+		margin-right: auto;
+		line-height: 1.5;
+	}
+
+	/* Section métiers */
+	.section-metiers {
+		padding: 3rem 0;
+	}
+
+	.jobs-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 1.25rem;
+	}
+
+	.jobs-empty {
+		grid-column: 1 / -1;
+		text-align: center;
+		color: var(--landing-muted);
+		font-size: 0.9rem;
+		padding: 3rem 1rem;
+		background: var(--landing-card);
+		border: 1px dashed var(--landing-border);
+		border-radius: 16px;
+	}
+
+	.job-card {
+		background: var(--landing-card);
+		border: 1px solid var(--landing-border);
+		border-radius: 16px;
+		padding: 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+		animation: cardFadeIn 0.5s ease-out backwards;
+	}
+
+	@keyframes cardFadeIn {
+		from { opacity: 0; transform: translateY(14px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.job-card:hover {
+		transform: translateY(-4px) scale(1.01);
+		border-color: #008c54;
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+	}
+
+	html.dark .job-card:hover {
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+		border-color: #22c55e;
+	}
+
+	.job-head {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.job-badge {
+		width: 32px;
+		height: 32px;
+		border-radius: 10px;
+		background: linear-gradient(135deg, #004080, #0d5aa7);
+		color: #fff;
+		font-size: 0.7rem;
+		font-weight: 700;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		shrink: 0;
+	}
+
+	.job-name {
+		font-size: 1.05rem;
+		font-weight: 700;
+		margin: 0;
+		color: var(--landing-text);
+		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
+	}
+
+	.job-desc {
+		font-size: 0.85rem;
+		color: var(--landing-muted);
+		line-height: 1.5;
+		margin: 0;
+		flex: 1;
+	}
+
+	.job-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin-top: 0.25rem;
+	}
+
+	.tag {
+		font-size: 0.7rem;
+		padding: 0.25rem 0.6rem;
+		border-radius: 999px;
+		font-weight: 500;
+	}
+
+	.tag-salary {
+		background: rgba(0, 64, 128, 0.1);
+		color: #004080;
+	}
+	html.dark .tag-salary {
+		background: rgba(56, 189, 248, 0.12);
+		color: #38bdf8;
+	}
+
+	.tag-green {
+		background: rgba(0, 140, 84, 0.12);
+		color: #008c54;
+	}
+	html.dark .tag-green {
+		background: rgba(34, 197, 94, 0.12);
+		color: #22c55e;
+	}
+
+	.tag-muted {
+		background: var(--landing-border);
+		color: var(--landing-muted);
+	}
+
+	.jobs-error {
+		color: var(--landing-muted);
+	}
+
+	.jobs-error code {
+		font-size: 0.8em;
+		background: var(--landing-border);
+		padding: 0.1em 0.3em;
+		border-radius: 4px;
+	}
+
+	.section-cta {
+		text-align: center;
+		margin-top: 1.5rem;
+	}
+
+	.link-app {
+		display: inline-block;
+		font-size: 0.9rem;
+		color: #004080;
+		text-decoration: none;
+		font-weight: 600;
+		transition: color 0.15s;
+	}
+	html.dark .link-app {
+		color: #38bdf8;
+	}
+
+	.link-app:hover {
+		text-decoration: underline;
+	}
+
+	/* How it works */
+	.section-how {
+		padding: 3rem 0 4rem;
+	}
+
+	.steps-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: 1.25rem;
+	}
+
+	.step-card {
+		background: var(--landing-card);
+		border: 1px solid var(--landing-border);
+		border-radius: 16px;
+		padding: 1.5rem;
+		text-align: center;
+		transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+		animation: cardFadeIn 0.5s ease-out backwards;
+	}
+
+	.step-card:nth-child(1) { animation-delay: 0.1s; }
+	.step-card:nth-child(2) { animation-delay: 0.2s; }
+	.step-card:nth-child(3) { animation-delay: 0.3s; }
+
+	.step-card:hover {
+		transform: translateY(-3px);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+	}
+	html.dark .step-card:hover {
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+	}
+
+	.step-number {
+		width: 44px;
+		height: 44px;
+		border-radius: 12px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.1rem;
+		font-weight: 800;
+		border: 1px solid;
+		margin-bottom: 1rem;
+		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
+	}
+
+	.step-title {
+		font-size: 1rem;
+		font-weight: 700;
+		margin: 0 0 0.5rem;
+		color: var(--landing-text);
+		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
+	}
+
+	.step-desc {
+		font-size: 0.85rem;
+		color: var(--landing-muted);
+		margin: 0;
+		line-height: 1.5;
+	}
+
+	/* Footer */
+	.footer {
+		background: var(--landing-card);
+		border-top: 1px solid var(--landing-border);
+		padding: 2.5rem 1.5rem;
+		margin-top: auto;
+		transition: background 0.3s, border-color 0.3s;
+	}
+
+	.footer-inner {
+		max-width: 960px;
+		margin: 0 auto;
+		text-align: center;
+	}
+
+	.footer-top {
+		margin-bottom: 1.5rem;
+	}
+
+	.footer-brand-wrap {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.25rem;
+	}
+
+	.footer-logo {
+		width: 28px;
+		height: 28px;
+		object-fit: contain;
+	}
+
+	.footer-brand {
+		font-weight: 700;
+		color: var(--landing-accent);
+		margin: 0;
+		font-size: 1rem;
+		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
+	}
+
+	.footer-tagline {
+		color: var(--landing-muted);
+		font-size: 0.85rem;
+		margin: 0;
+	}
+
+	.footer-links {
+		display: flex;
+		justify-content: center;
+		gap: 1.5rem;
+		margin-bottom: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.footer-links a {
+		color: var(--landing-muted);
+		text-decoration: none;
+		font-size: 0.8rem;
+		transition: color 0.15s;
+	}
+
+	.footer-links a:hover {
+		color: var(--landing-text);
+	}
+
+	.footer-copy {
+		color: var(--landing-muted);
+		font-size: 0.7rem;
+		margin: 0;
+		opacity: 0.7;
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.main {
+			padding: 0 1.25rem;
+		}
+
+		.site-header {
+			padding: 0.8rem 1.25rem;
+		}
+
+		.logo-img {
+			width: 40px;
+			height: 40px;
+		}
+
+		.brand-sub {
+			display: none;
+		}
+
+		.hero {
+			padding: 2.5rem 0 2rem;
+		}
+
+		.hero-title {
+			font-size: 1.75rem;
+		}
+
+		.hero-sub {
+			font-size: 0.95rem;
+		}
+
+		.hero-stats {
+			gap: 1rem;
+		}
+
+		.stat-number {
+			font-size: 1.1rem;
+		}
+
+		.jobs-grid {
+			grid-template-columns: 1fr;
+			gap: 1rem;
+		}
+
+		.steps-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.footer-links {
+			flex-direction: column;
+			gap: 0.75rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.main {
+			padding: 0 1rem;
+		}
+
+		.site-header {
+			padding: 0.75rem 1rem;
+		}
+
+		.hero {
+			padding: 2rem 0 1.5rem;
+		}
+
+		.hero-title {
+			font-size: 1.5rem;
+		}
+
+		.hero-actions {
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+
+		.btn-primary,
+		.btn-secondary,
+		.btn-connect {
+			width: 100%;
+			text-align: center;
+		}
+
+		.section-title {
+			font-size: 1.25rem;
+		}
+	}
+</style>

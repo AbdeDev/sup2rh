@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Briefcase, Loader2, ArrowLeft } from "lucide-react";
+import { Briefcase, Loader2 } from "lucide-react";
 
 import { getJobs, type JobFiche } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { AppLogo } from "../components/AppLogo";
 
 export function FichesPage() {
   const navigate = useNavigate();
@@ -24,15 +25,15 @@ export function FichesPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="flex h-11 shrink-0 items-center border-b border-border bg-card/95 backdrop-blur">
         <div className="flex w-full items-center gap-2 px-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="-ml-1 h-8 w-8"
-            onClick={() => navigate(-1)}
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity -ml-0.5"
+            aria-label="Accueil"
           >
-            <ArrowLeft className="h-4 w-4 text-muted-foreground" />
-          </Button>
-          <span className="text-xs font-medium text-foreground">Toutes les fiches métier</span>
+            <AppLogo className="h-10 w-10 object-contain transition-transform duration-200 hover:scale-110" />
+            <span className="text-xs font-medium text-foreground">Fiches métier</span>
+          </button>
           <div className="ml-auto">
             <ThemeToggle />
           </div>
@@ -45,7 +46,23 @@ export function FichesPage() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : error ? (
-            <p className="text-sm text-destructive text-center py-8">{error}</p>
+            <div className="text-center py-8 space-y-3">
+              <p className="text-sm text-destructive">{error}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setError(null);
+                  setLoading(true);
+                  getJobs()
+                    .then(({ items }) => setJobs(items))
+                    .catch((e) => setError(e instanceof Error ? e.message : "Erreur"))
+                    .finally(() => setLoading(false));
+                }}
+              >
+                Réessayer
+              </Button>
+            </div>
           ) : jobs.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
               Aucune fiche métier disponible

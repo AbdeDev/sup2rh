@@ -1,7 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Sparkles } from "lucide-react";
-
 import { LoginForm } from "../components/login-form";
+import { AppLogo } from "../components/AppLogo";
 import { ThemeToggle } from "../components/ThemeToggle";
 
 export function LoginPage() {
@@ -17,10 +16,12 @@ export function LoginPage() {
       </div>
       <div className="w-full max-w-md animate-in slide-in-from-bottom-4 duration-500">
         <div className="text-center mb-8">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-xl bg-primary/20 border border-primary/30 mb-4 transition-transform duration-200 hover:scale-105">
-            <Sparkles className="h-7 w-7 text-primary" />
+          <div className="inline-flex h-20 w-20 items-center justify-center mb-4 transition-transform duration-300 hover:scale-110">
+            <AppLogo className="h-16 w-16 object-contain" />
           </div>
-          <h1 className="text-xl font-heading font-semibold text-foreground mb-2">SupdesRH</h1>
+          <h1 className="text-xl font-heading font-semibold text-foreground mb-2">
+            Quizz SupDesRh
+          </h1>
           <p className="text-xs text-muted-foreground">Découvre ton métier RH idéal</p>
           {fromResult && (
             <p className="text-xs text-primary mt-2">

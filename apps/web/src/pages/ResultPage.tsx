@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { ArrowLeft, Loader2, User, Mail, Sparkles, CheckCircle2 } from "lucide-react";
+import { Loader2, User, Sparkles, CheckCircle2 } from "lucide-react";
 
 import {
   getQuizSession,
@@ -16,56 +16,192 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { AppLogo } from "../components/AppLogo";
+import { ChartContainer, type ChartConfig } from "../components/ui/chart";
 
 export function ResultPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const [analysis, setAnalysis] = useState<AnalysisResult | null>(location.state?.analysis || null);
-  const [session, setSession] = useState<QuizSessionWithAnswers | null>(
-    location.state?.session || null,
-  );
-  const [user, setUser] = useState<{ email: string } | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [contactLoading, setContactLoading] = useState(false);
+  const stateSession = location.state?.session as QuizSessionWithAnswers | undefined;
+  const stateAnalysis = location.state?.analysis as AnalysisResult | undefined;
+  const stateSummary = location.state?.sessionSummary as
+    | {
+        id: string;
+        finalJobId: string | null;
+        scores: Record<string, number> | null;
+        answerCount?: number;
+      }
+    | undefined;
+  const hasFullState = Boolean(stateSession && stateAnalysis);
+  const hasSummary = Boolean(stateSummary?.finalJobId && stateSummary?.scores);
 
-  useEffect(() => {
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(stateAnalysis || null);
+  const [session, setSession] = useState<QuizSessionWithAnswers | null>(stateSession || null);
+  const [user, setUser] = useState<{ email: string } | null>(null);
+  const [loading, setLoading] = useState(() => Boolean(id && !hasFullState && !hasSummary));
+  const [error, setError] = useState<string | null>(null);
+  const [contactLoading, setContactLoading] = useState(false);
+  const [showAllScores, setShowAllScores] = useState(false);
+
+  const buildResultFromScores = useCallback(
+    async (finalJobId: string, scores: Record<string, number>, answerCount?: number) => {
+      const { items } = await getJobs();
+      const job = items.find((j) => j.id === finalJobId) as JobFiche | undefined;
+      const topScore = Math.max(...Object.values(scores), 0.5);
+      const result: AnalysisResult = {
+        jobId: finalJobId,
+        confidence: topScore,
+        explanation: job
+          ? `Vos réponses indiquent une affinité avec le profil « ${job.name} ».`
+          : "Profil analysé avec succès.",
+        scores,
+        job: job ?? undefined,
+      };
+      if (result.jobId && (!result.job || !result.job.description)) {
+        const fullJob = items.find((j) => j.id === result.jobId) as JobFiche | undefined;
+        if (fullJob) result.job = fullJob;
+      }
+      setAnalysis(result);
+      setSession((prev) => {
+        if (prev) return prev;
+        return {
+          id: id!,
+          userId: "",
+          createdAt: "",
+          finalJobId,
+          scores,
+          answers: Array.from({ length: answerCount ?? 0 }, (_, i) => ({
+            id: String(i),
+            questionId: "",
+            answerId: null,
+            textValue: null,
+            createdAt: "",
+          })),
+        };
+      });
+    },
+    [id],
+  );
+
+  const loadResult = useCallback(async () => {
     if (!id) return;
-    if (session && analysis) return;
     setLoading(true);
-    getQuizSession(id!)
-      .then(async (s) => {
-        setSession(s);
-        let result: AnalysisResult | null = null;
+    setError(null);
+    try {
+      const s = await getQuizSession(id);
+      setSession(s);
+      let result: AnalysisResult | null = null;
+
+      if (s.finalJobId && s.scores && Object.keys(s.scores).length > 0) {
+        const { items } = await getJobs();
+        const job = items.find((j) => j.id === s.finalJobId!) as JobFiche | undefined;
+        const topScore = Math.max(...Object.values(s.scores), 0.5);
+        result = {
+          jobId: s.finalJobId,
+          confidence: topScore,
+          explanation: job
+            ? `Vos réponses indiquent une affinité avec le profil « ${job.name} ».`
+            : "Profil analysé avec succès.",
+          scores: s.scores,
+          job: job ?? undefined,
+        };
+      } else if (s.finalJobId) {
         try {
-          if (s.finalJobId) result = await analyzeQuiz(id!);
+          result = await analyzeQuiz(id);
         } catch {
-          // Fallback: session a déjà finalJobId, récupérer la fiche depuis /jobs
-          if (s.finalJobId && s.scores) {
+          setError("Impossible d'analyser cette session. Réessaie plus tard.");
+        }
+      }
+
+      if (result) {
+        if (result.jobId && (!result.job || !result.job.description)) {
+          try {
             const { items } = await getJobs();
-            const job = items.find((j) => j.id === s.finalJobId!) as JobFiche | undefined;
-            if (job) {
-              result = {
-                jobId: s.finalJobId,
-                confidence: Math.max(...Object.values(s.scores), 0.5),
-                explanation: `Vos réponses indiquent une affinité avec le profil « ${job.name} ».`,
-                scores: s.scores,
-                job,
-              };
-            }
+            const fullJob = items.find((j) => j.id === result!.jobId) as JobFiche | undefined;
+            if (fullJob) result = { ...result, job: fullJob };
+          } catch {
+            /* proceed without full fiche */
           }
         }
-        if (result) setAnalysis(result);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+        setAnalysis(result);
+      } else if (!s.finalJobId) {
+        setError("Quiz non terminé. Complète le quiz pour voir ton résultat.");
+      } else {
+        setError("Résultats non disponibles pour cette session.");
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Impossible de charger les résultats.";
+      setError(msg);
+      console.error("Erreur chargement résultat:", e);
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
+
+  const didLoadRef = useRef(false);
+
+  useEffect(() => {
+    if (!id || didLoadRef.current) return;
+    if (hasFullState) return;
+
+    didLoadRef.current = true;
+
+    if (hasSummary && stateSummary!.finalJobId && stateSummary!.scores) {
+      setLoading(true);
+      buildResultFromScores(
+        stateSummary!.finalJobId,
+        stateSummary!.scores as Record<string, number>,
+        stateSummary!.answerCount,
+      )
+        .catch((e) => {
+          console.error("Erreur construction résultat depuis summary:", e);
+          loadResult();
+        })
+        .finally(() => setLoading(false));
+      return;
+    }
+
+    loadResult();
+  }, [id, hasFullState, hasSummary, loadResult, buildResultFromScores, stateSummary]);
 
   useEffect(() => {
     getMe()
       .then((userData) => setUser({ email: userData.email }))
       .catch(console.error);
   }, []);
+
+  const jobLabel = (jid: string) => jid.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+
+  const scoresChartData = useMemo(() => {
+    const scores = analysis?.scores;
+    if (!scores || typeof scores !== "object") return [];
+    const entries = Object.entries(scores);
+    if (entries.length === 0) return [];
+    const sorted = [...entries].sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
+    return sorted.map(([jId, value]) => ({
+      jobId: jId,
+      label: jId === analysis.jobId && analysis.job?.name ? analysis.job.name : jobLabel(jId),
+      value: Math.round((Number(value) || 0) * 100),
+      isMain: jId === analysis.jobId,
+    }));
+  }, [analysis]);
+
+  const INITIAL_VISIBLE = 5;
+  const visibleChartData = showAllScores
+    ? scoresChartData
+    : scoresChartData.slice(0, INITIAL_VISIBLE);
+  const hasMoreScores = scoresChartData.length > INITIAL_VISIBLE;
+  const answerCount = session?.answers?.length ?? 0;
+  const confidencePercent = Math.round((analysis?.confidence ?? 0) * 100);
+  const remainingPercent = Math.max(0, 100 - confidencePercent);
+  const topJobLabel =
+    analysis?.job?.name ?? (analysis?.jobId ? jobLabel(analysis.jobId) : "Métier RH");
+  const fiche = analysis?.job;
+
+  const chartConfig: ChartConfig = {
+    value: { label: "Correspondance", color: "--chart-1" },
+  };
 
   async function handleContact() {
     if (!session || !analysis) return;
@@ -99,246 +235,430 @@ export function ResultPage() {
 
   if (!analysis || !session) {
     return (
-      <div className="h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-3 animate-in fade-in duration-300">
-          <p className="text-sm text-muted-foreground">Résultats indisponibles</p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 text-sm border-border text-foreground hover:bg-accent transition-all duration-200"
-            onClick={() => navigate("/quiz")}
-          >
-            Retour au quiz
-          </Button>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+        <div className="text-center space-y-5 animate-in fade-in duration-300 max-w-md">
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+            <p className="text-sm font-medium text-foreground mb-1">
+              {error || "Résultats indisponibles"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Vérifie que tu es connecté avec le bon compte et que l&apos;API est démarrée.
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            {error && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 text-sm border-border"
+                onClick={loadResult}
+              >
+                Réessayer
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 text-sm border-border"
+              onClick={() => navigate("/sessions")}
+            >
+              Mes sessions
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 text-sm border-primary text-primary hover:bg-primary/10"
+              onClick={() => navigate("/quiz")}
+            >
+              Accueil quiz
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
 
-  const jobLabel = (id: string) => id.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-  const topJobLabel =
-    analysis.job?.name ?? (analysis.jobId ? jobLabel(analysis.jobId) : "Métier RH");
-  const confidencePercent = Math.round(analysis.confidence * 100);
-  const fiche = analysis.job;
-
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden">
-      <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border bg-card/95 backdrop-blur">
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border bg-card/95 backdrop-blur sticky top-0 z-50">
         <div className="flex w-full items-center gap-2 px-4 lg:px-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="-ml-1.5 h-8 w-8 transition-all duration-200 hover:bg-accent"
+          <button
+            type="button"
             onClick={() => navigate("/quiz")}
+            className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity -ml-0.5"
+            aria-label="Accueil"
           >
-            <ArrowLeft className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors duration-200" />
-          </Button>
-          <Separator orientation="vertical" className="h-4 mx-1" />
-          <span className="text-xs text-muted-foreground">Résultat</span>
-          <div className="ml-auto">
+            <AppLogo className="h-10 w-10 object-contain transition-transform duration-200 hover:scale-110" />
+            <span className="text-sm font-semibold text-foreground truncate hidden sm:inline">
+              Résultat
+            </span>
+          </button>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs border-border"
+              onClick={() => navigate("/sessions")}
+            >
+              Mes sessions
+            </Button>
             <ThemeToggle />
           </div>
         </div>
       </header>
 
-      <main className="flex-1 overflow-hidden">
-        <div className="h-full flex flex-col lg:flex-row">
-          {/* Colonne gauche : Profil utilisateur */}
-          <div className="lg:w-80 shrink-0 border-r border-border bg-card/50 p-4 md:p-6 flex flex-col">
-            <div className="mb-6 animate-in fade-in slide-in-from-left-4 duration-500">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="h-10 w-10 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center">
-                  <User className="h-5 w-5 text-primary" />
-                </div>
-                <h2 className="text-sm font-semibold text-foreground">Ton profil</h2>
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-6 md:space-y-8">
+          {/* Résultat principal */}
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="text-center">
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-success/15 border border-success/25 mb-5 transition-transform duration-200 hover:scale-105">
+                <CheckCircle2 className="h-8 w-8 text-success" />
               </div>
-              {user && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Mail className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">{user.email}</span>
-                  </div>
-                  <Separator className="bg-border" />
-                  <div>
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
-                      Quiz complété
-                    </p>
-                    <p className="text-xs text-foreground">
-                      {session.answers.length} réponse{session.answers.length > 1 ? "s" : ""}
-                    </p>
-                  </div>
-                </div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-3">
+                {topJobLabel}
+              </h1>
+              <div className="flex items-center justify-center gap-3 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-sm font-semibold text-primary">
+                  {confidencePercent}% de correspondance
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted border border-border px-3 py-1 text-xs text-muted-foreground">
+                  {answerCount} question{answerCount > 1 ? "s" : ""} répondue
+                  {answerCount > 1 ? "s" : ""}
+                </span>
+              </div>
+              {!!remainingPercent && (
+                <p className="mt-3 text-xs text-muted-foreground max-w-md mx-auto">
+                  Il reste {remainingPercent}% de marge pour explorer d&apos;autres métiers RH.
+                </p>
               )}
             </div>
           </div>
 
-          {/* Colonne droite : Fiche métier + CTA */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="max-w-3xl mx-auto p-4 md:p-6 lg:p-8 h-full flex flex-col">
-              {/* Résultat principal */}
-              <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="text-center mb-6">
-                  <div className="inline-flex h-16 w-16 items-center justify-center rounded-xl bg-success/20 border border-success/30 mb-4 transition-transform duration-200 hover:scale-105">
-                    <CheckCircle2 className="h-8 w-8 text-success" />
+          {/* Profil + Statistiques rapides */}
+          {user && (
+            <div
+              className="grid grid-cols-1 sm:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              style={{ animationDelay: "50ms" }}
+            >
+              <Card className="border border-border bg-card">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center shrink-0">
+                    <User className="h-4 w-4 text-primary" />
                   </div>
-                  <h1 className="text-2xl md:text-3xl font-heading font-semibold text-foreground mb-2">
-                    {topJobLabel}
-                  </h1>
-                  <p className="text-sm text-muted-foreground">
-                    {confidencePercent}% de correspondance avec ton profil
-                  </p>
-                </div>
-              </div>
-
-              {/* Fiche métier RH */}
-              <Card
-                className="border border-border bg-card mb-6 flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500"
-                style={{ animationDelay: "100ms" }}
-              >
-                <CardContent className="p-5 md:p-6 flex-1 flex flex-col">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Sparkles className="h-4 w-4 text-primary" />
-                    <h2 className="text-sm font-semibold text-foreground">Fiche métier RH</h2>
-                  </div>
-                  <Separator className="bg-border mb-4" />
-                  <div className="space-y-4 flex-1">
-                    {fiche?.description && (
-                      <div>
-                        <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-                          Description du métier
-                        </p>
-                        <p className="text-sm text-foreground leading-relaxed">
-                          {fiche.description}
-                        </p>
-                      </div>
-                    )}
-                    {(fiche?.salary ?? fiche?.hiringRate ?? fiche?.turnoverRate) && (
-                      <>
-                        {fiche?.description && <Separator className="bg-border" />}
-                        <div className="grid gap-2 text-sm">
-                          {fiche?.salary && (
-                            <p>
-                              <span className="text-muted-foreground">Salaire (France) :</span>{" "}
-                              <span className="text-foreground">{fiche.salary}</span>
-                            </p>
-                          )}
-                          {fiche?.hiringRate != null && (
-                            <p>
-                              <span className="text-muted-foreground">Taux d&apos;embauche :</span>{" "}
-                              <span className="text-foreground">{fiche.hiringRate} %</span>
-                            </p>
-                          )}
-                          {fiche?.turnoverRate != null && (
-                            <p>
-                              <span className="text-muted-foreground">Taux de turnover :</span>{" "}
-                              <span className="text-foreground">{fiche.turnoverRate} %</span>
-                            </p>
-                          )}
-                        </div>
-                      </>
-                    )}
-                    <Separator className="bg-border" />
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-                        Pourquoi ce métier te correspond
-                      </p>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {analysis.explanation}
-                      </p>
-                    </div>
-                    {Array.isArray(fiche?.indicators) && fiche.indicators.length > 0 && (
-                      <>
-                        <Separator className="bg-border" />
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-                            Autres indicateurs (France)
-                          </p>
-                          <ul className="space-y-1 text-sm">
-                            {fiche.indicators.map((ind, i) => (
-                              <li key={i}>
-                                <span className="text-muted-foreground">{ind.label} :</span>{" "}
-                                <span className="text-foreground">{String(ind.value)}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </>
-                    )}
-                    {fiche?.videoUrl && (
-                      <>
-                        <Separator className="bg-border" />
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-                            Vidéo explicative
-                          </p>
-                          <a
-                            href={fiche.videoUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-primary hover:underline"
-                          >
-                            Voir la vidéo du métier →
-                          </a>
-                        </div>
-                      </>
-                    )}
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                      Profil
+                    </p>
+                    <p className="text-xs text-foreground truncate">{user.email}</p>
                   </div>
                 </CardContent>
               </Card>
-
-              {/* CTA Contact */}
-              <div
-                className="animate-in fade-in slide-in-from-bottom-4 duration-500"
-                style={{ animationDelay: "200ms" }}
-              >
-                <Card className="border border-primary/30 bg-primary/5">
-                  <CardContent className="p-5 md:p-6 text-center">
-                    <h3 className="text-base font-semibold text-foreground mb-2">
-                      Intéressé par ce métier ?
-                    </h3>
-                    <p className="text-xs text-muted-foreground mb-4 max-w-md mx-auto">
-                      L&apos;équipe SupdesRH peut t&apos;aider à trouver une alternance ou un stage
-                      dans ce domaine.
+              <Card className="border border-border bg-card">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-success/15 border border-success/25 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                      Statut
                     </p>
-                    <Button
-                      onClick={handleContact}
-                      disabled={contactLoading}
-                      className="h-10 px-8 text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:scale-105"
-                    >
-                      {contactLoading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Envoi…
-                        </>
-                      ) : (
-                        "Être contacté par SupdesRH"
-                      )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Actions secondaires */}
-              <div
-                className="mt-4 flex gap-3 justify-center animate-in fade-in duration-500"
-                style={{ animationDelay: "300ms" }}
-              >
-                <Button
-                  variant="outline"
-                  className="h-9 text-xs border-border text-muted-foreground hover:text-foreground transition-all duration-200"
-                  onClick={() => navigate("/quiz/start")}
-                >
-                  Nouveau quiz
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-9 text-xs border-border text-muted-foreground hover:text-foreground transition-all duration-200"
-                  onClick={() => navigate("/sessions")}
-                >
-                  Mes sessions
-                </Button>
-              </div>
+                    <p className="text-xs text-foreground">Quiz complété</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border border-border bg-card">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-lg bg-orange/15 border border-orange/25 flex items-center justify-center shrink-0">
+                    <Sparkles className="h-4 w-4 text-orange" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                      Métiers analysés
+                    </p>
+                    <p className="text-xs text-foreground">
+                      {scoresChartData.length} fiche{scoresChartData.length > 1 ? "s" : ""}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+          )}
+
+          {/* Comparaison des métiers — barres verticales avec couleurs du projet */}
+          {scoresChartData.length > 0 && (
+            <Card
+              className="border border-border bg-card animate-in fade-in slide-in-from-bottom-4 duration-500"
+              style={{ animationDelay: "100ms" }}
+            >
+              <CardContent className="p-5 md:p-6">
+                <div className="mb-5">
+                  <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
+                    Comparaison des métiers
+                  </p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    {scoresChartData.length} métier{scoresChartData.length > 1 ? "s" : ""} analysé
+                    {scoresChartData.length > 1 ? "s" : ""} — Plus la barre est haute, plus le
+                    métier te correspond.
+                  </p>
+                </div>
+                <ChartContainer
+                  config={chartConfig}
+                  className="w-full rounded-xl border border-border bg-muted/30 p-4 md:p-6"
+                >
+                  <div
+                    className={`flex items-end gap-2 sm:gap-3 md:gap-4 ${visibleChartData.length > 8 ? "overflow-x-auto pb-2" : "justify-center"}`}
+                    style={{ minHeight: "200px" }}
+                  >
+                    {visibleChartData.map((item, idx) => {
+                      const maxVal = scoresChartData[0]?.value || 100;
+                      const barHeight = Math.max((item.value / Math.max(maxVal, 1)) * 160, 16);
+                      const barColors = [
+                        "#004080",
+                        "#008c54",
+                        "#f37021",
+                        "#0d5aa7",
+                        "#16a34a",
+                        "#d97706",
+                        "#3b82f6",
+                        "#10b981",
+                        "#ef4444",
+                        "#8b5cf6",
+                        "#6b7280",
+                        "#ec4899",
+                        "#14b8a6",
+                        "#f59e0b",
+                        "#6366f1",
+                      ];
+                      const barColor = item.isMain
+                        ? "#004080"
+                        : (barColors[idx % barColors.length] ?? "#6b7280");
+
+                      return (
+                        <div
+                          key={item.jobId}
+                          className="flex flex-col items-center gap-1.5 animate-in fade-in"
+                          style={{
+                            animationDelay: `${idx * 50}ms`,
+                            minWidth: visibleChartData.length > 8 ? "56px" : undefined,
+                            flex: visibleChartData.length <= 8 ? "1 1 0" : undefined,
+                            maxWidth: "100px",
+                          }}
+                        >
+                          <span
+                            className={`text-[10px] sm:text-xs tabular-nums font-bold ${item.isMain ? "text-foreground" : "text-muted-foreground"}`}
+                          >
+                            {item.value}%
+                          </span>
+                          <div
+                            className="w-full flex flex-col justify-end"
+                            style={{ height: "160px" }}
+                          >
+                            <div
+                              className="w-full rounded-t-lg transition-all duration-700 ease-out hover:opacity-80"
+                              style={{
+                                height: `${barHeight}px`,
+                                background: item.isMain
+                                  ? `linear-gradient(180deg, ${barColor} 0%, ${barColor}cc 100%)`
+                                  : `linear-gradient(180deg, ${barColor}99 0%, ${barColor}66 100%)`,
+                                boxShadow: item.isMain ? `0 -4px 16px ${barColor}33` : undefined,
+                                minWidth: "24px",
+                              }}
+                            />
+                          </div>
+                          <span
+                            className={`text-[9px] sm:text-[10px] text-center leading-tight line-clamp-2 ${
+                              item.isMain
+                                ? "font-semibold text-foreground"
+                                : "text-muted-foreground"
+                            }`}
+                            title={item.label}
+                            style={{ minHeight: "24px" }}
+                          >
+                            {item.label.length > 14 ? item.label.slice(0, 12) + "…" : item.label}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {hasMoreScores && (
+                    <div className="mt-4 text-center">
+                      <button
+                        type="button"
+                        className="text-xs font-medium transition-colors hover:underline"
+                        style={{ color: "#004080" }}
+                        onClick={() => setShowAllScores(!showAllScores)}
+                      >
+                        {showAllScores
+                          ? "Voir moins"
+                          : `Voir les ${scoresChartData.length - INITIAL_VISIBLE} autres métiers`}
+                      </button>
+                    </div>
+                  )}
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Fiche métier RH */}
+          <Card
+            className="border border-border bg-card animate-in fade-in slide-in-from-bottom-4 duration-500"
+            style={{ animationDelay: "150ms" }}
+          >
+            <CardContent className="p-5 md:p-6">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="h-8 w-8 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                </div>
+                <h2 className="text-base font-heading font-semibold text-foreground">
+                  Fiche métier RH
+                </h2>
+              </div>
+              <div className="space-y-5">
+                {fiche?.description && (
+                  <div>
+                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                      Description du métier
+                    </p>
+                    <p className="text-sm text-foreground leading-relaxed">{fiche.description}</p>
+                  </div>
+                )}
+                {(fiche?.salary ?? fiche?.hiringRate ?? fiche?.turnoverRate) && (
+                  <>
+                    <Separator className="bg-border" />
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {fiche?.salary && (
+                        <div className="rounded-lg border border-border bg-muted/30 p-3">
+                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                            Salaire
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">{fiche.salary}</p>
+                        </div>
+                      )}
+                      {fiche?.hiringRate != null && (
+                        <div className="rounded-lg border border-success/20 bg-success/5 p-3">
+                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                            Taux d&apos;embauche
+                          </p>
+                          <p className="text-sm font-semibold text-success">{fiche.hiringRate} %</p>
+                        </div>
+                      )}
+                      {fiche?.turnoverRate != null && (
+                        <div className="rounded-lg border border-border bg-muted/30 p-3">
+                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                            Turnover
+                          </p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {fiche.turnoverRate} %
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+                <Separator className="bg-border" />
+                <div>
+                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                    Pourquoi ce métier te correspond
+                  </p>
+                  <p className="text-sm text-foreground/80 leading-relaxed">
+                    {analysis.explanation}
+                  </p>
+                </div>
+                {Array.isArray(fiche?.indicators) && fiche.indicators.length > 0 && (
+                  <>
+                    <Separator className="bg-border" />
+                    <div>
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                        Autres indicateurs
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {fiche.indicators.map((ind, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2"
+                          >
+                            <span className="text-xs text-muted-foreground">{ind.label}</span>
+                            <span className="text-xs font-medium text-foreground">
+                              {String(ind.value)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+                {fiche?.videoUrl && (
+                  <>
+                    <Separator className="bg-border" />
+                    <div>
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                        Vidéo explicative
+                      </p>
+                      <a
+                        href={fiche.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
+                      >
+                        Voir la vidéo du métier →
+                      </a>
+                    </div>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* CTA Contact */}
+          <Card
+            className="border border-primary/30 bg-primary/5 animate-in fade-in slide-in-from-bottom-4 duration-500"
+            style={{ animationDelay: "200ms" }}
+          >
+            <CardContent className="p-5 md:p-8 text-center">
+              <h3 className="text-lg font-heading font-semibold text-foreground mb-2">
+                Intéressé par ce métier ?
+              </h3>
+              <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
+                L&apos;équipe SupdesRH peut t&apos;aider à trouver une alternance ou un stage dans
+                ce domaine.
+              </p>
+              <Button
+                onClick={handleContact}
+                disabled={contactLoading}
+                className="h-11 px-10 text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:scale-105"
+              >
+                {contactLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Envoi…
+                  </>
+                ) : (
+                  "Être contacté par SupdesRH"
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Actions secondaires */}
+          <div
+            className="flex gap-3 justify-center pb-6 animate-in fade-in duration-500"
+            style={{ animationDelay: "300ms" }}
+          >
+            <Button
+              variant="outline"
+              className="h-9 px-5 text-xs border-border text-muted-foreground hover:text-foreground transition-all duration-200"
+              onClick={() => navigate("/quiz/start")}
+            >
+              Nouveau quiz
+            </Button>
+            <Button
+              variant="outline"
+              className="h-9 px-5 text-xs border-border text-muted-foreground hover:text-foreground transition-all duration-200"
+              onClick={() => navigate("/sessions")}
+            >
+              Mes sessions
+            </Button>
           </div>
         </div>
       </main>

@@ -1,7 +1,5 @@
 "use client";
 
-import * as React from "react";
-
 export interface DateRangeFilterProps {
   dateFrom: string;
   dateTo: string;

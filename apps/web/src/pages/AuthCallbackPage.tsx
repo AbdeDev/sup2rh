@@ -32,7 +32,16 @@ export default function AuthCallbackPage() {
           return;
         }
 
-        await supabase.from("profiles").upsert({ id: data.session.user.id }, { onConflict: "id" });
+        const { error: upsertError } = await supabase
+          .from("profiles")
+          .upsert(
+            { id: data.session.user.id, email: data.session.user.email ?? undefined },
+            { onConflict: "id" },
+          );
+        if (upsertError) {
+          // Ne pas bloquer : la table profiles peut être absente ou RLS restreindre
+          console.warn("[Auth] profiles upsert:", upsertError.message);
+        }
 
         setStatus("Connexion réussie !");
         setSuccess(true);
