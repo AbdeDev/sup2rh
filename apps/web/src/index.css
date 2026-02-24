@@ -239,6 +239,19 @@ html {
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Logos : couleurs fixes, non impactés par dark/light mode */
+.logo-theme-safe {
+  filter: none !important;
+  -webkit-filter: none !important;
+  color-scheme: only light;
+  forced-color-adjust: none;
+  opacity: 1 !important;
+}
+.dark .logo-theme-safe {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
 /* Palette SupdesRH — Bleu #162728, Blanc #FFFFFF, Bleu #004080, Vert #008C54, Orange #F37021, Gris #6B7280 */
 .dark {
   color-scheme: dark;

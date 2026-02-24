@@ -11,9 +11,9 @@ security:
         dev:
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
-        # Routes API sans auth : login admin + debug (dev)
+        # Routes API publiques (pas d'authentification)
         public_api:
-            pattern: ^/api/(admin/login|debug)
+            pattern: ^/api/(admin/login|debug|jobs|health)
             security: false
         main:
             lazy: true

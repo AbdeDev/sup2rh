@@ -5,17 +5,23 @@ export interface ApiError {
   errors?: string[];
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(
+  endpoint: string,
+  options: RequestInit = {},
+  retried = false,
+): Promise<T> {
   const { supabase } = await import("./supabase");
 
-  const {
-    data: { session: authSession },
-  } = await supabase.auth.getSession();
+  let authSession = (await supabase.auth.getSession()).data.session;
+  if (!authSession?.access_token && !retried) {
+    const { data } = await supabase.auth.refreshSession();
+    authSession = data.session;
+  }
   const token = authSession?.access_token;
 
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
 
   if (token) {
@@ -27,10 +33,38 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers,
   });
 
+  if (response.status === 401 && !retried) {
+    const { data } = await supabase.auth.refreshSession();
+    const newToken = data.session?.access_token;
+    if (newToken) {
+      const newHeaders: Record<string, string> = {
+        "Content-Type": "application/json",
+        ...(options.headers as Record<string, string>),
+        Authorization: `Bearer ${newToken}`,
+      };
+      return request<T>(endpoint, { ...options, headers: newHeaders }, true);
+    }
+  }
+
   if (!response.ok) {
-    const error: ApiError = await response.json().catch(() => ({
-      message: `HTTP ${response.status}: ${response.statusText}`,
-    }));
+    let error: ApiError;
+    const contentType = response.headers.get("content-type");
+    if (contentType?.includes("application/json")) {
+      error = await response.json().catch(() => ({
+        message: `HTTP ${response.status}: ${response.statusText}`,
+      }));
+    } else {
+      error = {
+        message:
+          response.status === 401
+            ? "Session expirée. Reconnecte-toi."
+            : response.status === 404
+              ? "Ressource introuvable."
+              : response.status === 403
+                ? "Accès refusé."
+                : `Erreur serveur (${response.status}). Vérifie que l'API est démarrée.`,
+      };
+    }
     throw new Error(error.message || `HTTP ${response.status}`);
   }
 
@@ -90,7 +124,13 @@ export async function submitContactRequest(data: {
 }
 
 export async function getJobs(): Promise<{ items: JobFiche[] }> {
-  return request<{ items: JobFiche[] }>("/jobs");
+  const response = await fetch(`${API_BASE_URL}/jobs`, {
+    headers: { Accept: "application/json" },
+  });
+  if (!response.ok) {
+    throw new Error(`Impossible de charger les fiches métiers (${response.status}).`);
+  }
+  return response.json();
 }
 
 export async function submitFeedback(data: {
@@ -136,6 +176,12 @@ export async function getQuizSessions(): Promise<{ items: QuizSession[] }> {
 
 export async function getQuizSession(id: string): Promise<QuizSessionWithAnswers> {
   return request<QuizSessionWithAnswers>(`/quiz/session/${id}`);
+}
+
+export async function deleteQuizSession(id: string): Promise<{ message: string }> {
+  return request<{ message: string }>(`/quiz/session/${id}`, {
+    method: "DELETE",
+  });
 }
 
 // Quiz Answers

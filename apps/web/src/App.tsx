@@ -12,6 +12,8 @@ import { FichesPage } from "./pages/FichesPage";
 import { VerifyPage } from "./pages/VerifyPage";
 import { SessionsPage } from "./pages/SessionsPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
+import { LegalConditionsPage } from "./pages/LegalConditionsPage";
+import { LegalPrivacyPage } from "./pages/LegalPrivacyPage";
 
 export default function App() {
   return (
@@ -23,6 +25,8 @@ export default function App() {
       <Route path="/check-email" element={<CheckEmailPage />} />
       <Route path="/verify" element={<VerifyPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <Route path="/legal/conditions" element={<LegalConditionsPage />} />
+      <Route path="/legal/confidentialite" element={<LegalPrivacyPage />} />
 
       {/* Private */}
       <Route

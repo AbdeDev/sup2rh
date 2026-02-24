@@ -98,7 +98,7 @@ final class QuizSessionController extends AbstractController
         }
 
         // Vérifier que la session appartient à l'utilisateur
-        if ($session->getUserId() !== $userId) {
+        if (strtolower($session->getUserId()) !== strtolower($userId)) {
             return $this->json(['message' => 'Access denied'], 403);
         }
 
@@ -122,5 +122,29 @@ final class QuizSessionController extends AbstractController
             'scores' => $session->getScores(),
             'answers' => $answers,
         ]);
+    }
+
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
+    #[IsGranted('ROLE_USER')]
+    public function delete(string $id, QuizSessionRepository $repository, EntityManagerInterface $em): JsonResponse
+    {
+        /** @var AuthUser $user */
+        $user = $this->getUser();
+        $userId = $user->getUserIdentifier();
+
+        $session = $repository->find($id);
+
+        if (!$session) {
+            return $this->json(['message' => 'Session not found'], 404);
+        }
+
+        if (strtolower($session->getUserId()) !== strtolower($userId)) {
+            return $this->json(['message' => 'Access denied'], 403);
+        }
+
+        $em->remove($session);
+        $em->flush();
+
+        return $this->json(['message' => 'Session supprimée']);
     }
 }

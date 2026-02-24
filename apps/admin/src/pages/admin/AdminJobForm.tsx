@@ -138,15 +138,19 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 dark:bg-black/60 backdrop-blur-sm">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-border bg-card text-card-foreground shadow-xl dark:shadow-2xl dark:border-border animate-in scale-in duration-200">
-        <CardHeader className="flex items-center justify-between pb-3 border-b border-border">
-          <h2 className="text-lg font-semibold text-foreground">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-border bg-card text-card-foreground shadow-2xl rounded-2xl animate-in scale-in duration-200">
+        <CardHeader className="flex items-center justify-between pb-3 px-6 pt-5 border-b border-border">
+          <h2 className="text-lg font-heading font-bold text-foreground">
             {job ? "Modifier la fiche métier" : "Nouvelle fiche métier"}
           </h2>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          >
             <X className="h-4 w-4" />
-          </Button>
+          </button>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -316,24 +320,24 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-3 border-t border-border mt-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                className="h-9 text-sm flex-1 border-border text-muted-foreground hover:text-foreground transition-all duration-200"
+                className="h-10 text-sm flex-1 rounded-xl border-border text-muted-foreground hover:text-foreground transition-all duration-200"
               >
                 Annuler
               </Button>
               <Button
                 type="submit"
                 disabled={loading}
-                className="h-9 text-sm flex-1 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:scale-[1.02]"
+                className="h-10 text-sm flex-1 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:scale-[1.01] shadow-sm"
               >
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Enregistrement...
+                    Enregistrement…
                   </>
                 ) : (
                   "Enregistrer"

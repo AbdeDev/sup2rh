@@ -36,12 +36,30 @@ final class QuizAnalyzeController extends AbstractController
             return $this->json(['message' => 'Session not found'], 404);
         }
 
-        if ($session->getUserId() !== $userId) {
+        if (strtolower($session->getUserId()) !== strtolower($userId)) {
             return $this->json(['message' => 'Access denied'], 403);
         }
 
         if ($session->getAnswers()->isEmpty()) {
             return $this->json(['message' => 'No answers found for this session'], 422);
+        }
+
+        $cachedScores = $session->getScores();
+        $cachedJobId = $session->getFinalJobId();
+        if ($cachedJobId && $cachedScores && !empty($cachedScores)) {
+            $job = $jobRepository->find($cachedJobId);
+            $payload = [
+                'jobId' => $cachedJobId,
+                'confidence' => max($cachedScores) ?: 0.5,
+                'explanation' => $job instanceof Job
+                    ? sprintf('Vos réponses indiquent une affinité avec le profil « %s ».', $job->getName())
+                    : 'Profil analysé avec succès.',
+                'scores' => $cachedScores,
+            ];
+            if ($job instanceof Job) {
+                $payload['job'] = $this->jobToArray($job);
+            }
+            return $this->json($payload, 200);
         }
 
         try {
