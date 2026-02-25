@@ -8,6 +8,9 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { supabase } from "../lib/supabase";
 
+const OTP_COOLDOWN_MS = 60_000;
+const OTP_LAST_SENT_KEY = "supdesrh_otp_last_sent_at";
+
 function isRateLimitError(error: { message?: string; status?: number }): boolean {
   const msg = (error?.message ?? "").toLowerCase();
   return (
@@ -24,9 +27,21 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const now = Date.now();
+  const lastSentAt = Number(localStorage.getItem(OTP_LAST_SENT_KEY) || "0");
+  const remainingMs = Math.max(0, OTP_COOLDOWN_MS - (now - lastSentAt));
+  const isCooldownActive = remainingMs > 0;
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+
+    if (isCooldownActive) {
+      const remainingSec = Math.ceil(remainingMs / 1000);
+      setError(`Patiente ${remainingSec}s avant de redemander un lien.`);
+      return;
+    }
+
     const trimmed = email.trim();
     setLoading(true);
 
@@ -55,6 +70,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       return;
     }
 
+    localStorage.setItem(OTP_LAST_SENT_KEY, String(Date.now()));
     navigate(`/check-email?email=${encodeURIComponent(trimmed)}`);
   }
 
@@ -99,13 +115,15 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
             <Button
               type="submit"
               className="w-full h-11 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-semibold transition-all duration-200 hover:scale-[1.01] shadow-sm"
-              disabled={loading}
+              disabled={loading || isCooldownActive}
             >
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Envoi en cours…
                 </>
+              ) : isCooldownActive ? (
+                `Réessaie dans ${Math.ceil(remainingMs / 1000)}s`
               ) : (
                 "Recevoir le lien magique"
               )}
