@@ -1,0 +1,33 @@
+# =============================================================================
+# Sup2Rh — Docker Compose (développement local)
+# Usage: docker compose up
+# =============================================================================
+
+services:
+  # ── Backend Symfony API ──
+  backend:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    env_file:
+      - ./backend/api/.env
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: "1"
+      RUN_MIGRATIONS: "true"
+    volumes:
+      - ./backend/api:/var/www/html
+      - backend_vendor:/var/www/html/vendor
+      - backend_var:/var/www/html/var
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  backend_vendor:
+  backend_var:

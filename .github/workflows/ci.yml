@@ -1,0 +1,86 @@
+# =============================================================================
+# CI — Lint, Typecheck, Build
+# Déclenché sur chaque PR vers main/dev et push sur main/dev
+# =============================================================================
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main, dev]
+  push:
+    branches: [main, dev]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Frontend (Bun) ──
+  frontend:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Build Web
+        run: bun run build:web
+
+      - name: Build Admin
+        run: bun run build:admin
+
+      - name: Build Landing
+        run: bun run build:landing
+
+  # ── Backend (PHP / Symfony) ──
+  backend:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: intl, pdo_pgsql, zip, opcache
+          tools: composer:v2
+
+      - name: Validate composer
+        run: composer validate
+
+      - name: Setup env
+        run: cp .env.example .env
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Lint YAML config
+        run: php bin/console lint:yaml config --env=dev
+
+      - name: Lint container
+        run: php bin/console lint:container --env=dev
+
+      - name: PHPUnit
+        run: |
+          if [ -d tests ] && [ "$(find tests -name '*Test.php' | head -1)" ]; then
+            vendor/bin/phpunit
+          else
+            echo "No tests found, skipping"
+          fi
