@@ -130,10 +130,27 @@ L'admin peut consulter **Sessions de quiz** pour voir :
 
 ## Déploiement (prod)
 
-1. **Variables d'environnement** : configure `VITE_API_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` pour chaque app (web, admin, landing).
-2. **API** : déploie le backend Symfony (PHP) avec `DATABASE_URL` pointant vers la base Supabase.
-3. **CORS** : configure les origines autorisées dans l'API pour les domaines de prod.
-4. **Supabase** : ajoute les URLs de redirection de prod dans Authentication → URL Configuration.
+Voir le guide complet : **[DEPLOYMENT.md](DEPLOYMENT.md)**
+
+**Résumé rapide :**
+
+| Service         | Plateforme          | Coût    |
+| --------------- | ------------------- | ------- |
+| Backend API     | Koyeb (Docker)      | Gratuit |
+| Web App         | Cloudflare Pages    | Gratuit |
+| Admin App       | Cloudflare Pages    | Gratuit |
+| Landing Page    | Cloudflare Pages    | Gratuit |
+| Base de données | Supabase (Postgres) | Gratuit |
+
+**CI/CD automatisé :**
+
+- Push sur `dev`/`main` → CI (lint, typecheck, build, tests)
+- Tag `vX.Y.Z` → Build Docker + Push GHCR + GitHub Release
+
+```bash
+# Créer une release
+git tag v1.0.0 && git push origin v1.0.0
+```
 
 ---
 

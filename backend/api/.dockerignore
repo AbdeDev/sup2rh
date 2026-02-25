@@ -1,0 +1,11 @@
+.git
+.github
+var/cache
+var/log
+vendor
+node_modules
+tests
+.env.local
+.env.dev
+.env.test
+docker-compose*.yml
