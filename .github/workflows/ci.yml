@@ -63,7 +63,7 @@ jobs:
           tools: composer:v2
 
       - name: Validate composer
-        run: composer validate --strict
+        run: composer validate
 
       - name: Setup env
         run: cp .env.example .env

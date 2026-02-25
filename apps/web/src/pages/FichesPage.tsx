@@ -168,7 +168,7 @@ export function FichesPage() {
                           )}
                         </div>
                       </div>
-                      {(job.salary || job.hiringRate != null || job.turnover) && (
+                      {(job.salary || job.hiringRate != null || job.turnoverRate) && (
                         <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
                           {job.salary && (
                             <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground rounded-lg bg-muted/50 px-2 py-1">
