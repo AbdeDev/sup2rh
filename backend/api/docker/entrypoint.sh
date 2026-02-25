@@ -15,4 +15,7 @@ if [ "$RUN_MIGRATIONS" = "true" ]; then
     php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration 2>&1 || true
 fi
 
+# Ensure runtime user can write Symfony cache/log files
+chown -R www-data:www-data /var/www/html/var
+
 exec "$@"
