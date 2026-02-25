@@ -43,7 +43,7 @@
     "typecheck:admin": "bun --cwd apps/admin tsc -p tsconfig.json --noEmit",
     "typecheck:packages": "tsc -p tsconfig.packages.json --noEmit",
     "typecheck": "bun run typecheck:packages && bun run typecheck:web && bun run typecheck:admin",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
@@ -56,5 +56,8 @@
   },
   "dependencies": {
     "recharts": "^3.7.0"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.57.1"
   }
 }
