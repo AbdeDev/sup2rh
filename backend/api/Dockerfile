@@ -45,7 +45,8 @@ COPY --from=vendor /app /var/www/html
 WORKDIR /var/www/html
 
 # Permissions
-RUN chown -R www-data:www-data var/ public/
+RUN mkdir -p var/cache var/log public \
+    && chown -R www-data:www-data var public
 
 # Build-time env for cache warmup (overridden at runtime)
 ENV APP_ENV=prod \
