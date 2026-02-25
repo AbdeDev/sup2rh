@@ -1,4 +1,6 @@
 {
+    "name": "supdesrh/api",
+    "description": "Sup2Rh backend API — Quiz d'orientation métiers RH",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
