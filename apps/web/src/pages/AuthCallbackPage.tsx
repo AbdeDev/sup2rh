@@ -18,20 +18,6 @@ export default function AuthCallbackPage() {
       try {
         const url = new URL(window.location.href);
         const code = url.searchParams.get("code");
-        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-        const callbackErrorCode = hashParams.get("error_code");
-        const lastLoginEmail = localStorage.getItem("supdesrh_last_login_email") || "";
-
-        if (callbackErrorCode === "otp_expired" || callbackErrorCode === "access_denied") {
-          setStatus("Lien invalide/expiré. Passe par le code email.");
-          setTimeout(() => {
-            navigate(
-              lastLoginEmail ? `/verify?email=${encodeURIComponent(lastLoginEmail)}` : "/login",
-              { replace: true },
-            );
-          }, 400);
-          return;
-        }
 
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
