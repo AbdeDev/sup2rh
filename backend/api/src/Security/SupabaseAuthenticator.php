@@ -119,6 +119,16 @@ final class SupabaseAuthenticator extends AbstractAuthenticator
             $request->server->get('REDIRECT_HTTP_AUTHORIZATION'),
         ];
 
+        // Proxy/CDN stacks may forward Authorization under unusual server keys.
+        foreach ($request->server->all() as $key => $value) {
+            if (!is_string($value)) {
+                continue;
+            }
+            if (str_contains((string) $key, 'AUTHORIZATION')) {
+                $candidates[] = $value;
+            }
+        }
+
         foreach ($candidates as $value) {
             if (!is_string($value)) {
                 continue;
