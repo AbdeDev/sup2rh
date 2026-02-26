@@ -10,6 +10,7 @@ import { supabase } from "../lib/supabase";
 
 const OTP_COOLDOWN_MS = 60_000;
 const OTP_LAST_SENT_KEY = "supdesrh_otp_last_sent_at";
+const LAST_LOGIN_EMAIL_KEY = "supdesrh_last_login_email";
 
 function isRateLimitError(error: { message?: string; status?: number }): boolean {
   const msg = (error?.message ?? "").toLowerCase();
@@ -71,7 +72,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
     }
 
     localStorage.setItem(OTP_LAST_SENT_KEY, String(Date.now()));
-    navigate(`/check-email?email=${encodeURIComponent(trimmed)}`);
+    localStorage.setItem(LAST_LOGIN_EMAIL_KEY, trimmed);
+    navigate(`/verify?email=${encodeURIComponent(trimmed)}`);
   }
 
   return (
@@ -84,7 +86,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
             </div>
             <div>
               <p className="text-xs font-semibold text-foreground">Connexion rapide</p>
-              <p className="text-[10px] text-muted-foreground">Un lien magique envoyé par email</p>
+              <p className="text-[10px] text-muted-foreground">
+                Un code de connexion envoyé par email
+              </p>
             </div>
           </div>
 
@@ -125,7 +129,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
               ) : isCooldownActive ? (
                 `Réessaie dans ${Math.ceil(remainingMs / 1000)}s`
               ) : (
-                "Recevoir le lien magique"
+                "Recevoir le code"
               )}
             </Button>
           </form>
