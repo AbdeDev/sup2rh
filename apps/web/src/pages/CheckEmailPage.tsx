@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { Mail, ArrowLeft, CheckCircle2, Loader2, Inbox } from "lucide-react";
 
 import { Button } from "../components/ui/button";
@@ -9,6 +9,7 @@ import { supabase } from "../lib/supabase";
 
 export function CheckEmailPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const email = searchParams.get("email") || "";
   const [resendLoading, setResendLoading] = useState(false);
   const [resendDone, setResendDone] = useState(false);
@@ -16,6 +17,7 @@ export function CheckEmailPage() {
 
   async function handleResend() {
     if (!email.trim()) return;
+    localStorage.setItem("supdesrh_last_login_email", email.trim());
     setResendError(null);
     setResendLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
@@ -52,9 +54,7 @@ export function CheckEmailPage() {
           <h1 className="text-xl font-heading font-bold text-foreground mb-2">
             Vérifie ta boîte mail
           </h1>
-          <p className="text-sm text-muted-foreground">
-            On t&apos;a envoyé un lien de connexion magique
-          </p>
+          <p className="text-sm text-muted-foreground">On t&apos;a envoyé un code de connexion</p>
         </div>
 
         <Card className="border border-border bg-card rounded-2xl shadow-lg">
@@ -79,17 +79,29 @@ export function CheckEmailPage() {
                 <div className="h-6 w-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-[10px] font-bold text-primary">
                   2
                 </div>
-                <p className="text-sm text-muted-foreground pt-0.5">Clique sur le lien reçu</p>
+                <p className="text-sm text-muted-foreground pt-0.5">
+                  Récupère le code dans l&apos;email
+                </p>
               </div>
               <div className="flex items-start gap-3">
                 <div className="h-6 w-6 rounded-full bg-success/10 border border-success/20 flex items-center justify-center shrink-0 text-[10px] font-bold text-success">
                   3
                 </div>
                 <p className="text-sm text-muted-foreground pt-0.5">
-                  Tu seras connecté automatiquement
+                  Saisis le code dans l&apos;application
                 </p>
               </div>
             </div>
+
+            {email && (
+              <Button
+                type="button"
+                className="w-full h-10 text-sm rounded-xl"
+                onClick={() => navigate(`/verify?email=${encodeURIComponent(email)}`)}
+              >
+                Entrer mon code
+              </Button>
+            )}
 
             <div className="p-3 rounded-xl border border-border bg-muted/30 flex items-start gap-2.5">
               <Inbox className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
@@ -114,10 +126,10 @@ export function CheckEmailPage() {
                 ) : resendDone ? (
                   <>
                     <CheckCircle2 className="h-4 w-4 mr-2 text-success" />
-                    Lien renvoyé !
+                    Code renvoyé !
                   </>
                 ) : (
-                  "Renvoyer le lien"
+                  "Renvoyer le code"
                 )}
               </Button>
             )}
