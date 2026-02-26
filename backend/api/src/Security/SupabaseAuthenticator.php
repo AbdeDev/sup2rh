@@ -43,10 +43,9 @@ final class SupabaseAuthenticator extends AbstractAuthenticator
             return false;
         }
 
-        // Si pas de header Authorization, ne pas déclencher l'authenticator
+        // Si pas de token Bearer, ne pas déclencher l'authenticator
         // (laisser Symfony gérer via access_control / IS_AUTHENTICATED_ANONYMOUSLY)
-        $authHeader = $request->headers->get('Authorization');
-        if (!$authHeader || !preg_match('/^Bearer\s+.+$/i', $authHeader)) {
+        if ($this->extractBearerToken($request) === null) {
             return false;
         }
 
@@ -55,13 +54,10 @@ final class SupabaseAuthenticator extends AbstractAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        $authHeader = $request->headers->get('Authorization');
-        
-        if (!$authHeader || !preg_match('/^Bearer\s+(.+)$/i', $authHeader, $matches)) {
+        $token = $this->extractBearerToken($request);
+        if ($token === null) {
             throw new AuthenticationException('Missing or invalid Authorization header');
         }
-
-        $token = $matches[1];
 
         $adminPayload = $this->adminTokenService->verify($token);
         if ($adminPayload !== null) {
@@ -112,5 +108,26 @@ final class SupabaseAuthenticator extends AbstractAuthenticator
             'message' => 'Authentication failed',
             'error' => $exception->getMessage(),
         ], Response::HTTP_UNAUTHORIZED);
+    }
+
+    private function extractBearerToken(Request $request): ?string
+    {
+        $candidates = [
+            $request->headers->get('Authorization'),
+            $request->headers->get('X-Forwarded-Authorization'),
+            $request->server->get('HTTP_AUTHORIZATION'),
+            $request->server->get('REDIRECT_HTTP_AUTHORIZATION'),
+        ];
+
+        foreach ($candidates as $value) {
+            if (!is_string($value)) {
+                continue;
+            }
+            if (preg_match('/^Bearer\s+(.+)$/i', trim($value), $matches) === 1) {
+                return $matches[1];
+            }
+        }
+
+        return null;
     }
 }
