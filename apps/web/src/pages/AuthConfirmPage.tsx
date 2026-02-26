@@ -15,7 +15,7 @@ function useQueryParam(name: string) {
 export function AuthConfirmPage() {
   const navigate = useNavigate();
   const tokenHash = useQueryParam("token_hash");
-  const type = (useQueryParam("type") ?? "email") as "email";
+  const type = useQueryParam("type") ?? "email";
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,14 +29,32 @@ export function AuthConfirmPage() {
     setError(null);
     setLoading(true);
 
-    const { data, error: verifyError } = await supabase.auth.verifyOtp({
-      token_hash: tokenHash,
-      type,
-    });
+    const preferredType = type.toLowerCase();
+    const candidateTypes = Array.from(new Set([preferredType, "magiclink", "signup", "email"]));
 
-    if (verifyError) {
+    let data:
+      | {
+          session: { user: { id: string; email?: string | null } } | null;
+        }
+      | undefined;
+    let verifyError: { message?: string } | null = null;
+
+    for (const candidate of candidateTypes) {
+      const result = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: candidate as "magiclink" | "signup" | "email",
+      });
+      if (!result.error) {
+        data = result.data as typeof data;
+        verifyError = null;
+        break;
+      }
+      verifyError = result.error as { message?: string };
+    }
+
+    if (verifyError || !data?.session) {
       setLoading(false);
-      setError(verifyError.message || "Lien invalide ou expiré.");
+      setError(verifyError?.message || "Lien invalide ou expiré.");
       return;
     }
 
