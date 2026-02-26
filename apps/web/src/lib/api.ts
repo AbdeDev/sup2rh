@@ -5,6 +5,27 @@ export interface ApiError {
   errors?: string[];
 }
 
+function getAccessTokenFromSupabaseStorage(): string | null {
+  try {
+    const key = Object.keys(localStorage).find(
+      (k) => k.startsWith("sb-") && k.endsWith("-auth-token"),
+    );
+    if (!key) return null;
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as
+      | { access_token?: string; currentSession?: { access_token?: string } }
+      | Array<{ access_token?: string }>;
+
+    if (Array.isArray(parsed)) {
+      return parsed[0]?.access_token ?? null;
+    }
+    return parsed.access_token ?? parsed.currentSession?.access_token ?? null;
+  } catch {
+    return null;
+  }
+}
+
 async function request<T>(
   endpoint: string,
   options: RequestInit = {},
@@ -17,7 +38,7 @@ async function request<T>(
     const { data } = await supabase.auth.refreshSession();
     authSession = data.session;
   }
-  const token = authSession?.access_token;
+  const token = authSession?.access_token ?? getAccessTokenFromSupabaseStorage();
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
