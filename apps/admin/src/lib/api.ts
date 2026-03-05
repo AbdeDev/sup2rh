@@ -51,6 +51,21 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     throw new Error(error.message || `HTTP ${response.status}`);
   }
 
+  // 204 No Content (common for DELETE endpoints)
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  const contentLength = response.headers.get("content-length");
+  if (contentLength === "0") {
+    return undefined as T;
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    return undefined as T;
+  }
+
   return response.json();
 }
 
@@ -120,7 +135,7 @@ export async function getJobs(): Promise<{ items: Job[] }> {
 }
 
 export async function getJob(id: string): Promise<Job> {
-  return request<Job>(`/admin/jobs/${id}`);
+  return request<Job>(`/admin/jobs/${encodeURIComponent(id)}`);
 }
 
 export async function createJob(job: CreateJobRequest): Promise<Job> {
@@ -131,14 +146,14 @@ export async function createJob(job: CreateJobRequest): Promise<Job> {
 }
 
 export async function updateJob(id: string, job: UpdateJobRequest): Promise<Job> {
-  return request<Job>(`/admin/jobs/${id}`, {
+  return request<Job>(`/admin/jobs/${encodeURIComponent(id)}`, {
     method: "PUT",
     body: JSON.stringify(job),
   });
 }
 
 export async function deleteJob(id: string): Promise<void> {
-  return request<void>(`/admin/jobs/${id}`, {
+  return request<void>(`/admin/jobs/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
 }
@@ -177,7 +192,7 @@ export async function getQuizzes(): Promise<{ items: QuizDefinition[] }> {
 }
 
 export async function getQuiz(id: string): Promise<QuizDefinition> {
-  return request<QuizDefinition>(`/admin/quizzes/${id}`);
+  return request<QuizDefinition>(`/admin/quizzes/${encodeURIComponent(id)}`);
 }
 
 export async function createQuiz(quiz: CreateQuizRequest): Promise<QuizDefinition> {
@@ -194,14 +209,14 @@ export interface UpdateQuizRequest {
 }
 
 export async function updateQuiz(id: string, data: UpdateQuizRequest): Promise<QuizDefinition> {
-  return request<QuizDefinition>(`/admin/quizzes/${id}`, {
+  return request<QuizDefinition>(`/admin/quizzes/${encodeURIComponent(id)}`, {
     method: "PUT",
     body: JSON.stringify(data),
   });
 }
 
 export async function deleteQuiz(id: string): Promise<void> {
-  return request<void>(`/admin/quizzes/${id}`, {
+  return request<void>(`/admin/quizzes/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
 }

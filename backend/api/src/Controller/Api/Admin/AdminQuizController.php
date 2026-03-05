@@ -33,7 +33,7 @@ final class AdminQuizController extends AbstractController
         return $this->json(['items' => $items]);
     }
 
-    #[Route('/{id}', name: 'get', methods: ['GET'], requirements: ['id' => '[0-9a-fA-F-]{36}'])]
+    #[Route('/{id}', name: 'get', methods: ['GET'])]
     public function get(string $id, QuizRepository $repository): JsonResponse
     {
         $quiz = $repository->find($id);
@@ -79,7 +79,7 @@ final class AdminQuizController extends AbstractController
         return $this->json($this->quizToArray($quiz), 201);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT'], requirements: ['id' => '[0-9a-fA-F-]{36}'])]
+    #[Route('/{id}', name: 'update', methods: ['PUT'])]
     public function update(string $id, Request $request, QuizRepository $repository, JobRepository $jobRepository, EntityManagerInterface $em): JsonResponse
     {
         $quiz = $repository->find($id);
@@ -110,7 +110,7 @@ final class AdminQuizController extends AbstractController
         return $this->json($this->quizToArray($quiz));
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '[0-9a-fA-F-]{36}'])]
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(string $id, QuizRepository $repository, EntityManagerInterface $em): JsonResponse
     {
         $quiz = $repository->find($id);
