@@ -32,7 +32,7 @@ final class AdminJobController extends AbstractController
         return $this->json(['items' => $items]);
     }
 
-    #[Route('/{id}', name: 'get', methods: ['GET'], requirements: ['id' => '[a-zA-Z0-9_-]+'])]
+    #[Route('/{id}', name: 'get', methods: ['GET'])]
     public function get(string $id, JobRepository $repository): JsonResponse
     {
         $job = $repository->find($id);
@@ -80,7 +80,7 @@ final class AdminJobController extends AbstractController
         return $this->json($this->jobToArray($job), 201);
     }
 
-    #[Route('/{id}', name: 'update', methods: ['PUT'], requirements: ['id' => '[a-zA-Z0-9_-]+'])]
+    #[Route('/{id}', name: 'update', methods: ['PUT'])]
     public function update(string $id, Request $request, JobRepository $repository, EntityManagerInterface $em): JsonResponse
     {
         $job = $repository->find($id);
@@ -119,7 +119,7 @@ final class AdminJobController extends AbstractController
         return $this->json($this->jobToArray($job));
     }
 
-    #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '[a-zA-Z0-9_-]+'])]
+    #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(string $id, JobRepository $repository, EntityManagerInterface $em): JsonResponse
     {
         $job = $repository->find($id);
