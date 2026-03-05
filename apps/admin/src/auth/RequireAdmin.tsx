@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 export function RequireAdmin({ children }: { children: ReactNode }) {
   const { session, loading: sessionLoading, hasAdminToken } = useSession();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const checkedRef = useRef(false);
 
@@ -18,8 +19,14 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
     if (session || hasAdminToken) {
       checkedRef.current = true;
       getMe()
-        .then((user) => setIsAdmin(user.role === "ADMIN"))
-        .catch(() => setIsAdmin(false))
+        .then((user) => {
+          setAuthError(null);
+          setIsAdmin(user.role === "ADMIN");
+        })
+        .catch((e: unknown) => {
+          setAuthError(e instanceof Error ? e.message : "Erreur d'authentification");
+          setIsAdmin(false);
+        })
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
@@ -50,6 +57,11 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
             <code className="bg-muted px-1 rounded">bun run dev:api</code> tourne et que ton profil
             a le rôle ADMIN.
           </p>
+          {authError && (
+            <p className="text-[11px] text-muted-foreground">
+              Détail: <code className="bg-muted px-1 rounded">{authError}</code>
+            </p>
+          )}
         </div>
       </div>
     );

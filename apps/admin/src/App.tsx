@@ -15,7 +15,7 @@ import { AdminFeedbacksPage } from "./pages/admin/AdminFeedbacksPage";
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/admin" replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
 
       {/* Public */}
       <Route path="/login" element={<LoginPage />} />
