@@ -138,6 +138,30 @@ docs: met à jour le README
 
 Types : `feat` `fix` `refactor` `docs` `style` `test` `chore` `ci` `build`
 
+### Version automatique (tags vX.Y.Z)
+
+À chaque **push sur `main`**, la CI crée un tag de version selon les commits depuis le dernier tag :
+
+| Type de commit                                   | Bump      | Exemple         |
+| ------------------------------------------------ | --------- | --------------- |
+| `fix:` ou autre (sans feat)                      | **patch** | v1.0.0 → v1.0.1 |
+| `feat:`                                          | **minor** | v1.0.0 → v1.1.0 |
+| `feat!:` ou message contenant `BREAKING CHANGE:` | **major** | v1.1.0 → v2.0.0 |
+
+**Pour la prochaine fois — déclencher un major (ex. v2.0.0) :**
+
+```bash
+# Option 1 : feat! dans le message
+git commit -m "feat!: grands domaines RH, quiz redesigné, auth sécurisée"
+
+# Option 2 : BREAKING CHANGE en fin de message
+git commit -m "feat(web): refonte complète du quiz
+
+BREAKING CHANGE: nouvelle structure des questions et résultats"
+```
+
+Ensuite : `git push origin main` → la CI créera automatiquement le tag (ex. `v2.0.0`).
+
 ---
 
 ## Environnements
@@ -190,11 +214,11 @@ Voir [DEPLOYMENT.md](DEPLOYMENT.md) pour le guide complet.
 
 ### Automatique sur GitHub Actions
 
-| Déclencheur       | Pipeline                                         |
-| ----------------- | ------------------------------------------------ |
-| PR → `main`/`dev` | Lint + Typecheck + Build (bloque la PR si KO)    |
-| Push → `main`     | CI + **auto-tag semver** (feat→minor, fix→patch) |
-| Tag `v*`          | Build Docker + Push GHCR + GitHub Release        |
+| Déclencheur       | Pipeline                                                                |
+| ----------------- | ----------------------------------------------------------------------- |
+| PR → `main`/`dev` | Lint + Typecheck + Build (bloque la PR si KO)                           |
+| Push → `main`     | CI + **auto-tag semver** (voir section "Version automatique" ci-dessus) |
+| Tag `v*`          | Build Docker + Push GHCR + GitHub Release                               |
 
 ### Local (avant push)
 
