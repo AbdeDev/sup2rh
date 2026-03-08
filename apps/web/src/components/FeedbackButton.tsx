@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MessageCircle, X, Loader2, Star } from "lucide-react";
+import { toast } from "sonner";
 
 import { submitFeedback } from "../lib/api";
 import { Button } from "./ui/button";
@@ -26,7 +27,7 @@ export function FeedbackButton() {
         setSent(false);
       }, 1500);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erreur lors de l'envoi");
+      toast.error(err instanceof Error ? err.message : "Erreur lors de l'envoi");
     } finally {
       setLoading(false);
     }
@@ -90,7 +91,7 @@ export function FeedbackButton() {
                   </div>
                 </div>
                 <Textarea
-                  placeholder="Ton avis sur SupdesRH…"
+                  placeholder="Ton avis sur SUP des RH…"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows={4}

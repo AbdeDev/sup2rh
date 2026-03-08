@@ -1,0 +1,96 @@
+# =============================================================================
+# Sup2Rh — Docker Compose STAGING
+#
+# Environnement de test pré-production : réplique la prod mais isolé.
+# Utilise les images Docker buildées localement (pas de registre requis).
+#
+# Usage :
+#   docker compose -f docker-compose.staging.yml up --build -d
+#   docker compose -f docker-compose.staging.yml logs -f
+#   docker compose -f docker-compose.staging.yml down
+#
+# Variables requises dans .env.staging (copier depuis .env.staging.example) :
+#   DATABASE_URL, SUPABASE_PROJECT_URL, SUPABASE_JWT_AUD, CORS_ALLOW_ORIGIN
+# =============================================================================
+
+services:
+  # ── Backend Symfony API ──────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend/api
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "8001:80" # port 8001 pour éviter conflit avec le dev local (8000)
+    env_file:
+      - .env.staging
+    environment:
+      APP_ENV: staging
+      APP_DEBUG: "0"
+      RUN_MIGRATIONS: "true"
+    volumes:
+      # Pas de volume de code source (test de l'image finale, comme en prod)
+      - staging_var:/var/www/html/var
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/api/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - staging_net
+
+  # ── Nginx (reverse proxy + serve frontends buildés) ──────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "8080:80" # http://localhost:8080 → landing
+    volumes:
+      - ./docker/nginx/staging.conf:/etc/nginx/conf.d/default.conf:ro
+      - staging_landing:/usr/share/nginx/html/landing:ro
+      - staging_web:/usr/share/nginx/html/web:ro
+      - staging_admin:/usr/share/nginx/html/admin:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - staging_net
+
+  # ── Builder des frontends (one-shot, se termine après le build) ──────────────
+  frontend-builder:
+    image: oven/bun:latest
+    working_dir: /app
+    command: >
+      sh -c "
+        bun install --frozen-lockfile &&
+        PUBLIC_API_URL=http://localhost:8001 PUBLIC_WEB_URL=http://localhost:8080/web bun run build:landing &&
+        VITE_API_URL=http://localhost:8001 VITE_SUPABASE_URL=$$VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY=$$VITE_SUPABASE_ANON_KEY bun run build:web &&
+        VITE_API_URL=http://localhost:8001 VITE_SUPABASE_URL=$$VITE_SUPABASE_URL VITE_SUPABASE_ANON_KEY=$$VITE_SUPABASE_ANON_KEY bun run build:admin &&
+        cp -r apps/landing/dist/* /out/landing/ &&
+        cp -r apps/web/dist/* /out/web/ &&
+        cp -r apps/admin/dist/* /out/admin/ &&
+        echo 'Build terminé !'
+      "
+    volumes:
+      - .:/app:ro
+      - staging_landing:/out/landing
+      - staging_web:/out/web
+      - staging_admin:/out/admin
+    env_file:
+      - .env.staging
+    networks:
+      - staging_net
+    profiles:
+      - build # lancé uniquement via : docker compose --profile build up frontend-builder
+
+volumes:
+  staging_var:
+  staging_landing:
+  staging_web:
+  staging_admin:
+
+networks:
+  staging_net:
+    driver: bridge

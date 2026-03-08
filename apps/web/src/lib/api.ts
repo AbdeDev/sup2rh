@@ -247,6 +247,7 @@ export interface JobFiche {
   turnoverRate?: number;
   indicators?: JobFicheIndicator[];
   videoUrl?: string;
+  category?: string;
   createdAt: string;
 }
 

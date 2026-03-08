@@ -17,6 +17,10 @@ backend/api/public/bundles/
 .env.local
 .env.*.local
 !.env.example
+!.env.staging
+!.env.prod
+.env.staging.example
+.env.prod.example
 
 # IDE
 .cursor/

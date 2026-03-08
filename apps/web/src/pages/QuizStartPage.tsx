@@ -236,7 +236,7 @@ export function QuizStartPage() {
             <AppLogo className="h-9 w-9 shrink-0 object-contain" />
             <div className="hidden sm:block">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                SupdesRH
+                SUP des RH
               </p>
               <p className="text-[10px] text-muted-foreground leading-tight">Quiz d'orientation</p>
             </div>
@@ -356,7 +356,11 @@ export function QuizStartPage() {
             <Button
               onClick={handleNext}
               disabled={!canProceed || loading}
-              className="h-10 px-6 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-semibold transition-all duration-200 active:scale-[0.98] shadow-sm"
+              className="h-10 px-6 text-sm rounded-xl font-semibold transition-all duration-200 active:scale-[0.98] shadow-sm"
+              style={{
+                backgroundColor: canProceed ? "#004080" : "#6b7280",
+                color: "#ffffff",
+              }}
             >
               {loading ? (
                 <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />

@@ -4,10 +4,12 @@ import { X, Loader2, Plus, Trash2 } from "lucide-react";
 import {
   createJob,
   updateJob,
+  getJobCategories,
   type Job,
   type CreateJobRequest,
   type UpdateJobRequest,
   type JobIndicator,
+  type JobCategory,
 } from "../../lib/api";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -36,6 +38,16 @@ interface AdminJobFormProps {
 export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<JobCategory[]>([]);
+
+  useEffect(() => {
+    getJobCategories()
+      .then(({ items }) => setCategories(items))
+      .catch(() => {
+        /* silently ignore, fallback to empty list */
+      });
+  }, []);
+
   const [formData, setFormData] = useState({
     id: "",
     name: "",
@@ -44,6 +56,7 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
     hiringRate: "",
     turnoverRate: "",
     videoUrl: "",
+    category: "",
     indicators: [] as JobIndicator[],
   });
 
@@ -57,6 +70,7 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
         hiringRate: job.hiringRate?.toString() || "",
         turnoverRate: job.turnoverRate?.toString() || "",
         videoUrl: job.videoUrl || "",
+        category: job.category || "",
         indicators: parseIndicators(
           job.indicators as JobIndicator[] | Record<string, unknown> | undefined,
         ),
@@ -110,6 +124,7 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
           hiringRate: formData.hiringRate ? parseFloat(formData.hiringRate) : undefined,
           turnoverRate: formData.turnoverRate ? parseFloat(formData.turnoverRate) : undefined,
           videoUrl: formData.videoUrl || undefined,
+          category: formData.category || undefined,
           indicators: indicators.length ? indicators : undefined,
         };
         await updateJob(job.id, updateData);
@@ -125,6 +140,7 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
           hiringRate: formData.hiringRate ? parseFloat(formData.hiringRate) : undefined,
           turnoverRate: formData.turnoverRate ? parseFloat(formData.turnoverRate) : undefined,
           videoUrl: formData.videoUrl || undefined,
+          category: formData.category || undefined,
           indicators: indicators.length ? indicators : undefined,
         };
         await createJob(createData);
@@ -191,6 +207,31 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
                 required
                 className="h-9 text-sm"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category" className="text-xs text-muted-foreground">
+                Grand domaine RH
+              </Label>
+              <select
+                id="category"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">— Aucun domaine —</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.name}>
+                    {cat.emoji ? `${cat.emoji} ` : ""}
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-[10px] text-muted-foreground">
+                {categories.length > 0
+                  ? `${categories.length} domaines disponibles · Gérer dans "Domaines RH"`
+                  : "Aucun domaine créé — va dans Domaines RH pour en créer"}
+              </p>
             </div>
 
             <div className="space-y-2">

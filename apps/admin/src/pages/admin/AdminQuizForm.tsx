@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Loader2, Plus, Trash2 } from "lucide-react";
+import { X, Loader2, Plus, Trash2, GripVertical } from "lucide-react";
 
 import { createQuiz, updateQuiz, type QuizDefinition, type Job } from "../../lib/api";
 import { Button } from "../../components/ui/button";
@@ -14,47 +14,40 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 
+interface Question {
+  id: string;
+  text: string;
+  answers: Array<{ id: string; label: string }>;
+}
+
 interface AdminQuizFormProps {
   quiz?: QuizDefinition;
   jobs: Job[];
   onClose: () => void;
 }
 
+function makeId(prefix: string, num: number) {
+  return `${prefix}${num}`;
+}
+
 export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    jobId: "",
-    name: "",
-  });
-  const [questions, setQuestions] = useState<
-    Array<{ id: string; text: string; answers: Array<{ id: string; label: string }> }>
-  >([]);
-
-  const defaultQuestion = () => [
-    {
-      id: "q1",
-      text: "",
-      answers: [
-        { id: "a1", label: "" },
-        { id: "a2", label: "" },
-      ],
-    },
-  ];
+  const [formData, setFormData] = useState({ jobId: "", name: "" });
+  const [questions, setQuestions] = useState<Question[]>([]);
 
   useEffect(() => {
     if (quiz) {
-      setFormData({
-        jobId: quiz.jobId,
-        name: quiz.name,
-      });
+      setFormData({ jobId: quiz.jobId, name: quiz.name });
       setQuestions(quiz.questions);
     } else {
       setFormData((prev) => ({
         ...prev,
         jobId: prev.jobId || (jobs.length > 0 ? jobs[0].id : ""),
       }));
-      setQuestions((prev) => (prev.length ? prev : defaultQuestion()));
+      if (questions.length === 0) {
+        setQuestions([{ id: "q1", text: "", answers: [] }]);
+      }
     }
   }, [quiz]);
 
@@ -65,18 +58,8 @@ export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
   }, [quiz, jobs]);
 
   function addQuestion() {
-    const qNum = questions.length + 1;
-    setQuestions([
-      ...questions,
-      {
-        id: `q${qNum}`,
-        text: "",
-        answers: [
-          { id: "a1", label: "" },
-          { id: "a2", label: "" },
-        ],
-      },
-    ]);
+    const num = questions.length + 1;
+    setQuestions([...questions, { id: makeId("q", num), text: "", answers: [] }]);
   }
 
   function removeQuestion(index: number) {
@@ -89,33 +72,6 @@ export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
     setQuestions(updated);
   }
 
-  function addAnswer(questionIndex: number) {
-    const updated = [...questions];
-    const q = updated[questionIndex];
-    const aNum = q.answers.length + 1;
-    q.answers.push({ id: `a${aNum}`, label: "" });
-    setQuestions(updated);
-  }
-
-  function removeAnswer(questionIndex: number, answerIndex: number) {
-    const updated = [...questions];
-    updated[questionIndex].answers = updated[questionIndex].answers.filter(
-      (_, i) => i !== answerIndex,
-    );
-    setQuestions(updated);
-  }
-
-  function updateAnswer(
-    questionIndex: number,
-    answerIndex: number,
-    field: "id" | "label",
-    value: string,
-  ) {
-    const updated = [...questions];
-    updated[questionIndex].answers[answerIndex][field] = value;
-    setQuestions(updated);
-  }
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -124,26 +80,14 @@ export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
       setError("Sélectionne un métier RH");
       return;
     }
-
     if (questions.length === 0) {
       setError("Ajoute au moins une question");
       return;
     }
-
     for (const q of questions) {
       if (!q.text.trim()) {
         setError("Toutes les questions doivent avoir un texte");
         return;
-      }
-      if (q.answers.length < 2) {
-        setError("Chaque question doit avoir au moins 2 réponses");
-        return;
-      }
-      for (const a of q.answers) {
-        if (!a.label.trim()) {
-          setError("Toutes les réponses doivent avoir un libellé");
-          return;
-        }
       }
     }
 
@@ -155,10 +99,7 @@ export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
         questions: questions.map((q) => ({
           id: q.id,
           text: q.text,
-          answers: q.answers.map((a) => ({
-            id: a.id,
-            label: a.label,
-          })),
+          answers: q.answers,
         })),
       };
       if (quiz) {
@@ -176,8 +117,8 @@ export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-      <Card className="w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-border bg-card text-card-foreground shadow-2xl rounded-2xl animate-in scale-in duration-200">
-        <CardHeader className="flex items-center justify-between pb-3 px-6 pt-5 border-b border-border">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-border bg-card shadow-2xl rounded-2xl animate-in scale-in duration-200">
+        <CardHeader className="flex items-center justify-between pb-3 px-6 pt-5 border-b border-border sticky top-0 bg-card z-10">
           <h2 className="text-lg font-heading font-bold text-foreground">
             {quiz ? "Modifier le quiz" : "Nouveau quiz"}
           </h2>
@@ -189,16 +130,18 @@ export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
             <X className="h-4 w-4" />
           </button>
         </CardHeader>
-        <CardContent>
+
+        <CardContent className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-3 rounded-md border border-destructive/30 bg-destructive/10 text-destructive text-xs animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="p-3 rounded-md border border-destructive/30 bg-destructive/10 text-destructive text-xs animate-in fade-in">
                 {error}
               </div>
             )}
 
+            {/* Métier */}
             <div className="space-y-2">
-              <Label htmlFor="jobId" className="text-xs text-muted-foreground">
+              <Label className="text-xs text-muted-foreground">
                 Métier RH <span className="text-destructive">*</span>
               </Label>
               <Select
@@ -218,146 +161,111 @@ export function AdminQuizForm({ quiz, jobs, onClose }: AdminQuizFormProps) {
               </Select>
             </div>
 
+            {/* Nom */}
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-xs text-muted-foreground">
-                Nom du quiz <span className="text-destructive">*</span>
-              </Label>
+              <Label className="text-xs text-muted-foreground">Nom du quiz</Label>
               <Input
-                id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="ex: Quiz HR Business Partner"
-                required
                 className="h-9 text-sm"
               />
             </div>
 
-            <div className="space-y-4">
+            {/* Questions */}
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="text-xs text-muted-foreground">Questions</Label>
+                <Label className="text-xs text-muted-foreground">
+                  Questions ({questions.length})
+                </Label>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={addQuestion}
-                  className="h-8 text-xs"
+                  className="h-8 text-xs gap-1.5"
                 >
-                  <Plus className="h-3.5 w-3.5 mr-1.5" />
+                  <Plus className="h-3.5 w-3.5" />
                   Ajouter une question
                 </Button>
               </div>
 
-              {questions.map((question, qIndex) => (
-                <Card key={qIndex} className="border border-border bg-card">
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-foreground">
-                        Question {qIndex + 1}
-                      </span>
-                      {questions.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeQuestion(qIndex)}
-                          className="h-7 text-xs text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
+              {questions.length === 0 && (
+                <div className="rounded-lg border border-dashed border-border bg-muted/20 py-8 text-center text-sm text-muted-foreground">
+                  Aucune question — clique sur "Ajouter une question"
+                </div>
+              )}
 
-                    <div className="grid grid-cols-[80px_1fr] gap-2 items-center">
-                      <Label className="text-xs text-muted-foreground">ID</Label>
+              <div className="space-y-2">
+                {questions.map((question, qIndex) => (
+                  <div
+                    key={qIndex}
+                    className="group flex items-start gap-2 rounded-lg border border-border bg-muted/10 p-3"
+                  >
+                    <GripVertical className="h-5 w-5 text-muted-foreground/30 mt-0.5 shrink-0" />
+
+                    <div className="flex-1 grid grid-cols-[80px_1fr] gap-2 items-center">
                       <Input
                         value={question.id}
                         onChange={(e) => updateQuestion(qIndex, "id", e.target.value)}
                         placeholder="q1"
                         className="h-8 text-xs font-mono"
+                        title="ID de la question"
                       />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-xs text-muted-foreground">Texte</Label>
                       <Input
                         value={question.text}
                         onChange={(e) => updateQuestion(qIndex, "text", e.target.value)}
-                        placeholder="Texte de la question..."
+                        placeholder={`Question ${qIndex + 1}…`}
                         className="h-8 text-sm"
+                        autoFocus={!quiz && qIndex === questions.length - 1}
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-xs text-muted-foreground">Réponses</Label>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => addAnswer(qIndex)}
-                          className="h-7 text-xs"
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Ajouter
-                        </Button>
-                      </div>
-                      {question.answers.map((answer, aIndex) => (
-                        <div
-                          key={aIndex}
-                          className="grid grid-cols-[60px_1fr_auto] gap-2 items-center"
-                        >
-                          <Input
-                            value={answer.id}
-                            onChange={(e) => updateAnswer(qIndex, aIndex, "id", e.target.value)}
-                            placeholder="a1"
-                            className="h-8 text-xs font-mono"
-                          />
-                          <Input
-                            value={answer.label}
-                            onChange={(e) => updateAnswer(qIndex, aIndex, "label", e.target.value)}
-                            placeholder="Libellé de la réponse..."
-                            className="h-8 text-sm"
-                          />
-                          {question.answers.length > 2 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeAnswer(qIndex, aIndex)}
-                              className="h-8 w-8 text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    {questions.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeQuestion(qIndex)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8 flex items-center justify-center rounded text-destructive hover:bg-destructive/10 shrink-0"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {questions.length > 0 && (
+                <p className="text-[11px] text-muted-foreground">
+                  Les réponses sont gérées automatiquement par le moteur du quiz (Oui / Non /
+                  Parfois…).
+                </p>
+              )}
             </div>
 
-            <div className="flex gap-3 pt-3 border-t border-border mt-2">
+            {/* Footer */}
+            <div className="flex gap-3 pt-3 border-t border-border">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                className="h-10 text-sm flex-1 rounded-xl border-border text-muted-foreground hover:text-foreground transition-all duration-200"
+                className="flex-1 h-10 text-sm rounded-xl"
               >
                 Annuler
               </Button>
               <Button
                 type="submit"
                 disabled={loading}
-                className="h-10 text-sm flex-1 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:scale-[1.01] shadow-sm"
+                className="flex-1 h-10 text-sm rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
               >
                 {loading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Enregistrement…
                   </>
+                ) : quiz ? (
+                  "Mettre à jour"
                 ) : (
-                  "Enregistrer"
+                  "Créer le quiz"
                 )}
               </Button>
             </div>
