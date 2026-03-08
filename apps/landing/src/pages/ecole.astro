@@ -1,0 +1,567 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const WEB_APP_URL = import.meta.env.PUBLIC_WEB_URL || "http://localhost:5173";
+
+const formations = [
+  {
+    title: "Chargé des RH",
+    level: "Bac +3",
+    tag: "RNCP Niveau 6",
+    access: "Post Bac+2",
+    mode: "Alternance · Présentiel & Distanciel",
+    description: "Formation généraliste aux métiers des RH : recrutement, droit social, gestion de la paie, GPEC et développement des compétences. Classé 3ème Bachelor RH en France.",
+    competences: ["Recrutement & intégration", "Droit du travail", "Gestion de la paie", "GPEC"],
+    color: "#004080",
+    href: "https://www.supdesrh.com/alternance/post-bac-2/charge-des-rh/",
+  },
+  {
+    title: "Manager des RH — Filière RH",
+    level: "Bac +5",
+    tag: "RNCP Niveau 7",
+    access: "Post Bac+3 ou Bac+4",
+    mode: "Alternance",
+    description: "Mastère expert pour les profils issus d'une filière RH. Stratégie RH, management d'équipe, SIRH et transformation des organisations.",
+    competences: ["Stratégie RH", "Management d'équipe", "SIRH & digitalisation", "Conduite du changement"],
+    color: "#008c54",
+    href: "https://www.supdesrh.com/alternance/post-bac-3/manager-des-rh-filiere-rh/",
+  },
+  {
+    title: "Manager des RH — Toutes filières",
+    level: "Bac +5",
+    tag: "RNCP Niveau 7",
+    access: "Post Bac+3 ou Bac+4",
+    mode: "Alternance",
+    description: "Ouvert à tous les profils, y compris non-RH. Reconversion ou montée en compétences vers les postes RH stratégiques (HRBP, RRH, DRH).",
+    competences: ["Droit social avancé", "Développement RH", "Communication interne", "Pilotage RH"],
+    color: "#f37021",
+    href: "https://www.supdesrh.com/alternance/post-bac-3/manager-des-rh-toutes-filieres/",
+  },
+  {
+    title: "Manager des RH — Parcours international",
+    level: "Bac +5",
+    tag: "RNCP Niveau 7",
+    access: "Post Bac+3",
+    mode: "Alternance · Programme Erasmus",
+    description: "Spécialisation internationale : mobilité globale, droit social européen, management interculturel. Programme Erasmus+ et séjours à l'étranger inclus.",
+    competences: ["Mobilité internationale", "Management interculturel", "Droit social européen", "Erasmus+"],
+    color: "#6b21a8",
+    href: "https://www.supdesrh.com/alternance/post-bac-3/manager-des-rh-parcours-international/",
+  },
+  {
+    title: "Responsable Rémunération & Avantages Sociaux",
+    level: "Bac +6",
+    tag: "RNCP Niveau 7 — Executive MBA",
+    access: "Post Bac+5",
+    mode: "Alternance",
+    description: "Comp & Ben : conception des politiques de rémunération, épargne salariale, avantages sociaux et pilotage de la masse salariale. Le plus haut niveau de l'école.",
+    competences: ["Politique de rémunération", "Épargne salariale", "Avantages sociaux", "Masse salariale"],
+    color: "#0891b2",
+    href: "https://www.supdesrh.com/alternance/post-bac-5/responsable-remuneration-et-avantages-sociaux-comp-ben/",
+  },
+];
+
+const chiffres = [
+  { value: "27 ans", label: "D'expérience (depuis 1998)", icon: "🏫" },
+  { value: "100%", label: "Placement en alternance", icon: "✅" },
+  { value: "600+", label: "Entreprises partenaires", icon: "🤝" },
+  { value: "+8 500", label: "Alumnis actifs en France", icon: "🎓" },
+  { value: "95%", label: "Emploi dans les 6 mois", icon: "📈" },
+];
+
+const temoignages = [
+  {
+    initiales: "GC",
+    nom: "Geraldo Codjovi",
+    poste: "Apprenant en Mastère Manager des RH",
+    texte: "La pédagogie de SUP des RH m'a permis de développer des compétences concrètes directement applicables en entreprise. L'alternance a été une vraie chance.",
+    color: "#004080",
+  },
+  {
+    initiales: "RS",
+    nom: "Rebecca Siber-Tonne",
+    poste: "Apprenante en Mastère Manager des RH",
+    texte: "Une formation exigeante mais passionnante. Les intervenants sont tous des professionnels RH en activité, ce qui apporte une vraie valeur ajoutée au quotidien.",
+    color: "#008c54",
+  },
+  {
+    initiales: "YE",
+    nom: "Youmna El Boubou",
+    poste: "Directrice des Ressources Humaines",
+    entreprise: "Fondation Mérieux",
+    texte: "Alumna SUP des RH, cette formation m'a donné les clés pour évoluer rapidement. Aujourd'hui DRH, je conseille SUP des RH à tous mes collaborateurs RH.",
+    color: "#f37021",
+  },
+];
+
+const pedagogie = [
+  { icon: "🏢", title: "Pédagogie par l'alternance", desc: "Chaque étudiant alterne entre cours théoriques et immersion en entreprise. Un modèle qui garantit 100% d'insertion." },
+  { icon: "👩‍💼", title: "Intervenants professionnels", desc: "Tous nos formateurs sont DRH, RRH ou experts RH en activité. Les cours sont ancrés dans la réalité du marché." },
+  { icon: "🌍", title: "Réseau & ouverture internationale", desc: "Programme Erasmus+, partenariats en province, mobilité internationale pour les parcours avancés." },
+  { icon: "📱", title: "Accompagnement personnalisé", desc: "Un tuteur pédagogique dédié (C.A.R.E), des réunions régulières et un suivi individualisé tout au long du parcours." },
+];
+---
+
+<Layout>
+  <div class="page">
+    <header class="site-header">
+      <div class="logo-wrap">
+        <img src="/lamascott-hero.png" alt="Sup des RH" class="logo-img logo-theme-safe" width="56" height="56" />
+        <div class="brand-text">
+          <p class="brand">Quiz Sup des RH</p>
+          <p class="brand-sub">Orientation métiers RH</p>
+        </div>
+      </div>
+      <nav class="header-nav">
+        <a href="/" class="nav-link">Accueil</a>
+        <a href="/ecole" class="nav-link nav-link-active">L'école</a>
+        <a href="/entreprises" class="nav-link">Entreprises</a>
+      </nav>
+      <div class="header-actions">
+        <button type="button" class="btn-theme" id="theme-toggle" aria-label="Changer le thème">
+          <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <a href={WEB_APP_URL + "/login"} class="btn-connect">Se connecter</a>
+      </div>
+    </header>
+
+    <main class="main">
+
+      <!-- ── Hero ── -->
+      <section class="ecole-hero">
+        <span class="hero-badge">L'école de référence 100% RH</span>
+        <h1 class="hero-title">
+          <span class="highlight">SUP des RH</span><br/>
+          Former les professionnels RH depuis 1998
+        </h1>
+        <p class="hero-sub">
+          École spécialisée dans les métiers des Ressources Humaines, SUP des RH accompagne chaque année des centaines d'apprenants vers des postes RH opérationnels, en France et à l'international.
+        </p>
+        <div class="hero-actions">
+          <a href="#formations" class="btn-primary">Découvrir nos formations</a>
+          <a href="/entreprises" class="btn-secondary">Espace entreprises →</a>
+        </div>
+      </section>
+
+      <!-- ── Chiffres clés ── -->
+      <section class="section-chiffres">
+        <div class="chiffres-grid">
+          {chiffres.map((c) => (
+            <div class="chiffre-card">
+              <span class="chiffre-icon">{c.icon}</span>
+              <p class="chiffre-value">{c.value}</p>
+              <p class="chiffre-label">{c.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- ── Présentation ── -->
+      <section class="section-presentation">
+        <div class="section-header">
+          <div class="section-badge">Notre mission</div>
+          <h2 class="section-title">L'école innovante dédiée aux RH depuis 1998</h2>
+        </div>
+        <div class="presentation-content">
+          <div class="presentation-text">
+            <p>
+              Depuis sa création, la vocation de SUP des RH est de <strong>former les professionnels des Ressources Humaines sur toutes les fonctions et métiers RH</strong> : recrutement, formation, paie, gestion de compétences, expatriation, droit social, RSE, etc.
+            </p>
+            <p>
+              Notre école à taille humaine se donne pour mission de former les professionnels RH <strong>en impliquant les RRH et DRH partenaires</strong> dans la formation et l'évaluation de ses apprenants.
+            </p>
+            <p>
+              Dans un monde de plus en plus connecté, SUP des RH a construit un projet pédagogique focalisé sur <strong>l'innovation, l'accompagnement personnalisé, la recherche de l'excellence et l'employabilité</strong> de ses stagiaires.
+            </p>
+            <a href="https://www.supdesrh.com/" target="_blank" rel="noopener noreferrer" class="lien-site">
+              Visiter le site officiel supdesrh.com →
+            </a>
+          </div>
+          <div class="presentation-highlights">
+            <div class="highlight-item">
+              <span class="highlight-icon">🎓</span>
+              <div>
+                <p class="highlight-title">Titres RNCP reconnus par l'État</p>
+                <p class="highlight-desc">Niveaux 6 et 7 — reconnus en France et en Europe</p>
+              </div>
+            </div>
+            <div class="highlight-item">
+              <span class="highlight-icon">🤝</span>
+              <div>
+                <p class="highlight-title">100% en alternance</p>
+                <p class="highlight-desc">Études financées par l'entreprise, aucun frais pour l'étudiant</p>
+              </div>
+            </div>
+            <div class="highlight-item">
+              <span class="highlight-icon">📍</span>
+              <div>
+                <p class="highlight-title">Paris & campus en régions</p>
+                <p class="highlight-desc">39 rue De Moscou, 75008 Paris + campus partenaires en province</p>
+              </div>
+            </div>
+            <div class="highlight-item">
+              <span class="highlight-icon">🦙</span>
+              <div>
+                <p class="highlight-title">Lama Scott, notre mascotte</p>
+                <p class="highlight-desc">Symbole de l'esprit SUP des RH : curieux, tenace et bienveillant</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Pédagogie ── -->
+      <section class="section-pedagogie">
+        <div class="section-header">
+          <div class="section-badge section-badge-green">Approche pédagogique</div>
+          <h2 class="section-title">Une pédagogie innovante</h2>
+          <p class="section-desc">SUP des RH a construit une approche pédagogique centrée sur l'employabilité réelle et l'immersion professionnelle.</p>
+        </div>
+        <div class="pedagogie-grid">
+          {pedagogie.map((p) => (
+            <div class="pedagogie-card">
+              <span class="pedagogie-icon">{p.icon}</span>
+              <h3 class="pedagogie-title">{p.title}</h3>
+              <p class="pedagogie-desc">{p.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- ── Formations ── -->
+      <section id="formations" class="section-formations">
+        <div class="section-header">
+          <div class="section-badge">Programmes</div>
+          <h2 class="section-title">Nos formations en alternance</h2>
+          <p class="section-desc">De Bac+3 à Bac+6, des cursus pensés pour les réalités du terrain RH, 100% en alternance et reconnus par l'État.</p>
+        </div>
+
+        <div class="formations-grid" id="formations-grid">
+          {formations.map((f, idx) => (
+            <article class={`formation-card${idx >= 3 ? " formation-extra" : ""}`} style={`--fc: ${f.color};`}>
+              <div class="formation-top-bar" style={`background: ${f.color};`}></div>
+              <div class="formation-header">
+                <div class="formation-badges">
+                  <span class="formation-level" style={`color: ${f.color}; background: ${f.color}14; border-color: ${f.color}30;`}>{f.level}</span>
+                  <span class="formation-tag">{f.tag}</span>
+                </div>
+                <h3 class="formation-title">{f.title}</h3>
+                <p class="formation-access">Accès : {f.access} · {f.mode}</p>
+              </div>
+              <p class="formation-desc">{f.description}</p>
+              <div class="formation-competences">
+                {f.competences.map((c) => (
+                  <span class="competence-tag" style={`background: ${f.color}0f; border-color: ${f.color}28; color: ${f.color};`}>{c}</span>
+                ))}
+              </div>
+              <a href={f.href} target="_blank" rel="noopener noreferrer" class="formation-link" style={`color: ${f.color};`}>
+                En savoir plus →
+              </a>
+            </article>
+          ))}
+        </div>
+
+        {formations.length > 3 && (
+          <div class="formations-show-more-wrap" id="formations-show-more-wrap">
+            <button type="button" id="formations-show-more" class="btn-show-more">
+              Voir les {formations.length - 3} autres formations
+            </button>
+          </div>
+        )}
+      </section>
+
+      <!-- ── Témoignages ── -->
+      <section class="section-temoignages">
+        <div class="section-header">
+          <div class="section-badge section-badge-orange">Ils témoignent</div>
+          <h2 class="section-title">Leur aventure SUP des RH</h2>
+          <p class="section-desc">Apprenants, intervenants et alumnis partagent leur expérience.</p>
+        </div>
+        <div class="temoignages-grid">
+          {temoignages.map((t) => (
+            <blockquote class="temoignage-card">
+              <div class="temoignage-avatar" style={`background: ${t.color}18; color: ${t.color}; border-color: ${t.color}30;`}>
+                {t.initiales}
+              </div>
+              <p class="temoignage-text">"{t.texte}"</p>
+              <footer class="temoignage-footer">
+                <p class="temoignage-nom">{t.nom}</p>
+                <p class="temoignage-poste">
+                  {t.poste}{t.entreprise ? <> — <span class="temoignage-entreprise">{t.entreprise}</span></> : ""}
+                </p>
+              </footer>
+            </blockquote>
+          ))}
+        </div>
+      </section>
+
+      <!-- ── CTA ── -->
+      <section class="section-cta-ecole">
+        <div class="cta-card">
+          <div class="cta-content">
+            <p class="cta-eyebrow">Vous ne savez pas quelle formation choisir ?</p>
+            <h2 class="cta-title">Faites le quiz d'orientation RH</h2>
+            <p class="cta-desc">En 3 minutes, découvrez quel métier RH vous correspond et quelle formation SUP des RH est faite pour vous.</p>
+            <div class="cta-actions">
+              <a href={WEB_APP_URL + "/login"} class="btn-primary">Faire le quiz gratuitement →</a>
+              <a href="https://www.supdesrh.com/inscription/" target="_blank" rel="noopener noreferrer" class="btn-secondary">Candidater ↗</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div class="footer-top">
+          <div class="footer-brand-wrap">
+            <img src="/lamascott-hero.png" alt="" class="footer-logo logo-theme-safe" width="32" height="32" />
+            <p class="footer-brand">Sup des RH</p>
+          </div>
+          <p class="footer-tagline">Orientation métiers RH, en toute confiance.</p>
+        </div>
+        <nav class="footer-links">
+          <a href="/">Accueil</a>
+          <a href="/entreprises">Entreprises</a>
+          <a href={WEB_APP_URL + "/legal/conditions"}>Conditions d'utilisation</a>
+          <a href={WEB_APP_URL + "/legal/confidentialite"}>Politique de confidentialité</a>
+          <a href={WEB_APP_URL + "/login"}>Accéder au quiz</a>
+        </nav>
+        <p class="footer-copy">© {new Date().getFullYear()} Quiz Sup des RH — Tous droits réservés</p>
+      </div>
+    </footer>
+  </div>
+</Layout>
+
+<script>
+  const btn = document.getElementById("theme-toggle");
+  if (btn) {
+    btn.addEventListener("click", () => {
+      // @ts-expect-error
+      if (typeof window.supdesrhToggleTheme === "function") window.supdesrhToggleTheme();
+    });
+  }
+
+  const showMoreBtn = document.getElementById("formations-show-more") as HTMLButtonElement | null;
+  if (showMoreBtn) {
+    showMoreBtn.addEventListener("click", () => {
+      document.querySelectorAll(".formation-extra").forEach((el) => el.classList.add("formation-visible"));
+      showMoreBtn.closest(".formations-show-more-wrap")?.remove();
+    });
+  }
+</script>
+
+<style>
+  .page { min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── Header ── */
+  .site-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.9rem 1.5rem;
+    background: var(--landing-card); border-bottom: 1px solid var(--landing-border);
+    backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 50;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .logo-wrap { display: flex; align-items: center; gap: 0.75rem; }
+  .logo-img { width: 48px; height: 48px; object-fit: contain; }
+  .logo-theme-safe { filter: none !important; opacity: 1 !important; }
+  html.dark .logo-theme-safe { filter: none !important; }
+  .brand-text { display: flex; flex-direction: column; }
+  .brand { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--landing-accent); line-height: 1.2; font-family: "Figtree","Montserrat",system-ui,sans-serif; }
+  .brand-sub { margin: 0; font-size: 0.7rem; color: var(--landing-muted); }
+  .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+  .header-nav { display: flex; align-items: center; gap: 0.25rem; margin: 0 auto; }
+  .nav-link { padding: 0.4rem 0.85rem; border-radius: 999px; font-size: 0.82rem; font-weight: 500; color: var(--landing-muted); text-decoration: none; transition: color 0.15s, background 0.15s; }
+  .nav-link:hover, .nav-link-active { color: var(--landing-accent); background: rgba(0,64,128,0.08); }
+  html.dark .nav-link:hover, html.dark .nav-link-active { background: rgba(56,189,248,0.1); }
+  .btn-theme { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--landing-border); background: var(--landing-bg-soft); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+  .btn-theme:hover { background: var(--landing-border); transform: scale(1.05); }
+  .icon-moon { display: none; }
+  html.dark .icon-sun { display: none; }
+  html.dark .icon-moon { display: block; }
+  .icon-sun, .icon-moon { color: var(--landing-text); }
+  .btn-connect { padding: 0.55rem 1.25rem; border-radius: 999px; background: #004080; color: #fff !important; font-weight: 600; font-size: 0.85rem; text-decoration: none; box-shadow: 0 4px 14px rgba(0,64,128,0.3); transition: transform 0.15s, background 0.15s; }
+  .btn-connect:hover { transform: translateY(-1px); background: #003366; }
+
+  /* ── Main ── */
+  .main { flex: 1; max-width: 960px; margin: 0 auto; width: 100%; padding: 0 1.5rem; }
+
+  /* ── Buttons ── */
+  .btn-primary { display: inline-flex; align-items: center; padding: 0.75rem 1.75rem; border-radius: 999px; background: #004080; color: #fff !important; font-weight: 700; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 20px rgba(0,64,128,0.35); transition: transform 0.15s, background 0.15s; }
+  .btn-primary:hover { transform: translateY(-2px); background: #003366; }
+  .btn-secondary { display: inline-flex; align-items: center; padding: 0.75rem 1.75rem; border-radius: 999px; background: transparent; color: var(--landing-text); font-weight: 600; font-size: 0.95rem; text-decoration: none; border: 1.5px solid var(--landing-border); transition: all 0.15s; }
+  .btn-secondary:hover { background: var(--landing-bg-soft); border-color: #004080; }
+  html.dark .btn-secondary:hover { border-color: #38bdf8; }
+
+  /* ── Section header ── */
+  .section-header { text-align: center; margin-bottom: 2.5rem; }
+  .section-badge { display: inline-block; padding: 0.35rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em; background: rgba(0,64,128,0.1); color: #004080; border: 1px solid rgba(0,64,128,0.2); margin-bottom: 0.75rem; }
+  html.dark .section-badge { background: rgba(56,189,248,0.1); color: #38bdf8; border-color: rgba(56,189,248,0.2); }
+  .section-badge-green { background: rgba(0,140,84,0.1) !important; color: #008c54 !important; border-color: rgba(0,140,84,0.2) !important; }
+  html.dark .section-badge-green { background: rgba(34,197,94,0.1) !important; color: #22c55e !important; border-color: rgba(34,197,94,0.2) !important; }
+  .section-badge-orange { background: rgba(243,112,33,0.1) !important; color: #f37021 !important; border-color: rgba(243,112,33,0.2) !important; }
+  .section-title { font-size: clamp(1.3rem,3vw,1.75rem); font-weight: 800; margin: 0 0 0.75rem; color: var(--landing-text); font-family: "Figtree","Montserrat",system-ui,sans-serif; }
+  .section-desc { color: var(--landing-muted); font-size: 0.9rem; max-width: 34rem; margin: 0 auto; line-height: 1.6; }
+
+  /* ── Hero ── */
+  .ecole-hero { text-align: center; padding: 4.5rem 0 3.5rem; animation: heroFadeIn 0.6s ease-out; }
+  @keyframes heroFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .hero-badge { display: inline-block; padding: 0.35rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em; background: rgba(0,64,128,0.1); color: #004080; border: 1px solid rgba(0,64,128,0.2); margin-bottom: 1.5rem; }
+  html.dark .hero-badge { background: rgba(56,189,248,0.1); color: #38bdf8; border-color: rgba(56,189,248,0.2); }
+  .hero-title { font-size: clamp(2rem,5vw,2.9rem); font-weight: 800; line-height: 1.12; margin: 0 0 1.1rem; color: var(--landing-text); font-family: "Figtree","Montserrat",system-ui,sans-serif; }
+  .highlight { background: linear-gradient(120deg,#004080,#008c54); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  html.dark .highlight { background: linear-gradient(120deg,#38bdf8,#4ade80); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero-sub { color: var(--landing-muted); font-size: 1.05rem; max-width: 38rem; margin: 0 auto 2.25rem; line-height: 1.65; }
+  .hero-actions { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
+
+  /* ── Chiffres ── */
+  .section-chiffres { padding: 0 0 3.5rem; }
+  .chiffres-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 1rem; }
+  .chiffre-card { text-align: center; background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 16px; padding: 1.5rem 0.75rem; transition: box-shadow 0.2s, transform 0.2s; }
+  .chiffre-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+  .chiffre-icon { font-size: 1.5rem; display: block; margin-bottom: 0.5rem; }
+  .chiffre-value { font-size: 1.5rem; font-weight: 800; color: var(--landing-accent); margin: 0 0 0.25rem; font-family: "Figtree","Montserrat",system-ui,sans-serif; }
+  .chiffre-label { font-size: 0.72rem; color: var(--landing-muted); margin: 0; line-height: 1.4; }
+
+  /* ── Présentation ── */
+  .section-presentation { padding: 0 0 3.5rem; }
+  .presentation-content { display: grid; grid-template-columns: 1.2fr 1fr; gap: 3rem; align-items: start; margin-top: 2rem; }
+  .presentation-text p { color: var(--landing-muted); font-size: 0.9rem; line-height: 1.7; margin: 0 0 1rem; }
+  .presentation-text strong { color: var(--landing-text); font-weight: 600; }
+  .lien-site { display: inline-flex; align-items: center; font-size: 0.83rem; font-weight: 600; color: #004080; text-decoration: none; transition: color 0.15s; margin-top: 0.5rem; }
+  .lien-site:hover { color: #003366; }
+  html.dark .lien-site { color: #38bdf8; }
+  .presentation-highlights { display: flex; flex-direction: column; gap: 0.85rem; }
+  .highlight-item { display: flex; align-items: flex-start; gap: 0.85rem; padding: 1rem 1.1rem; background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 14px; transition: border-color 0.15s; }
+  .highlight-item:hover { border-color: rgba(0,64,128,0.25); }
+  html.dark .highlight-item:hover { border-color: rgba(56,189,248,0.2); }
+  .highlight-icon { font-size: 1.4rem; line-height: 1; flex-shrink: 0; }
+  .highlight-title { font-size: 0.85rem; font-weight: 700; color: var(--landing-text); margin: 0 0 0.2rem; }
+  .highlight-desc { font-size: 0.76rem; color: var(--landing-muted); margin: 0; line-height: 1.4; }
+
+  /* ── Pédagogie ── */
+  .section-pedagogie { padding: 0 0 3.5rem; }
+  .pedagogie-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.25rem; }
+  .pedagogie-card { background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; transition: box-shadow 0.2s, transform 0.2s; }
+  .pedagogie-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+  .pedagogie-icon { font-size: 1.75rem; }
+  .pedagogie-title { font-size: 0.95rem; font-weight: 700; color: var(--landing-text); margin: 0; font-family: "Figtree","Montserrat",system-ui,sans-serif; }
+  .pedagogie-desc { font-size: 0.82rem; color: var(--landing-muted); line-height: 1.6; margin: 0; }
+
+  /* ── Formations ── */
+  .section-formations { padding: 0 0 3.5rem; }
+  /* spécificité 0,2,0 > .formation-card (0,1,0) → la règle hide gagne toujours */
+  .formation-card.formation-extra { display: none; }
+  .formation-card.formation-extra.formation-visible { display: flex; }
+  .formations-show-more-wrap { display: flex; justify-content: center; margin-top: 1.5rem; }
+  .btn-show-more { padding: 0.65rem 1.75rem; border-radius: 999px; border: 1.5px solid var(--landing-border); background: var(--landing-card); color: var(--landing-text); font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: border-color 0.15s, background 0.15s; }
+  .btn-show-more:hover { border-color: #004080; background: rgba(0,64,128,0.04); }
+  html.dark .btn-show-more:hover { border-color: #38bdf8; }
+
+  .formations-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.25rem; }
+  .formation-card { background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 16px; overflow: hidden; padding: 0; display: flex; flex-direction: column; transition: box-shadow 0.2s, transform 0.2s; }
+  .formation-card:hover { box-shadow: 0 10px 28px rgba(0,0,0,0.1); transform: translateY(-3px); }
+  .formation-top-bar { height: 4px; width: 100%; flex-shrink: 0; }
+  .formation-header { padding: 1.4rem 1.5rem 0; display: flex; flex-direction: column; gap: 0.6rem; }
+  .formation-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+  .formation-level { display: inline-block; padding: 0.2rem 0.7rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; border: 1px solid; }
+  .formation-tag { display: inline-block; padding: 0.2rem 0.65rem; border-radius: 6px; font-size: 0.65rem; font-weight: 600; background: var(--landing-bg-soft); border: 1px solid var(--landing-border); color: var(--landing-muted); }
+  .formation-title { font-size: 1rem; font-weight: 800; color: var(--landing-text); margin: 0; font-family: "Figtree","Montserrat",system-ui,sans-serif; line-height: 1.3; }
+  .formation-access { font-size: 0.73rem; color: var(--landing-muted); margin: 0; }
+  .formation-desc { font-size: 0.83rem; color: var(--landing-muted); line-height: 1.6; margin: 0; padding: 0.75rem 1.5rem 0; flex: 1; }
+  .formation-competences { display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0.9rem 1.5rem 0; }
+  .competence-tag { display: inline-block; padding: 0.22rem 0.6rem; border-radius: 6px; font-size: 0.68rem; font-weight: 500; border: 1px solid; }
+  .formation-link { display: inline-flex; align-items: center; font-size: 0.8rem; font-weight: 700; text-decoration: none; padding: 0.9rem 1.5rem 1.25rem; transition: opacity 0.15s; margin-top: auto; }
+  .formation-link:hover { opacity: 0.75; }
+
+  /* ── Témoignages ── */
+  .section-temoignages { padding: 0 0 3.5rem; }
+  .temoignages-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.25rem; }
+  .temoignage-card { background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 16px; padding: 1.5rem; margin: 0; display: flex; flex-direction: column; gap: 1rem; }
+  .temoignage-avatar { width: 48px; height: 48px; border-radius: 14px; border: 1.5px solid; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 800; flex-shrink: 0; font-family: "Figtree","Montserrat",system-ui,sans-serif; }
+  .temoignage-text { font-size: 0.83rem; color: var(--landing-muted); line-height: 1.65; margin: 0; font-style: italic; flex: 1; }
+  .temoignage-nom { font-size: 0.85rem; font-weight: 700; color: var(--landing-text); margin: 0 0 0.15rem; }
+  .temoignage-poste { font-size: 0.73rem; color: var(--landing-muted); margin: 0; line-height: 1.4; }
+  .temoignage-entreprise { color: #004080; font-weight: 600; }
+  html.dark .temoignage-entreprise { color: #38bdf8; }
+
+  /* ── CTA ── */
+  .section-cta-ecole { padding: 0 0 5rem; }
+  .cta-card { background: linear-gradient(135deg, rgba(0,64,128,0.07) 0%, rgba(0,140,84,0.07) 100%); border: 1px solid rgba(0,64,128,0.15); border-radius: 24px; padding: 3.5rem 2.5rem; text-align: center; }
+  html.dark .cta-card { background: linear-gradient(135deg, rgba(56,189,248,0.06) 0%, rgba(74,222,128,0.06) 100%); border-color: rgba(56,189,248,0.15); }
+  .cta-eyebrow { font-size: 0.8rem; font-weight: 600; color: #004080; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.5rem; }
+  html.dark .cta-eyebrow { color: #38bdf8; }
+  .cta-title { font-size: clamp(1.4rem,3vw,1.8rem); font-weight: 800; color: var(--landing-text); margin: 0 0 0.75rem; font-family: "Figtree","Montserrat",system-ui,sans-serif; }
+  .cta-desc { color: var(--landing-muted); font-size: 0.9rem; max-width: 36rem; margin: 0 auto 2rem; line-height: 1.6; }
+  .cta-actions { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
+
+  /* ── Footer ── */
+  .footer { background: var(--landing-card); border-top: 1px solid var(--landing-border); padding: 2.5rem 1.5rem; margin-top: auto; }
+  .footer-inner { max-width: 960px; margin: 0 auto; text-align: center; }
+  .footer-top { margin-bottom: 1.5rem; }
+  .footer-brand-wrap { display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; }
+  .footer-logo { width: 28px; height: 28px; object-fit: contain; }
+  .footer-brand { font-weight: 700; color: var(--landing-accent); margin: 0; font-size: 1rem; font-family: "Figtree","Montserrat",system-ui,sans-serif; }
+  .footer-tagline { color: var(--landing-muted); font-size: 0.85rem; margin: 0; }
+  .footer-links { display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 1rem; flex-wrap: wrap; }
+  .footer-links a { color: var(--landing-muted); text-decoration: none; font-size: 0.8rem; transition: color 0.15s; }
+  .footer-links a:hover { color: var(--landing-text); }
+  .footer-copy { color: var(--landing-muted); font-size: 0.75rem; margin: 0; }
+
+  /* ── Responsive ── */
+
+  /* Tablette large (≤1024px) */
+  @media (max-width: 1024px) {
+    .chiffres-grid { grid-template-columns: repeat(4, 1fr); }
+    .formations-grid { grid-template-columns: repeat(2, 1fr); }
+    .pedagogie-grid { grid-template-columns: repeat(2, 1fr); }
+    .temoignages-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Tablette (≤768px) */
+  @media (max-width: 768px) {
+    .main { padding: 0 1.25rem; }
+    .site-header { padding: 0.8rem 1.25rem; }
+    .logo-img { width: 40px; height: 40px; }
+    .brand-sub { display: none; }
+    .ecole-hero { padding: 3rem 0 2.5rem; }
+    .hero-title { font-size: clamp(1.6rem, 5vw, 2rem); }
+    .chiffres-grid { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+    .presentation-content { grid-template-columns: 1fr; gap: 1.75rem; }
+    /* pedagogie + formations restent 2 colonnes sur tablette */
+    .temoignages-grid { grid-template-columns: 1fr; }
+    .footer-links { flex-direction: column; align-items: center; gap: 0.75rem; }
+    .section-title { font-size: 1.4rem; }
+    .cta-card { padding: 2.5rem 1.75rem; }
+  }
+
+  /* Mobile (≤640px) */
+  @media (max-width: 640px) {
+    .header-nav { display: none; }
+    .btn-connect { padding: 0.5rem 0.9rem; font-size: 0.78rem; }
+    .hero-actions { flex-direction: column; gap: 0.5rem; }
+    .btn-primary, .btn-secondary { width: 100%; justify-content: center; text-align: center; }
+    .chiffres-grid { grid-template-columns: repeat(2, 1fr); }
+    .pedagogie-grid { grid-template-columns: 1fr; }       /* 2→1 col sur mobile */
+    .formations-grid { grid-template-columns: 1fr; }     /* 2→1 col sur mobile */
+    .cta-card { padding: 2rem 1.5rem; }
+    .cta-actions { flex-direction: column; gap: 0.65rem; }
+    .btn-cta, .btn-cta-ghost { width: 100%; justify-content: center; text-align: center; }
+    .formations-show-more-wrap { text-align: center; }
+  }
+
+  /* Mobile petit (≤480px) */
+  @media (max-width: 480px) {
+    .main { padding: 0 1rem; }
+    .site-header { padding: 0.75rem 1rem; }
+    .ecole-hero { padding: 2rem 0 1.75rem; }
+    .hero-title { font-size: 1.5rem; }
+    .chiffres-grid { grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }
+    .chiffre-card { padding: 1.1rem 0.65rem; }
+    .chiffre-value { font-size: 1.2rem; }
+    .temoignages-grid { grid-template-columns: 1fr; }
+    .section-title { font-size: 1.2rem; }
+  }
+</style>

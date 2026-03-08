@@ -7,6 +7,7 @@ import {
   User,
   Mail,
   MessageSquare,
+  Building2,
   PanelLeftClose,
   PanelLeft,
 } from "lucide-react";
@@ -23,6 +24,12 @@ const navItems = [
   { id: "quizzes", label: "Quiz", icon: FileQuestion, path: "/admin/quizzes" },
   { id: "users", label: "Utilisateurs", icon: Users, path: "/admin/users" },
   { id: "contact-requests", label: "Demandes", icon: Mail, path: "/admin/contact-requests" },
+  {
+    id: "company-contacts",
+    label: "Entreprises",
+    icon: Building2,
+    path: "/admin/company-contacts",
+  },
   { id: "feedbacks", label: "Avis", icon: MessageSquare, path: "/admin/feedbacks" },
 ];
 
@@ -66,7 +73,7 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
             <AppLogo className="h-9 w-9 shrink-0 object-contain" />
             <div className="hidden sm:block">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                SupdesRH
+                SUP des RH
               </p>
               <p className="text-[10px] text-muted-foreground leading-tight">Administration</p>
             </div>

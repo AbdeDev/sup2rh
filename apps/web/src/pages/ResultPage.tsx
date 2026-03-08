@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Loader2, User, Sparkles, CheckCircle2 } from "lucide-react";
 
+import { toast } from "sonner";
 import {
   getQuizSession,
   analyzeQuiz,
@@ -214,9 +215,9 @@ export function ResultPage() {
         explanation: analysis.explanation,
         scores: analysis.scores,
       });
-      alert("Demande de contact envoyée ! L'équipe SupdesRH te contactera bientôt.");
+      toast.success("Demande envoyée ! L'équipe SUP des RH te contactera bientôt.");
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Erreur lors de l'envoi");
+      toast.error(e instanceof Error ? e.message : "Erreur lors de l'envoi");
     } finally {
       setContactLoading(false);
     }
@@ -291,7 +292,7 @@ export function ResultPage() {
             <AppLogo className="h-9 w-9 object-contain" />
             <div className="hidden sm:block">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Quiz SupdesRH
+                Quiz SUP des RH
               </p>
               <p className="text-[10px] text-muted-foreground leading-tight">Résultat</p>
             </div>
@@ -595,9 +596,45 @@ export function ResultPage() {
                   <>
                     <Separator className="bg-border" />
                     <div>
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-3">
                         Vidéo explicative
                       </p>
+                      <div className="rounded-xl overflow-hidden border border-border bg-muted/20 w-full aspect-video max-w-xl mb-2">
+                        {(() => {
+                          const url = fiche.videoUrl!;
+                          const ytMatch = url.match(
+                            /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/,
+                          );
+                          const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+                          if (ytMatch) {
+                            return (
+                              <iframe
+                                src={`https://www.youtube.com/embed/${ytMatch[1]}?rel=0`}
+                                title="Vidéo du métier"
+                                className="w-full h-full"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                              />
+                            );
+                          }
+                          if (vimeoMatch) {
+                            return (
+                              <iframe
+                                src={`https://player.vimeo.com/video/${vimeoMatch[1]}`}
+                                title="Vidéo du métier"
+                                className="w-full h-full"
+                                allow="autoplay; fullscreen; picture-in-picture"
+                                allowFullScreen
+                              />
+                            );
+                          }
+                          return (
+                            <video src={url} controls className="w-full h-full">
+                              <track kind="captions" />
+                            </video>
+                          );
+                        })()}
+                      </div>
                       <a
                         href={fiche.videoUrl}
                         target="_blank"
@@ -637,7 +674,7 @@ export function ResultPage() {
                     Envoi…
                   </>
                 ) : (
-                  "Être contacté par SupdesRH"
+                  "Être contacté par SUP des RH"
                 )}
               </Button>
             </CardContent>

@@ -1,167 +1,249 @@
-# SupdesRH
+# SUP des RH — Quiz d'orientation RH
 
-> Découvre ton métier RH idéal en quelques minutes
-
----
-
-## C'est quoi SupdesRH ?
-
-SupdesRH est une application qui t’aide à **trouver le métier des Ressources Humaines qui te correspond** le mieux. Tu réponds à un quiz court et personnalisé, et tu reçois une recommandation basée sur tes réponses, avec des fiches métiers et des infos pour t’orienter.
-
-L’objectif : te guider vers les métiers RH (Recrutement, Paie, QVCT, Formation, etc.) et te mettre en relation avec l’équipe SupdesRH pour une alternance ou un stage.
+> Trouve ton métier RH idéal en 3 minutes — par l'école SUP des RH depuis 1998.
 
 ---
 
-## Comment ça marche ?
+## Architecture
 
-### 1. Tu te connectes
+```
+Sup2Rh/
+├── apps/
+│   ├── landing/        # Site vitrine (Astro) — pages publiques
+│   ├── web/            # Application quiz (React + Vite) — utilisateurs
+│   └── admin/          # Back-office (React + Vite) — administrateurs
+├── backend/
+│   └── api/            # API REST (Symfony 7 / PHP 8.4 + Postgres)
+├── packages/
+│   ├── types/          # Types TypeScript partagés
+│   ├── ui/             # Composants UI partagés
+│   └── quiz-engine/    # Logique du quiz (algo de scoring)
+├── scripts/
+│   ├── setup-hooks.sh      # Installe les git hooks (à lancer une fois)
+│   ├── pre-push-check.sh   # CI local avant push
+│   └── ...
+├── docker-compose.yml          # Dev local (backend uniquement)
+├── docker-compose.staging.yml  # Staging (réplique prod en local)
+└── docker-compose.prod.yml     # Production (VPS)
+```
 
-Tu crées un compte ou tu te connectes avec ton email. Pas besoin de données compliquées.
+**Stack :**
 
-### 2. Tu fais le quiz
-
-Tu réponds à une quinzaine de questions rapides. À chaque question, tu dis à quel point tu es d’accord (ou pas) avec une affirmation, en déplaçant un curseur de 1 à 5.
-
-Par exemple : _« J’aime travailler en équipe »_ → tu choisis entre « Pas du tout d’accord » et « Tout à fait d’accord ».
-
-### 3. Tu découvres ton résultat
-
-À la fin du quiz, tu obtiens :
-
-- **Un métier RH recommandé** pour toi (ex : HR Business Partner, Recruteur, etc.)
-- **Un pourcentage de correspondance** avec ton profil
-- **Une fiche détaillée** : description du métier, salaire indicatif, taux d’embauche, etc.
-- **Une explication personnalisée** pour comprendre pourquoi ce métier te va bien
-
-### 4. Tu peux prendre contact
-
-Si un métier t’intéresse, tu peux demander à être contacté par l’équipe SupdesRH pour en savoir plus sur les alternances, stages et possibilités d’orientation.
-
----
-
-## Ce que tu peux faire dans l’app
-
-| Fonctionnalité     | Description                                                  |
-| ------------------ | ------------------------------------------------------------ |
-| **Quiz**           | Répondre aux questions et obtenir une recommandation         |
-| **Résultats**      | Voir le métier recommandé, la fiche et l’explication         |
-| **Mes sessions**   | Consulter tes anciens quiz et reprendre une session en cours |
-| **Fiches métiers** | Découvrir tous les métiers RH sans être connecté             |
-| **Profil**         | Gérer ton compte et tes infos de connexion                   |
+| Couche          | Technologie                      |
+| --------------- | -------------------------------- |
+| Landing         | Astro 5, CSS custom, dark mode   |
+| Web / Admin     | React 19, Vite, Tailwind CSS 4   |
+| Backend         | Symfony 7, PHP 8.4, Doctrine ORM |
+| Base de données | Supabase (Postgres)              |
+| Auth            | Supabase Auth (magic link)       |
+| CI/CD           | GitHub Actions                   |
+| Déploiement     | Koyeb (API) + Cloudflare Pages   |
 
 ---
 
-## Pour qui c’est fait ?
+## Installation rapide
 
-- Les étudiants qui hésitent sur une orientation dans les RH
-- Les personnes en reconversion vers les métiers RH
-- Tous ceux qui veulent clarifier leur profil et leurs goûts dans ce domaine
+### Prérequis
+
+- [Bun](https://bun.sh) ≥ 1.1
+- [PHP](https://php.net) 8.4 + Composer 2
+- [Docker](https://docker.com) (optionnel, pour le backend en container)
+
+### 1. Cloner et installer
+
+```bash
+git clone https://github.com/<org>/sup2rh.git
+cd sup2rh
+bun install
+```
+
+### 2. Configurer les variables d'environnement
+
+```bash
+# Web app
+cp apps/web/.env.example apps/web/.env
+
+# Admin
+cp apps/admin/.env.example apps/admin/.env
+
+# Backend
+cp backend/api/.env.example backend/api/.env
+```
+
+Variables à renseigner :
+
+| Variable                 | Description                                         |
+| ------------------------ | --------------------------------------------------- |
+| `VITE_SUPABASE_URL`      | URL du projet Supabase                              |
+| `VITE_SUPABASE_ANON_KEY` | Clé publique Supabase                               |
+| `VITE_API_URL`           | URL du backend (ex: `http://127.0.0.1:8000`)        |
+| `DATABASE_URL`           | Connexion Postgres (Supabase → Settings → Database) |
+| `SUPABASE_PROJECT_URL`   | URL Supabase pour valider les JWT                   |
+| `SUPABASE_JWT_AUD`       | Audience JWT (`authenticated`)                      |
+
+### 3. Installer les git hooks
+
+```bash
+bash scripts/setup-hooks.sh
+```
+
+Installe 3 hooks automatiquement :
+
+- **pre-commit** : ESLint sur les fichiers staged
+- **commit-msg** : vérifie le format du message
+- **pre-push** : build + typecheck complet (bloque si erreur)
+
+Bypass d'urgence : `git commit --no-verify` / `git push --no-verify`
+
+### 4. Lancer en développement
+
+```bash
+# Tout en parallèle (landing + web + admin + backend Docker)
+bun run dev
+
+# Ou séparément :
+bun run dev:landing   # http://localhost:4321
+bun run dev:web       # http://localhost:5173
+bun run dev:admin     # http://localhost:5174
+bun run dev:api       # http://localhost:8000
+```
 
 ---
 
-## Données et base de données
+## Stratégie de branches
 
-### Backend (API)
+```
+main          ← production stable (protégée)
+  └── dev     ← intégration (CI obligatoire avant merge)
+       └── feature/xxx  ← développement d'une fonctionnalité
+       └── fix/xxx       ← correction de bug
+       └── chore/xxx     ← maintenance (deps, config…)
+```
 
-Le backend Symfony doit être connecté à la **même base Postgres que Supabase** pour que les données (profiles, jobs, quiz, sessions) soient accessibles.
+**Règles :**
 
-1. `cd backend/api && composer install` (si `vendor/` n'existe pas)
-2. Crée `backend/api/.env` à partir de `backend/api/.env.example`
-3. Remplis `DATABASE_URL` avec l’URL de connexion Supabase :
-   - Supabase Dashboard → **Settings** → **Database** → **Connection string** (URI)
-   - Exemple : `postgresql://postgres.[ref]:[MOT_DE_PASSE]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres?serverVersion=15&charset=utf8`
-4. Remplis `SUPABASE_PROJECT_URL` et `SUPABASE_JWT_AUD` (Settings → API)
-5. Lance les migrations : `cd backend/api && php bin/console doctrine:migrations:migrate`
-6. Démarre l’API : `bun run dev:api`
+1. Jamais de push direct sur `main`
+2. Toute PR vers `main` passe par `dev` d'abord
+3. La CI doit être verte pour merger
+4. Les releases sont créées depuis `main` via tag `vX.Y.Z`
 
-Si tu ne récupères pas les fiches métiers, les questions de quiz ou les sessions : vérifie que `DATABASE_URL` pointe bien vers la base Supabase et que les migrations ont été exécutées.
+**Convention des commits (Conventional Commits) :**
+
+```
+feat(landing): rework hero section
+fix(web): corrige la visibilité des boutons en dark mode
+chore: met à jour les dépendances
+docs: met à jour le README
+```
+
+Types : `feat` `fix` `refactor` `docs` `style` `test` `chore` `ci` `build`
+
+---
+
+## Environnements
+
+### Développement local
+
+```bash
+bun run dev
+```
+
+Utilise les `.env` locaux. L'API tourne en Docker (`docker-compose.yml`) ou via PHP directement.
+
+### Staging (test pré-production)
+
+Réplique l'environnement de production **localement** pour valider avant de déployer :
+
+```bash
+# 1. Configurer
+cp .env.staging.example .env.staging
+# → remplir .env.staging avec les credentials de staging (base de données dédiée !)
+
+# 2. Builder les frontends
+docker compose -f docker-compose.staging.yml --profile build up frontend-builder
+
+# 3. Lancer le stack complet
+docker compose -f docker-compose.staging.yml up -d
+
+# Accès :
+# http://localhost:8080        → landing
+# http://localhost:8080/web/   → web app
+# http://localhost:8080/admin/ → admin
+# http://localhost:8001/api/   → backend direct
+```
+
+### Production
+
+Voir [DEPLOYMENT.md](DEPLOYMENT.md) pour le guide complet.
+
+| Service      | Plateforme          |
+| ------------ | ------------------- |
+| Backend API  | Koyeb (Docker)      |
+| Web App      | Cloudflare Pages    |
+| Admin        | Cloudflare Pages    |
+| Landing      | Cloudflare Pages    |
+| Base données | Supabase (Postgres) |
+
+---
+
+## CI/CD
+
+### Automatique sur GitHub Actions
+
+| Déclencheur       | Pipeline                                         |
+| ----------------- | ------------------------------------------------ |
+| PR → `main`/`dev` | Lint + Typecheck + Build (bloque la PR si KO)    |
+| Push → `main`     | CI + **auto-tag semver** (feat→minor, fix→patch) |
+| Tag `v*`          | Build Docker + Push GHCR + GitHub Release        |
+
+### Local (avant push)
+
+```bash
+# Vérifier manuellement sans faire de push :
+bash scripts/pre-push-check.sh
+
+# Les hooks git le font automatiquement après setup-hooks.sh
+```
+
+---
+
+## Sécurité
+
+- **Ne jamais committer** de fichier `.env` (protégé dans `.gitignore`)
+- Le hook **pre-commit** bloque les secrets évidents dans le diff
+- **Authentification** : Supabase Auth, tokens JWT validés côté API
+- **Admin** : protégé par rôle `ADMIN` en base + RequireAdmin guard
+- Les **CORS** sont configurés dans `backend/api/config/` (env-dependent)
+- **Headers de sécurité** nginx activés en staging et prod (X-Frame-Options, X-Content-Type-Options…)
 
 ---
 
 ## Connexion Admin
 
-L’admin utilise une **connexion par email uniquement** (pas de magic link) :
-
-1. Va sur `http://localhost:5174/login` (ou l’URL de l’app admin)
-2. Saisis ton **email**
-3. Clique sur « Accéder au dashboard »
-
-**Conditions :**
-
-- Ton email doit exister dans la table `profiles` (créée automatiquement à la première connexion web via Supabase)
-- La colonne `role` de ton profil doit être `ADMIN`
-
-**Pour donner les droits admin à un utilisateur :**
-
-```sql
--- Dans la base Supabase (ou celle utilisée par le backend)
-UPDATE profiles SET role = 'ADMIN' WHERE email = 'ton@email.com';
+```bash
+# Donner le rôle ADMIN (dans la base Supabase) :
+UPDATE profiles SET role = 'ADMIN' WHERE email = 'admin@example.com';
 ```
 
-Le backend doit utiliser la même base que Supabase (`DATABASE_URL` dans `backend/api/.env`).
-
-**Si "Failed to fetch" ou "L'API ne répond pas"** : exécute `cd backend/api && composer install` puis `bun run dev:api`.
+Puis : `http://localhost:5174/login` (dev) ou URL admin de prod.
 
 ---
 
 ## Connexion Web (magic link)
 
-1. Va sur `http://localhost:5173/login`
-2. Saisis ton email
-3. Clique sur le lien reçu par mail (dans le même navigateur)
-4. Tu es redirigé vers la page quiz
-
-Si tu vois « Une erreur s'est produite » après le clic, vérifie que les variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` sont bien configurées dans `apps/web/.env`, et que les URLs de redirection Supabase incluent `http://localhost:5173/auth/callback`.
-
-**Si la page résultat affiche une erreur** : vérifie que `VITE_API_URL` pointe vers l'API (ex. `http://127.0.0.1:8000`), que l'API est démarrée (`bun run dev:api`), et que tu es bien connecté avec le compte qui a passé le quiz. Dans l'onglet **Network** (F12), regarde les requêtes vers ton API (`/api/quiz/session/...`) — ignore les 404 vers `trustpilot.com` (provenant de l'extension Trustpilot du navigateur).
-
----
-
-## Admin – Sessions de quiz
-
-L'admin peut consulter **Sessions de quiz** pour voir :
-
-- Quels utilisateurs ont fait des quiz
-- Combien de quiz par utilisateur
-- Les dates et résultats (métier recommandé)
-- Le détail complet d'une session (bouton « Voir le résultat »)
-
----
-
-## Déploiement (prod)
-
-Voir le guide complet : **[DEPLOYMENT.md](DEPLOYMENT.md)**
-
-**Résumé rapide :**
-
-| Service         | Plateforme          | Coût    |
-| --------------- | ------------------- | ------- |
-| Backend API     | Koyeb (Docker)      | Gratuit |
-| Web App         | Cloudflare Pages    | Gratuit |
-| Admin App       | Cloudflare Pages    | Gratuit |
-| Landing Page    | Cloudflare Pages    | Gratuit |
-| Base de données | Supabase (Postgres) | Gratuit |
-
-**CI/CD automatisé :**
-
-- Push sur `dev`/`main` → CI (lint, typecheck, build, tests)
-- Tag `vX.Y.Z` → Build Docker + Push GHCR + GitHub Release
-
-```bash
-# Créer une release
-git tag v1.0.0 && git push origin v1.0.0
-```
+1. `http://localhost:5173/login`
+2. Entrer son email → lien magique envoyé
+3. Cliquer sur le lien **dans le même navigateur**
 
 ---
 
 ## Documentation
 
-- [**Fonctionnement technique**](docs/FONCTIONNEMENT_PROJET.md) : architecture, mécanismes, flux des données (pour développeurs / contributeurs).
+- [**DEPLOYMENT.md**](DEPLOYMENT.md) — Guide déploiement prod (Koyeb + Cloudflare)
+- [**docs/FONCTIONNEMENT_PROJET.md**](docs/FONCTIONNEMENT_PROJET.md) — Architecture technique détaillée
 
 ---
 
 ## Licence
 
-Ce projet est sous licence. Voir le fichier [LICENSE](LICENSE) pour les détails.
-
-Voir également [DISTRIBUTION_LICENSE.md](DISTRIBUTION_LICENSE.md).
+Voir [LICENSE](LICENSE) et [DISTRIBUTION_LICENSE.md](DISTRIBUTION_LICENSE.md).

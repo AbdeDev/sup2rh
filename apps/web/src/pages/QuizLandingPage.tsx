@@ -53,7 +53,7 @@ export function QuizLandingPage() {
             <AppLogo className="h-9 w-9 shrink-0 object-contain" />
             <div className="hidden sm:block">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Quiz SupdesRH
+                Quiz SUP des RH
               </p>
               <p className="text-[10px] text-muted-foreground leading-tight">Quiz d'orientation</p>
             </div>
@@ -177,7 +177,7 @@ export function QuizLandingPage() {
               {
                 step: 3,
                 title: "Tu prends contact",
-                desc: "Pour avancer avec SupdesRH",
+                desc: "Pour avancer avec SUP des RH",
                 icon: MessageSquare,
                 color: "#f37021",
                 bg: "bg-[#f37021]/10",
@@ -279,7 +279,7 @@ export function QuizLandingPage() {
                     <span className="h-1.5 w-1.5 rounded-full bg-success mt-1.5 shrink-0" />
                     <span>
                       Les <span className="text-foreground font-medium">contacts</span> pour
-                      alternance ou stage chez SupdesRH
+                      alternance ou stage chez SUP des RH
                     </span>
                   </li>
                 </ul>

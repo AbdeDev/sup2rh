@@ -58,6 +58,11 @@ try {
 					<p class="brand-sub">Orientation métiers RH</p>
 				</div>
 			</div>
+			<nav class="header-nav">
+				<a href="/" class="nav-link nav-link-active">Accueil</a>
+				<a href="/ecole" class="nav-link">L'école</a>
+				<a href="/entreprises" class="nav-link">Entreprises</a>
+			</nav>
 			<div class="header-actions">
 				<button type="button" class="btn-theme" id="theme-toggle" aria-label="Changer le thème">
 					<svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
@@ -69,21 +74,40 @@ try {
 
 		<main class="main">
 			<section class="hero">
-				<div class="hero-badge">Quiz d'orientation RH</div>
-				<h1 class="hero-title">
-					Trouve le <span class="highlight">métier RH</span><br/>qui te ressemble
-				</h1>
-				<p class="hero-sub">
-					Réponds à un quiz personnalisé et découvre les métiers des Ressources Humaines faits pour toi : Recrutement, Paie, QVCT, Formation…
-				</p>
-				<div class="hero-actions">
-					<a href={WEB_APP_URL + "/login"} class="btn-primary">
-						Faire le quiz gratuitement
-					</a>
-					<a href="#metiers" class="btn-secondary">
-						Voir les fiches métiers ↓
-					</a>
+				<div class="hero-blob hero-blob-1" aria-hidden="true"></div>
+				<div class="hero-blob hero-blob-2" aria-hidden="true"></div>
+
+				<div class="hero-inner">
+					<div class="hero-badge">
+						<span class="hero-badge-dot" aria-hidden="true"></span>
+						Quiz d'orientation RH
+					</div>
+					<h1 class="hero-title">
+						Trouve le <span class="highlight">métier RH</span><br/>qui te ressemble
+					</h1>
+					<p class="hero-sub">
+						Réponds à 15 questions et découvre les métiers des Ressources Humaines faits pour toi — Recrutement, Paie, QVCT, Formation et plus encore.
+					</p>
+					<div class="hero-actions">
+						<a href={WEB_APP_URL + "/login"} class="btn-primary">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+							Faire le quiz — c'est gratuit
+						</a>
+						<a href="#metiers" class="btn-secondary">
+							Explorer les métiers
+						</a>
+					</div>
+
+					<div class="hero-proof">
+						<div class="proof-avatars" aria-hidden="true">
+							<span class="pa" style="background:#004080">A</span>
+							<span class="pa" style="background:#008c54">M</span>
+							<span class="pa" style="background:#f37021">L</span>
+						</div>
+						<span class="proof-text">+2 000 étudiants ont déjà trouvé leur voie</span>
+					</div>
 				</div>
+
 				<div class="hero-stats">
 					<div class="stat">
 						<span class="stat-number">{jobs.length || "5+"}</span>
@@ -99,6 +123,11 @@ try {
 						<span class="stat-number">3 min</span>
 						<span class="stat-label">Durée du quiz</span>
 					</div>
+					<div class="stat-divider"></div>
+					<div class="stat">
+						<span class="stat-number">100%</span>
+						<span class="stat-label">Gratuit</span>
+					</div>
 				</div>
 			</section>
 
@@ -109,7 +138,7 @@ try {
 					<p class="section-desc">Parcours les métiers RH sans créer de compte. Connecte-toi pour obtenir une recommandation personnalisée.</p>
 				</div>
 
-				<div class="jobs-grid">
+				<div class="jobs-grid" id="jobs-grid">
 					{fetchError && (
 						<p class="jobs-empty jobs-error">
 							Impossible de charger les fiches ({fetchError}). Vérifie que l'API backend tourne et que <code>PUBLIC_API_URL</code> est bien défini dans <code>.env</code>.
@@ -119,15 +148,15 @@ try {
 						<p class="jobs-empty">Aucune fiche métier pour le moment. Démarre l'API backend si besoin.</p>
 					)}
 					{!fetchError && jobs.map((job, idx) => (
-						<article class="job-card" id={`job-${job.id}`} style={`animation-delay: ${idx * 60}ms`}>
+						<article class={`job-card${idx >= 6 ? " job-card-extra" : ""}`} id={`job-${job.id}`} style={`animation-delay: ${(idx % 6) * 60}ms`}>
 							<div class="job-head">
 								<span class="job-badge">RH</span>
 								<h3 class="job-name">{job.name}</h3>
 							</div>
 							<p class="job-desc">
 								{job.description
-									? job.description.length > 200
-										? job.description.slice(0, 200) + "…"
+									? job.description.length > 180
+										? job.description.slice(0, 180) + "…"
 										: job.description
 									: "Fiche détaillée disponible après connexion au quiz."}
 							</p>
@@ -144,6 +173,14 @@ try {
 					))}
 				</div>
 
+				{jobs.length > 6 && (
+					<div class="jobs-show-more-wrap">
+						<button type="button" id="jobs-show-more" class="btn-show-more">
+							Voir les {jobs.length - 6} autres fiches métier
+						</button>
+					</div>
+				)}
+
 				<div class="section-cta">
 					<a href={WEB_APP_URL + "/fiches"} class="link-app">Voir toutes les fiches dans l'app →</a>
 				</div>
@@ -153,26 +190,155 @@ try {
 				<div class="section-header">
 					<div class="section-badge">Comment ça marche</div>
 					<h2 class="section-title">En 3 étapes simples</h2>
+					<p class="section-desc">Pas d'inscription longue, pas de mot de passe. Juste un quiz intelligent.</p>
 				</div>
 				<div class="steps-grid">
-					<div class="step-card">
-						<div class="step-number" style="background: rgba(0,64,128,0.12); color: #004080; border-color: rgba(0,64,128,0.25);">1</div>
+					<div class="step-card step-card-blue">
+						<div class="step-top">
+							<div class="step-number">1</div>
+							<div class="step-connector" aria-hidden="true"></div>
+						</div>
+						<div class="step-icon step-icon-blue" aria-hidden="true">
+							<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+						</div>
 						<h3 class="step-title">Connecte-toi</h3>
-						<p class="step-desc">Crée un compte en 10 secondes avec ton email. Pas de mot de passe, juste un lien magique.</p>
+						<p class="step-desc">Crée un compte en 10 secondes avec ton email. Pas de mot de passe — juste un lien magique.</p>
 					</div>
-					<div class="step-card">
-						<div class="step-number" style="background: rgba(0,140,84,0.12); color: #008c54; border-color: rgba(0,140,84,0.25);">2</div>
+					<div class="step-card step-card-green">
+						<div class="step-top">
+							<div class="step-number step-number-green">2</div>
+							<div class="step-connector" aria-hidden="true"></div>
+						</div>
+						<div class="step-icon step-icon-green" aria-hidden="true">
+							<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+						</div>
 						<h3 class="step-title">Fais le quiz</h3>
-						<p class="step-desc">15 questions rapides pour cerner ton profil. Dis si tu es d'accord ou pas, c'est tout.</p>
+						<p class="step-desc">15 questions rapides pour cerner ton profil. Tu lis une affirmation, tu valides ou pas — c'est tout.</p>
 					</div>
-					<div class="step-card">
-						<div class="step-number" style="background: rgba(243,112,33,0.12); color: #f37021; border-color: rgba(243,112,33,0.25);">3</div>
+					<div class="step-card step-card-orange">
+						<div class="step-top">
+							<div class="step-number step-number-orange">3</div>
+						</div>
+						<div class="step-icon step-icon-orange" aria-hidden="true">
+							<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+						</div>
 						<h3 class="step-title">Découvre ton résultat</h3>
-						<p class="step-desc">Reçois une recommandation personnalisée avec fiche métier, salaire et taux d'embauche.</p>
+						<p class="step-desc">Reçois une recommandation personnalisée avec fiche métier, fourchette salariale et taux d'embauche.</p>
 					</div>
 				</div>
-			</section>
-		</main>
+		</section>
+
+		<!-- Section SUP des RH -->
+		<section class="section-school">
+			<div class="school-inner">
+				<div class="school-text">
+					<span class="school-eyebrow">Derrière ce quiz</span>
+					<h2 class="school-title">SUP des RH — L'école 100% spécialisée en RH depuis 1998</h2>
+					<p class="school-sub">Toutes nos formations sont dispensées en alternance et reconnues par l'État (titres RNCP niveaux 6 et 7). Rejoignez les +8 500 alumnis SUP des RH qui évoluent dans tous les secteurs.</p>
+					<div class="school-actions">
+						<a href="/ecole" class="btn-school">Découvrir l'école →</a>
+						<a href="/entreprises" class="btn-school-ghost">Espace entreprises</a>
+					</div>
+				</div>
+				<div class="school-stats">
+					<div class="school-stat">
+						<span class="ss-val">27 ans</span>
+						<span class="ss-lbl">D'expérience (depuis 1998)</span>
+					</div>
+					<div class="school-stat">
+						<span class="ss-val">100%</span>
+						<span class="ss-lbl">Placement en alternance</span>
+					</div>
+					<div class="school-stat">
+						<span class="ss-val">600+</span>
+						<span class="ss-lbl">Entreprises partenaires</span>
+					</div>
+					<div class="school-stat">
+						<span class="ss-val">+8 500</span>
+						<span class="ss-lbl">Alumnis actifs</span>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<!-- Section Espace Entreprises -->
+	<section class="section-ent">
+		<div class="ent-inner">
+
+			<!-- En-tête de section -->
+			<div class="ent-header">
+				<span class="ent-eyebrow">Espace entreprises</span>
+				<h2 class="ent-title">Recrutez les talents RH de demain</h2>
+				<p class="ent-subtitle">SUP des RH forme des professionnels RH opérationnels dès la 1ère année. 600+ entreprises partenaires font confiance à notre réseau.</p>
+			</div>
+
+			<!-- Grille services -->
+			<div class="ent-services-grid">
+				<div class="ent-service-card">
+					<div class="ent-svc-icon ent-svc-icon-blue">
+						<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+					</div>
+					<h3 class="ent-svc-title">Déposer une offre</h3>
+					<p class="ent-svc-desc">Alternance ou stage — nos étudiants sont disponibles tout au long de l'année.</p>
+				</div>
+				<div class="ent-service-card">
+					<div class="ent-svc-icon ent-svc-icon-green">
+						<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+					</div>
+					<h3 class="ent-svc-title">Recruter un alumni</h3>
+					<p class="ent-svc-desc">+8 500 diplômés actifs dans tous les secteurs. Accédez à notre vivier de talents RH.</p>
+				</div>
+				<div class="ent-service-card">
+					<div class="ent-svc-icon ent-svc-icon-orange">
+						<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+					</div>
+					<h3 class="ent-svc-title">Devenir partenaire</h3>
+					<p class="ent-svc-desc">Intégrez notre réseau d'entreprises partenaires et participez à la formation des futurs RH.</p>
+				</div>
+				<div class="ent-service-card">
+					<div class="ent-svc-icon ent-svc-icon-purple">
+						<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+					</div>
+					<h3 class="ent-svc-title">Interventions & masterclass</h3>
+					<p class="ent-svc-desc">Partagez votre expertise en intervenant dans nos formations. Visibilité et engagement RSE.</p>
+				</div>
+			</div>
+
+			<!-- Bandeau stats + CTA -->
+			<div class="ent-cta-band">
+				<div class="ent-stats-row">
+					<div class="ent-stat-item">
+						<span class="ent-stat-val">600+</span>
+						<span class="ent-stat-lbl">Entreprises partenaires</span>
+					</div>
+					<div class="ent-stat-sep" aria-hidden="true"></div>
+					<div class="ent-stat-item">
+						<span class="ent-stat-val">100%</span>
+						<span class="ent-stat-lbl">Placement en alternance</span>
+					</div>
+					<div class="ent-stat-sep" aria-hidden="true"></div>
+					<div class="ent-stat-item">
+						<span class="ent-stat-val">48h</span>
+						<span class="ent-stat-lbl">Délai de réponse</span>
+					</div>
+					<div class="ent-stat-sep" aria-hidden="true"></div>
+					<div class="ent-stat-item">
+						<span class="ent-stat-val">27 ans</span>
+						<span class="ent-stat-lbl">D'expérience RH</span>
+					</div>
+				</div>
+				<div class="ent-cta-group">
+					<a href="/entreprises#contact" class="btn-ent-cta-primary">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+						Déposer une demande
+					</a>
+					<a href="/entreprises" class="btn-ent-cta-ghost">Découvrir l'espace entreprises →</a>
+				</div>
+			</div>
+
+		</div>
+	</section>
 
 		<footer class="footer">
 			<div class="footer-inner">
@@ -184,6 +350,8 @@ try {
 					<p class="footer-tagline">Orientation métiers RH, en toute confiance.</p>
 				</div>
 				<nav class="footer-links">
+					<a href="/ecole">L'école</a>
+					<a href="/entreprises">Entreprises</a>
 					<a href={WEB_APP_URL + "/legal/conditions"}>Conditions d'utilisation</a>
 					<a href={WEB_APP_URL + "/legal/confidentialite"}>Politique de confidentialité</a>
 					<a href={WEB_APP_URL + "/login"}>Accéder au quiz</a>
@@ -202,6 +370,17 @@ try {
 			if (typeof window.supdesrhToggleTheme === "function") window.supdesrhToggleTheme();
 		});
 	}
+
+	// Fiches métier — show more
+	const showMoreBtn = document.getElementById("jobs-show-more") as HTMLButtonElement | null;
+	if (showMoreBtn) {
+		showMoreBtn.addEventListener("click", () => {
+			const extras = document.querySelectorAll(".job-card-extra");
+			extras.forEach((el) => el.classList.add("job-visible"));
+			showMoreBtn.parentElement?.remove();
+		});
+	}
+
 </script>
 
 <style>
@@ -318,6 +497,266 @@ try {
 		box-shadow: 0 6px 20px rgba(0, 64, 128, 0.4);
 	}
 
+	/* Nav header */
+	.header-nav {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		margin: 0 auto;
+	}
+
+	.nav-link {
+		padding: 0.4rem 0.85rem;
+		border-radius: 999px;
+		font-size: 0.82rem;
+		font-weight: 500;
+		color: var(--landing-muted);
+		text-decoration: none;
+		transition: color 0.15s, background 0.15s;
+	}
+
+	.nav-link:hover, .nav-link-active {
+		color: var(--landing-accent);
+		background: rgba(0, 64, 128, 0.08);
+	}
+	html.dark .nav-link:hover, html.dark .nav-link-active {
+		background: rgba(56, 189, 248, 0.1);
+	}
+
+	@media (max-width: 640px) {
+		.header-nav { display: none; }
+	}
+
+	/* ── Section Espace Entreprises ── */
+	.section-ent {
+		padding: 0 0 3.5rem;
+	}
+
+	.ent-inner {
+		background: var(--landing-card);
+		border: 1px solid var(--landing-border);
+		border-radius: 28px;
+		overflow: hidden;
+		padding: 3rem 2.5rem 2.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 2.5rem;
+	}
+
+	/* En-tête */
+	.ent-header { text-align: center; }
+
+	.ent-eyebrow {
+		display: inline-block;
+		padding: 0.35rem 1rem;
+		border-radius: 999px;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		background: rgba(0,64,128,0.1);
+		color: #004080;
+		border: 1px solid rgba(0,64,128,0.2);
+		margin-bottom: 1rem;
+	}
+	html.dark .ent-eyebrow { background: rgba(56,189,248,0.1); color: #38bdf8; border-color: rgba(56,189,248,0.2); }
+
+	.ent-title {
+		font-size: clamp(1.4rem, 3vw, 2rem);
+		font-weight: 900;
+		color: var(--landing-text);
+		margin: 0 0 0.75rem;
+		font-family: "Figtree","Montserrat",system-ui,sans-serif;
+		letter-spacing: -0.02em;
+	}
+
+	.ent-subtitle {
+		font-size: 0.95rem;
+		color: var(--landing-muted);
+		max-width: 38rem;
+		margin: 0 auto;
+		line-height: 1.65;
+	}
+
+	/* Grille services */
+	.ent-services-grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 1rem;
+	}
+
+	.ent-service-card {
+		background: var(--landing-bg-soft);
+		border: 1px solid var(--landing-border);
+		border-radius: 18px;
+		padding: 1.5rem 1.25rem;
+		transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+	}
+
+	.ent-service-card:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+		border-color: rgba(0,64,128,0.3);
+	}
+	html.dark .ent-service-card:hover {
+		box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+		border-color: rgba(56,189,248,0.25);
+	}
+
+	.ent-svc-icon {
+		width: 46px; height: 46px;
+		border-radius: 14px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 1rem;
+	}
+	.ent-svc-icon-blue   { background: rgba(0,64,128,0.1);   color: #004080; }
+	.ent-svc-icon-green  { background: rgba(0,140,84,0.1);   color: #008c54; }
+	.ent-svc-icon-orange { background: rgba(243,112,33,0.1); color: #f37021; }
+	.ent-svc-icon-purple { background: rgba(124,58,237,0.1); color: #7c3aed; }
+	html.dark .ent-svc-icon-blue   { background: rgba(56,189,248,0.12);  color: #38bdf8; }
+	html.dark .ent-svc-icon-green  { background: rgba(74,222,128,0.12);  color: #4ade80; }
+	html.dark .ent-svc-icon-orange { background: rgba(251,146,60,0.12);  color: #fb923c; }
+	html.dark .ent-svc-icon-purple { background: rgba(167,139,250,0.12); color: #a78bfa; }
+
+	.ent-svc-title {
+		font-size: 0.9rem;
+		font-weight: 700;
+		color: var(--landing-text);
+		margin: 0 0 0.4rem;
+		font-family: "Figtree","Montserrat",system-ui,sans-serif;
+	}
+
+	.ent-svc-desc {
+		font-size: 0.8rem;
+		color: var(--landing-muted);
+		margin: 0;
+		line-height: 1.55;
+	}
+
+	/* Bandeau stats + CTA */
+	.ent-cta-band {
+		background: linear-gradient(135deg, #002855 0%, #004080 60%, #00559e 100%);
+		border-radius: 20px;
+		padding: 2rem 2.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 2rem;
+		flex-wrap: wrap;
+	}
+
+	.ent-stats-row {
+		display: flex;
+		align-items: center;
+		gap: 0;
+		flex-wrap: wrap;
+		flex: 1;
+	}
+
+	.ent-stat-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 0 1.75rem;
+	}
+
+	.ent-stat-val {
+		font-size: 1.5rem;
+		font-weight: 900;
+		color: #fff;
+		font-family: "Figtree","Montserrat",system-ui,sans-serif;
+		line-height: 1;
+	}
+
+	.ent-stat-lbl {
+		font-size: 0.68rem;
+		color: rgba(255,255,255,0.65);
+		margin-top: 0.2rem;
+		white-space: nowrap;
+		text-align: center;
+	}
+
+	.ent-stat-sep {
+		width: 1px;
+		height: 32px;
+		background: rgba(255,255,255,0.2);
+	}
+
+	.ent-cta-group {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		flex-shrink: 0;
+		flex-wrap: wrap;
+	}
+
+	.btn-ent-cta-primary {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.75rem 1.6rem;
+		border-radius: 12px;
+		background: #fff;
+		color: #004080 !important;
+		font-weight: 700;
+		font-size: 0.88rem;
+		text-decoration: none;
+		white-space: nowrap;
+		transition: transform 0.15s, box-shadow 0.15s;
+		box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+	}
+	.btn-ent-cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.22); }
+
+	.btn-ent-cta-ghost {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.75rem 1.6rem;
+		border-radius: 12px;
+		background: rgba(255,255,255,0.1);
+		border: 1px solid rgba(255,255,255,0.25);
+		color: #fff !important;
+		font-weight: 600;
+		font-size: 0.88rem;
+		text-decoration: none;
+		white-space: nowrap;
+		transition: background 0.15s;
+	}
+	.btn-ent-cta-ghost:hover { background: rgba(255,255,255,0.18); }
+
+	/* Responsive section entreprises */
+	@media (max-width: 1024px) {
+		.ent-services-grid { grid-template-columns: repeat(2, 1fr); }
+	}
+
+	@media (max-width: 768px) {
+		.ent-inner { padding: 2.25rem 1.75rem 2rem; gap: 2rem; }
+		.ent-cta-band { flex-direction: column; padding: 1.75rem 1.5rem; text-align: center; }
+		.ent-stats-row { justify-content: center; gap: 0.25rem; }
+		.ent-stat-item { padding: 0 1rem; }
+		.ent-cta-group { width: 100%; justify-content: center; }
+		.ent-stat-sep { height: 24px; }
+	}
+
+	@media (max-width: 640px) {
+		.ent-services-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+		.ent-stat-sep { display: none; }
+		.ent-stats-row {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1rem;
+			width: 100%;
+		}
+		.ent-stat-item { padding: 0.75rem; background: rgba(255,255,255,0.07); border-radius: 12px; }
+		.btn-ent-cta-primary, .btn-ent-cta-ghost { width: 100%; justify-content: center; text-align: center; }
+	}
+
+	@media (max-width: 480px) {
+		.ent-inner { padding: 1.75rem 1.25rem; border-radius: 20px; }
+		.ent-cta-band { padding: 1.5rem 1.25rem; border-radius: 16px; }
+	}
+
 	/* Main */
 	.main {
 		flex: 1;
@@ -327,47 +766,89 @@ try {
 		padding: 0 1.5rem;
 	}
 
-	/* Hero */
+	/* ── Hero ── */
 	.hero {
 		text-align: center;
-		padding: 4rem 0 3rem;
-		animation: heroFadeIn 0.6s ease-out;
+		padding: 4.5rem 0 3.5rem;
+		position: relative;
+		overflow: hidden;
+		animation: heroFadeIn 0.7s ease-out;
 	}
 
 	@keyframes heroFadeIn {
-		from { opacity: 0; transform: translateY(20px); }
+		from { opacity: 0; transform: translateY(24px); }
 		to { opacity: 1; transform: translateY(0); }
 	}
 
+	/* Blobs décoratifs */
+	.hero-blob {
+		position: absolute;
+		border-radius: 50%;
+		filter: blur(80px);
+		pointer-events: none;
+		z-index: 0;
+	}
+	.hero-blob-1 {
+		width: 420px; height: 420px;
+		background: rgba(0, 64, 128, 0.09);
+		top: -100px; left: -100px;
+	}
+	.hero-blob-2 {
+		width: 360px; height: 360px;
+		background: rgba(0, 140, 84, 0.07);
+		bottom: -80px; right: -80px;
+	}
+	html.dark .hero-blob-1 { background: rgba(56, 189, 248, 0.07); }
+	html.dark .hero-blob-2 { background: rgba(74, 222, 128, 0.06); }
+
+	.hero-inner { position: relative; z-index: 1; }
+
+	/* Badge hero */
 	.hero-badge {
-		display: inline-block;
-		padding: 0.35rem 1rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0.4rem 1.1rem;
 		border-radius: 999px;
 		font-size: 0.75rem;
-		font-weight: 600;
-		letter-spacing: 0.03em;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
 		background: rgba(0, 64, 128, 0.1);
 		color: #004080;
 		border: 1px solid rgba(0, 64, 128, 0.2);
-		margin-bottom: 1.5rem;
+		margin-bottom: 1.75rem;
+	}
+	.hero-badge-dot {
+		width: 7px; height: 7px;
+		border-radius: 50%;
+		background: #004080;
+		display: inline-block;
+		animation: pulse-dot 2s infinite;
 	}
 	html.dark .hero-badge {
 		background: rgba(56, 189, 248, 0.1);
 		color: #38bdf8;
 		border-color: rgba(56, 189, 248, 0.2);
 	}
+	html.dark .hero-badge-dot { background: #38bdf8; }
+	@keyframes pulse-dot {
+		0%, 100% { opacity: 1; transform: scale(1); }
+		50% { opacity: 0.5; transform: scale(0.7); }
+	}
 
 	.hero-title {
-		font-size: clamp(2rem, 5vw, 2.75rem);
-		font-weight: 800;
-		line-height: 1.15;
-		margin: 0 0 1rem;
+		font-size: clamp(2.1rem, 5.5vw, 3.1rem);
+		font-weight: 900;
+		line-height: 1.1;
+		margin: 0 0 1.1rem;
 		color: var(--landing-text);
 		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
+		letter-spacing: -0.02em;
 	}
 
 	.hero-title .highlight {
-		background: linear-gradient(120deg, #004080, #008c54);
+		background: linear-gradient(120deg, #004080 20%, #008c54);
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
@@ -382,48 +863,52 @@ try {
 	.hero-sub {
 		color: var(--landing-muted);
 		font-size: 1.05rem;
-		max-width: 32rem;
-		margin: 0 auto 2rem;
-		line-height: 1.6;
+		max-width: 34rem;
+		margin: 0 auto 2.25rem;
+		line-height: 1.65;
 	}
 
 	.hero-actions {
 		display: flex;
 		justify-content: center;
+		align-items: center;
 		gap: 0.75rem;
 		flex-wrap: wrap;
-		margin-bottom: 2.5rem;
+		margin-bottom: 2rem;
 	}
 
 	.btn-primary {
-		display: inline-block;
-		padding: 0.75rem 1.75rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.8rem 1.9rem;
 		border-radius: 999px;
-		background: #004080;
+		background: linear-gradient(135deg, #004080, #0059b3);
 		color: #fff;
 		font-weight: 700;
 		font-size: 0.95rem;
 		text-decoration: none;
 		box-shadow: 0 4px 20px rgba(0, 64, 128, 0.35);
-		transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+		transition: transform 0.15s ease, box-shadow 0.15s ease;
 	}
 
 	.btn-primary:hover {
 		transform: translateY(-2px);
-		background: #003366;
-		box-shadow: 0 8px 28px rgba(0, 64, 128, 0.45);
+		box-shadow: 0 8px 30px rgba(0, 64, 128, 0.45);
 	}
 
 	.btn-secondary {
-		display: inline-block;
-		padding: 0.75rem 1.75rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.8rem 1.75rem;
 		border-radius: 999px;
 		background: transparent;
 		color: var(--landing-text);
 		font-weight: 600;
 		font-size: 0.95rem;
 		text-decoration: none;
-		border: 1px solid var(--landing-border);
+		border: 1.5px solid var(--landing-border);
 		transition: all 0.15s ease;
 	}
 
@@ -432,30 +917,72 @@ try {
 		border-color: var(--landing-accent);
 	}
 
+	/* Proof bar */
+	.hero-proof {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.65rem;
+		margin-bottom: 2.5rem;
+	}
+	.proof-avatars {
+		display: flex;
+	}
+	.pa {
+		width: 30px; height: 30px;
+		border-radius: 50%;
+		border: 2px solid var(--landing-card);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.65rem;
+		font-weight: 700;
+		color: #fff;
+		margin-left: -8px;
+	}
+	.pa:first-child { margin-left: 0; }
+	.proof-text {
+		font-size: 0.8rem;
+		color: var(--landing-muted);
+		font-weight: 500;
+	}
+
+	/* Stats bar */
 	.hero-stats {
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		gap: 1.5rem;
+		gap: 0;
+		background: var(--landing-card);
+		border: 1px solid var(--landing-border);
+		border-radius: 16px;
+		padding: 0.85rem 2rem;
+		max-width: fit-content;
+		margin: 0 auto;
+		position: relative;
+		z-index: 1;
 	}
 
 	.stat {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		padding: 0 1.5rem;
 	}
 
 	.stat-number {
-		font-size: 1.35rem;
+		font-size: 1.4rem;
 		font-weight: 800;
 		color: var(--landing-text);
 		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
+		line-height: 1;
 	}
 
 	.stat-label {
-		font-size: 0.7rem;
+		font-size: 0.68rem;
 		color: var(--landing-muted);
 		letter-spacing: 0.02em;
+		margin-top: 0.15rem;
+		white-space: nowrap;
 	}
 
 	.stat-divider {
@@ -634,6 +1161,45 @@ try {
 		color: var(--landing-muted);
 	}
 
+	.job-card-extra {
+		display: none;
+	}
+
+	.job-card-extra.job-visible {
+		display: flex;
+	}
+
+	.jobs-show-more-wrap {
+		display: flex;
+		justify-content: center;
+		margin-top: 1.5rem;
+	}
+
+	.btn-show-more {
+		padding: 0.6rem 1.75rem;
+		border-radius: 999px;
+		border: 1.5px solid var(--landing-border);
+		background: var(--landing-card);
+		color: var(--landing-text);
+		font-size: 0.85rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: border-color 0.15s, background 0.15s, color 0.15s;
+		font-family: inherit;
+	}
+
+	.btn-show-more:hover {
+		border-color: var(--landing-accent);
+		color: var(--landing-accent);
+		background: rgba(0,64,128,0.05);
+	}
+
+	html.dark .btn-show-more:hover {
+		border-color: #38bdf8;
+		color: #38bdf8;
+		background: rgba(56,189,248,0.07);
+	}
+
 	.jobs-error code {
 		font-size: 0.8em;
 		background: var(--landing-border);
@@ -662,23 +1228,31 @@ try {
 		text-decoration: underline;
 	}
 
-	/* How it works */
+	/* ── How it works ── */
 	.section-how {
-		padding: 3rem 0 4rem;
+		padding: 3rem 0 4.5rem;
+	}
+
+	.section-how .section-desc {
+		color: var(--landing-muted);
+		font-size: 0.95rem;
+		max-width: 30rem;
+		margin: 0.4rem auto 0;
 	}
 
 	.steps-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		grid-template-columns: repeat(3, 1fr);
 		gap: 1.25rem;
+		margin-top: 2rem;
 	}
 
 	.step-card {
 		background: var(--landing-card);
 		border: 1px solid var(--landing-border);
-		border-radius: 16px;
-		padding: 1.5rem;
-		text-align: center;
+		border-radius: 20px;
+		padding: 1.75rem 1.5rem;
+		position: relative;
 		transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
 		animation: cardFadeIn 0.5s ease-out backwards;
 	}
@@ -688,26 +1262,70 @@ try {
 	.step-card:nth-child(3) { animation-delay: 0.3s; }
 
 	.step-card:hover {
-		transform: translateY(-3px);
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+		transform: translateY(-4px);
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
 	}
 	html.dark .step-card:hover {
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+	}
+
+	/* Top row: numéro + connecteur */
+	.step-top {
+		display: flex;
+		align-items: center;
+		gap: 0;
+		margin-bottom: 1rem;
+	}
+
+	.step-connector {
+		flex: 1;
+		height: 2px;
+		background: var(--landing-border);
+		margin-left: 0.75rem;
 	}
 
 	.step-number {
-		width: 44px;
-		height: 44px;
-		border-radius: 12px;
+		width: 36px; height: 36px;
+		border-radius: 50%;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 1.1rem;
+		font-size: 0.9rem;
 		font-weight: 800;
-		border: 1px solid;
-		margin-bottom: 1rem;
+		flex-shrink: 0;
+		background: rgba(0,64,128,0.12);
+		color: #004080;
+		border: 1.5px solid rgba(0,64,128,0.25);
 		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
 	}
+	.step-number-green {
+		background: rgba(0,140,84,0.12);
+		color: #008c54;
+		border-color: rgba(0,140,84,0.25);
+	}
+	.step-number-orange {
+		background: rgba(243,112,33,0.12);
+		color: #f37021;
+		border-color: rgba(243,112,33,0.25);
+	}
+	html.dark .step-number { background: rgba(56,189,248,0.1); color: #38bdf8; border-color: rgba(56,189,248,0.2); }
+	html.dark .step-number-green { background: rgba(74,222,128,0.1); color: #4ade80; border-color: rgba(74,222,128,0.2); }
+	html.dark .step-number-orange { background: rgba(251,146,60,0.1); color: #fb923c; border-color: rgba(251,146,60,0.2); }
+
+	.step-icon {
+		width: 46px; height: 46px;
+		border-radius: 14px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 0.9rem;
+	}
+	.step-icon-blue { background: rgba(0,64,128,0.1); color: #004080; }
+	.step-icon-green { background: rgba(0,140,84,0.1); color: #008c54; }
+	.step-icon-orange { background: rgba(243,112,33,0.1); color: #f37021; }
+	html.dark .step-icon-blue { background: rgba(56,189,248,0.1); color: #38bdf8; }
+	html.dark .step-icon-green { background: rgba(74,222,128,0.1); color: #4ade80; }
+	html.dark .step-icon-orange { background: rgba(251,146,60,0.1); color: #fb923c; }
 
 	.step-title {
 		font-size: 1rem;
@@ -721,7 +1339,7 @@ try {
 		font-size: 0.85rem;
 		color: var(--landing-muted);
 		margin: 0;
-		line-height: 1.5;
+		line-height: 1.6;
 	}
 
 	/* Footer */
@@ -796,7 +1414,21 @@ try {
 		opacity: 0.7;
 	}
 
-	/* Responsive */
+	/* ── Responsive ── */
+
+	/* Tablet large (≤1024px) */
+	@media (max-width: 1024px) {
+		.ent-services-grid { grid-template-columns: repeat(2, 1fr); }
+		.section-entreprises-wrapper {
+			padding: 4rem 1.5rem;
+		}
+		.ent-stats {
+			flex-wrap: wrap;
+			gap: 1rem;
+		}
+	}
+
+	/* Tablet (≤768px) */
 	@media (max-width: 768px) {
 		.main {
 			padding: 0 1.25rem;
@@ -820,15 +1452,20 @@ try {
 		}
 
 		.hero-title {
-			font-size: 1.75rem;
+			font-size: 1.85rem;
 		}
 
 		.hero-sub {
-			font-size: 0.95rem;
+			font-size: 0.9rem;
 		}
 
 		.hero-stats {
-			gap: 1rem;
+			padding: 0.75rem 1rem;
+			gap: 0;
+		}
+
+		.stat {
+			padding: 0 0.85rem;
 		}
 
 		.stat-number {
@@ -836,7 +1473,7 @@ try {
 		}
 
 		.jobs-grid {
-			grid-template-columns: 1fr;
+			grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 			gap: 1rem;
 		}
 
@@ -844,12 +1481,136 @@ try {
 			grid-template-columns: 1fr;
 		}
 
+		.step-connector { display: none; }
+
+		.school-inner {
+			grid-template-columns: 1fr;
+			padding: 2rem 1.5rem;
+			gap: 2rem;
+		}
+
 		.footer-links {
 			flex-direction: column;
 			gap: 0.75rem;
+			align-items: center;
+		}
+
+		/* Section entreprises tablet */
+		.section-entreprises-wrapper {
+			padding: 3.5rem 1.25rem;
+			margin-top: 2rem;
+		}
+
+		.ent-title {
+			font-size: 1.5rem;
+		}
+
+		.ent-stats {
+			gap: 0.75rem;
+		}
+
+		.ent-stat-val {
+			font-size: 1.1rem;
 		}
 	}
 
+	/* Mobile (≤640px) */
+	@media (max-width: 640px) {
+		.header-nav { display: none; }
+
+		.btn-connect {
+			padding: 0.5rem 0.9rem;
+			font-size: 0.78rem;
+		}
+
+		.hero-stats {
+			flex-wrap: wrap;
+			gap: 0.5rem;
+			justify-content: center;
+			padding: 0.75rem 1rem;
+		}
+
+		.stat-divider { display: none; }
+
+		.stat {
+			padding: 0.3rem 0.75rem;
+		}
+
+		.jobs-grid {
+			grid-template-columns: 1fr;
+		}
+
+		/* Section entreprises mobile */
+		.ent-services-grid { grid-template-columns: 1fr; gap: 0.65rem; }
+		.ent-stat-sep { display: none; }
+		.ent-stats-row {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 0.75rem;
+		}
+		.ent-stat-item {
+			padding: 0.65rem 0.5rem;
+			background: rgba(255,255,255,0.07);
+			border-radius: 10px;
+		}
+		.btn-ent-cta-primary, .btn-ent-cta-ghost { width: 100%; justify-content: center; text-align: center; }
+
+		/* Ancien espace entreprises (compat) */
+		.ent-stats {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 0.75rem;
+		}
+		.ent-form-card { padding: 1.5rem; }
+		.section-entreprises-wrapper { padding: 3rem 1rem; margin-top: 1.5rem; }
+	}
+
+	/* ── Section SUP des RH ── */
+	.section-school { padding: 0 0 3rem; }
+	.school-inner {
+		background: var(--landing-card);
+		border: 1px solid var(--landing-border);
+		border-radius: 24px;
+		padding: 3rem 2.5rem;
+		display: grid;
+		grid-template-columns: 1.2fr 1fr;
+		gap: 3rem;
+		align-items: center;
+	}
+	.school-eyebrow {
+		display: inline-block;
+		padding: 0.35rem 1rem;
+		border-radius: 999px;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		background: rgba(0,64,128,0.1);
+		color: #004080;
+		border: 1px solid rgba(0,64,128,0.2);
+		margin-bottom: 0.75rem;
+	}
+	html.dark .school-eyebrow { background: rgba(56,189,248,0.1); color: #38bdf8; border-color: rgba(56,189,248,0.2); }
+	.school-title {
+		font-size: clamp(1.1rem,2.5vw,1.45rem);
+		font-weight: 800;
+		color: var(--landing-text);
+		margin: 0 0 0.75rem;
+		font-family: "Figtree","Montserrat",system-ui,sans-serif;
+		line-height: 1.3;
+	}
+	.school-sub { font-size: 0.88rem; color: var(--landing-muted); line-height: 1.65; margin: 0 0 1.5rem; }
+	.school-actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+	.btn-school { display: inline-flex; align-items: center; padding: 0.65rem 1.35rem; border-radius: 999px; background: #004080; color: #fff !important; font-weight: 700; font-size: 0.85rem; text-decoration: none; transition: transform 0.15s, background 0.15s; }
+	.btn-school:hover { transform: translateY(-1px); background: #003366; }
+	.btn-school-ghost { display: inline-flex; align-items: center; padding: 0.65rem 1.35rem; border-radius: 999px; background: transparent; color: var(--landing-text); font-weight: 600; font-size: 0.85rem; text-decoration: none; border: 1.5px solid var(--landing-border); transition: all 0.15s; }
+	.btn-school-ghost:hover { background: var(--landing-bg-soft); border-color: #004080; }
+	.school-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+	.school-stat { background: var(--landing-bg-soft); border: 1px solid var(--landing-border); border-radius: 16px; padding: 1.1rem 1rem; text-align: center; transition: box-shadow 0.2s; }
+	.school-stat:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+	.ss-val { display: block; font-size: 1.5rem; font-weight: 800; color: var(--landing-accent); font-family: "Figtree","Montserrat",system-ui,sans-serif; margin-bottom: 0.2rem; }
+	.ss-lbl { font-size: 0.7rem; color: var(--landing-muted); line-height: 1.4; display: block; }
+
+	/* Mobile petit (≤480px) */
 	@media (max-width: 480px) {
 		.main {
 			padding: 0 1rem;
@@ -864,7 +1625,8 @@ try {
 		}
 
 		.hero-title {
-			font-size: 1.5rem;
+			font-size: 1.55rem;
+			letter-spacing: -0.01em;
 		}
 
 		.hero-actions {
@@ -873,14 +1635,37 @@ try {
 		}
 
 		.btn-primary,
-		.btn-secondary,
-		.btn-connect {
+		.btn-secondary {
 			width: 100%;
 			text-align: center;
+			justify-content: center;
+		}
+
+		.btn-connect {
+			padding: 0.45rem 0.8rem;
+			font-size: 0.75rem;
 		}
 
 		.section-title {
-			font-size: 1.25rem;
+			font-size: 1.2rem;
 		}
+
+		.ent-stats {
+			grid-template-columns: 1fr;
+		}
+
+		.ent-form-card {
+			padding: 1.25rem;
+		}
+
+		.school-actions { flex-direction: column; }
+		.btn-school, .btn-school-ghost { width: 100%; justify-content: center; text-align: center; }
+
+		.step-card { padding: 1.35rem 1.1rem; }
+
+		/* Espace entreprises tiny */
+		.ent-inner { padding: 1.5rem 1.1rem; border-radius: 18px; }
+		.ent-cta-band { padding: 1.5rem 1.1rem; border-radius: 14px; }
+		.ent-stat-val { font-size: 1.1rem; }
 	}
 </style>

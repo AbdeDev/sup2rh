@@ -278,6 +278,22 @@ export async function getFeedbacks(): Promise<{ items: FeedbackItem[] }> {
   return request<{ items: FeedbackItem[] }>("/admin/feedbacks");
 }
 
+// Admin - Demandes entreprises (contact depuis la landing)
+export interface CompanyContactItem {
+  id: string;
+  companyName: string;
+  contactName: string;
+  email: string;
+  phone: string | null;
+  message: string;
+  formationInterest: string | null;
+  createdAt: string;
+}
+
+export async function getCompanyContacts(): Promise<{ items: CompanyContactItem[] }> {
+  return request<{ items: CompanyContactItem[] }>("/company-contact/admin");
+}
+
 // Admin - Sessions par utilisateur (quiz, résultats, dates)
 export interface AdminUserSession {
   userId: string;
