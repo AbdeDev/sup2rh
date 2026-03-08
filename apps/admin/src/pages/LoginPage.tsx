@@ -42,7 +42,7 @@ export function LoginPage() {
           <div className="inline-flex h-16 w-16 items-center justify-center mb-5 transition-transform duration-200 hover:scale-105">
             <AppLogo className="h-16 w-16 object-contain" />
           </div>
-          <h1 className="text-2xl font-heading font-bold text-foreground mb-2">Admin SupdesRH</h1>
+          <h1 className="text-2xl font-heading font-bold text-foreground mb-2">Admin SUP des RH</h1>
           <p className="text-sm text-muted-foreground">Panneau d'administration</p>
         </div>
 
@@ -113,7 +113,7 @@ export function LoginPage() {
         </Card>
 
         <p className="text-center text-[10px] text-muted-foreground mt-6">
-          SupdesRH · Administration sécurisée
+          SUP des RH · Administration sécurisée
         </p>
       </div>
     </div>

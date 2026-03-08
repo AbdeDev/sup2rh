@@ -1,22 +1,43 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
-import { useSession } from "./useSession";
+import { supabase } from "../lib/supabase";
 import { FeedbackButton } from "../components/FeedbackButton";
 
-const REDIRECT_KEY = "redirectAfterLogin";
+type AuthState = "loading" | "authenticated" | "unauthenticated";
 
 export function RequireAuth({ children }: { children: ReactNode }) {
-  const { session, loading } = useSession();
+  const [authState, setAuthState] = useState<AuthState>("loading");
   const location = useLocation();
 
-  if (loading) return <div className="p-6">Chargement…</div>;
-  if (!session) {
-    const from = location.pathname + location.search;
-    if (from && from !== "/login") {
-      sessionStorage.setItem(REDIRECT_KEY, from);
-    }
-    return <Navigate to="/login" replace />;
+  useEffect(() => {
+    // Vérifie la session en cours
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuthState(session ? "authenticated" : "unauthenticated");
+    });
+
+    // Écoute les changements d'état d'auth (logout, token refresh...)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthState(session ? "authenticated" : "unauthenticated");
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (authState === "loading") {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-7 w-7 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (authState === "unauthenticated") {
+    // Mémorise la page demandée pour rediriger après connexion
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return (

@@ -36,7 +36,7 @@ final class ProfileService
     public function isAdmin(string $userId): bool
     {
         $profile = $this->profileRepository->find($userId);
-        return $profile && $profile->getRole() === 'ADMIN';
+        return $profile && strtoupper((string) $profile->getRole()) === 'ADMIN';
     }
 
     public function setRole(string $userId, string $role): void
@@ -47,7 +47,7 @@ final class ProfileService
             $profile = $this->ensureProfile($userId);
         }
 
-        $profile->setRole($role);
+        $profile->setRole(strtoupper(trim($role)));
         $this->em->flush();
     }
 

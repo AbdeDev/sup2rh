@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   Plus,
   Trash2,
@@ -50,7 +51,7 @@ export function AdminQuizzesPage() {
       await deleteQuiz(id);
       await loadData();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Erreur lors de la suppression");
+      toast.error(e instanceof Error ? e.message : "Erreur lors de la suppression");
     }
   }
 

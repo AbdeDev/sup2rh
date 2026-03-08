@@ -1,7 +1,5 @@
 import { useNavigate } from "react-router-dom";
 import {
-  CheckCircle2,
-  Play,
   ArrowRight,
   User,
   LogOut,
@@ -9,6 +7,10 @@ import {
   Sparkles,
   Target,
   MessageSquare,
+  BarChart3,
+  Briefcase,
+  ChevronRight,
+  BookOpen,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -17,6 +19,56 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { AppLogo } from "../components/AppLogo";
+
+const STEPS = [
+  {
+    step: 1,
+    title: "Réponds aux questions",
+    desc: "Quiz rapide, intuitif, 2 minutes chrono",
+    icon: Target,
+    color: "#004080",
+    bg: "bg-[#004080]/10",
+    border: "border-[#004080]/20",
+  },
+  {
+    step: 2,
+    title: "Découvres ton domaine RH",
+    desc: "18 grands domaines analysés par l'IA",
+    icon: BarChart3,
+    color: "#008c54",
+    bg: "bg-[#008c54]/10",
+    border: "border-[#008c54]/20",
+  },
+  {
+    step: 3,
+    title: "Accède à ta fiche métier",
+    desc: "Salaire, missions, formations, vidéo",
+    icon: BookOpen,
+    color: "#f37021",
+    bg: "bg-[#f37021]/10",
+    border: "border-[#f37021]/20",
+  },
+  {
+    step: 4,
+    title: "Prends contact",
+    desc: "Alternance ou stage chez SUP des RH",
+    icon: MessageSquare,
+    color: "#6b21a8",
+    bg: "bg-purple-100 dark:bg-purple-900/20",
+    border: "border-purple-200 dark:border-purple-800/40",
+  },
+];
+
+const DOMAINS = [
+  { emoji: "🎯", label: "Recrutement & Talents" },
+  { emoji: "📚", label: "Formation & Compétences" },
+  { emoji: "💰", label: "Paie & Rémunération" },
+  { emoji: "🤝", label: "Relations Sociales" },
+  { emoji: "💻", label: "SIRH & Digital RH" },
+  { emoji: "🌈", label: "Diversité & Inclusion" },
+  { emoji: "🌿", label: "QVCT & Bien-être" },
+  { emoji: "🚀", label: "Gestion des Talents" },
+];
 
 export function QuizLandingPage() {
   const navigate = useNavigate();
@@ -42,6 +94,7 @@ export function QuizLandingPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
       <header className="flex h-14 shrink-0 items-center border-b border-border bg-card/95 backdrop-blur-md sticky top-0 z-50">
         <div className="flex w-full items-center gap-2 px-4 lg:px-6">
           <button
@@ -53,7 +106,7 @@ export function QuizLandingPage() {
             <AppLogo className="h-9 w-9 shrink-0 object-contain" />
             <div className="hidden sm:block">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Quiz SupdesRH
+                Quiz SUP des RH
               </p>
               <p className="text-[10px] text-muted-foreground leading-tight">Quiz d'orientation</p>
             </div>
@@ -68,6 +121,15 @@ export function QuizLandingPage() {
               <Clock className="h-3.5 w-3.5 mr-1.5" />
               Mes sessions
             </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs text-muted-foreground hover:text-foreground hidden sm:flex"
+              onClick={() => navigate("/fiches")}
+            >
+              <Briefcase className="h-3.5 w-3.5 mr-1.5" />
+              Fiches métier
+            </Button>
             <ThemeToggle />
             <div className="relative" ref={userMenuRef}>
               <Button
@@ -79,7 +141,7 @@ export function QuizLandingPage() {
                 <User className="h-4 w-4" />
               </Button>
               {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-1.5 w-44 rounded-xl border border-border bg-card py-1.5 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl border border-border bg-card py-1.5 shadow-xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                   <button
                     type="button"
                     className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-foreground hover:bg-accent transition-colors rounded-lg mx-0.5"
@@ -104,6 +166,18 @@ export function QuizLandingPage() {
                     <Clock className="h-3.5 w-3.5" />
                     Mes sessions
                   </button>
+                  <button
+                    type="button"
+                    className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-colors rounded-lg mx-0.5 sm:hidden"
+                    style={{ width: "calc(100% - 4px)" }}
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      navigate("/fiches");
+                    }}
+                  >
+                    <Briefcase className="h-3.5 w-3.5" />
+                    Fiches métier
+                  </button>
                   <div className="my-1 border-t border-border" />
                   <button
                     type="button"
@@ -122,169 +196,154 @@ export function QuizLandingPage() {
       </header>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-4 py-8 md:py-14">
-          {/* Hero */}
-          <div className="text-center mb-14 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="inline-flex h-24 w-24 items-center justify-center mb-6 transition-transform duration-300 hover:scale-110">
+        {/* Hero */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-[#004080]/8 via-background to-[#008c54]/5 pointer-events-none" />
+          <div
+            className="absolute top-0 right-0 w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] rounded-full opacity-[0.04] pointer-events-none"
+            style={{
+              background: "radial-gradient(circle, #f37021, transparent)",
+              transform: "translate(30%, -30%)",
+            }}
+          />
+
+          <div className="relative max-w-4xl mx-auto px-4 py-12 md:py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="inline-flex h-24 w-24 items-center justify-center mb-6 transition-transform duration-300 hover:scale-110 drop-shadow-lg">
               <AppLogo className="h-24 w-24 object-contain" />
             </div>
-            <br />
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-[11px] font-medium text-primary mb-4">
+
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3.5 py-1.5 text-[11px] font-semibold text-primary mb-5">
               <Sparkles className="h-3 w-3" />
-              Quiz gratuit · Résultat immédiat
+              Quiz gratuit · Résultat immédiat · Basé sur 18 domaines RH
             </div>
-            <h1 className="text-3xl md:text-4xl font-heading font-bold text-foreground mb-4">
+
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-foreground mb-5 leading-tight">
               Quel métier RH est{" "}
               <span className="bg-gradient-to-r from-[#004080] via-[#008c54] to-[#f37021] bg-clip-text text-transparent">
-                fait pour toi
-              </span>{" "}
-              ?
+                fait pour toi ?
+              </span>
             </h1>
-            <p className="text-base text-muted-foreground max-w-lg mx-auto mb-8 leading-relaxed">
-              Réponds à quelques questions et découvre ton profil parmi les métiers RH :
-              Recrutement, Paie, QVCT, Assistant RH ou Formation.
+
+            <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed">
+              Réponds à quelques questions et découvre ton grand domaine RH parmi les 18 métiers
+              référencés par <strong className="text-foreground">SUP des RH</strong>.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button
+                onClick={() => navigate("/quiz/start")}
+                className="h-12 px-8 text-base rounded-xl font-semibold transition-all duration-200 hover:scale-105 shadow-lg gap-2"
+                style={{ backgroundColor: "#004080", color: "#fff" }}
+              >
+                Commencer le quiz
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/fiches")}
+                className="h-12 px-6 text-sm rounded-xl font-medium gap-2"
+              >
+                <Briefcase className="h-4 w-4" />
+                Explorer les fiches métier
+              </Button>
+            </div>
+
+            {/* Stats */}
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mt-10 pt-8 border-t border-border/60">
+              {[
+                { value: "18", label: "Domaines RH" },
+                { value: "~2 min", label: "Durée du quiz" },
+                { value: "100%", label: "Gratuit" },
+                { value: "IA", label: "Analyse instantanée" },
+              ].map((s) => (
+                <div key={s.label} className="text-center">
+                  <p className="text-lg font-heading font-bold text-foreground">{s.value}</p>
+                  <p className="text-[11px] text-muted-foreground">{s.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Domaines aperçu */}
+        <div className="border-y border-border/60 bg-muted/20 py-4 overflow-hidden">
+          <div className="flex gap-3 animate-scroll px-4" style={{ width: "max-content" }}>
+            {[...DOMAINS, ...DOMAINS].map((d, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap shrink-0"
+              >
+                {d.emoji} {d.label}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto px-4 py-10 md:py-14 space-y-14">
+          {/* Étapes */}
+          <div>
+            <div className="text-center mb-8">
+              <h2 className="text-xl font-heading font-bold text-foreground">
+                Comment ça marche ?
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">Quatre étapes simples</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {STEPS.map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <Card
+                    key={item.step}
+                    className="rounded-2xl border border-border bg-card hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out animate-in fade-in slide-in-from-bottom-4 group"
+                    style={{ animationDelay: `${idx * 80}ms` }}
+                  >
+                    <CardContent className="p-5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div
+                          className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${item.bg} border ${item.border} transition-transform group-hover:scale-110 duration-300`}
+                        >
+                          <Icon className="h-5 w-5" style={{ color: item.color }} />
+                        </div>
+                        <span
+                          className="text-2xl font-heading font-black opacity-10"
+                          style={{ color: item.color }}
+                        >
+                          {item.step}
+                        </span>
+                      </div>
+                      <p className="text-sm font-heading font-semibold text-foreground leading-snug">
+                        {item.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* CTA final */}
+          <div
+            className="rounded-2xl border border-primary/20 bg-gradient-to-br from-[#004080]/8 via-card to-[#008c54]/5 p-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-500"
+            style={{ animationDelay: "400ms" }}
+          >
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 mb-5">
+              <Sparkles className="h-7 w-7 text-primary" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-heading font-bold text-foreground mb-3">
+              Prêt à découvrir ton profil RH ?
+            </h2>
+            <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+              Gratuit, sans engagement, résultat personnalisé en moins de 2 minutes.
             </p>
             <Button
               onClick={() => navigate("/quiz/start")}
-              className="h-12 px-8 text-base bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-semibold transition-all duration-200 hover:scale-105 shadow-md"
+              className="h-12 px-8 text-base rounded-xl font-semibold transition-all duration-200 hover:scale-105 shadow-md gap-2"
+              style={{ backgroundColor: "#004080", color: "#fff" }}
             >
-              Commencer le quiz
-              <ArrowRight className="h-5 w-5 ml-2" />
+              Lancer le quiz maintenant
+              <ChevronRight className="h-5 w-5" />
             </Button>
-          </div>
-
-          {/* Étapes */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-14">
-            {[
-              {
-                step: 1,
-                title: "Tu fais le quiz",
-                desc: "Questions rapides et intuitives",
-                icon: Target,
-                color: "#004080",
-                bg: "bg-[#004080]/10",
-                border: "border-[#004080]/20",
-              },
-              {
-                step: 2,
-                title: "Tu découvres ton profil",
-                desc: "Résultat personnalisé et détaillé",
-                icon: Sparkles,
-                color: "#008c54",
-                bg: "bg-[#008c54]/10",
-                border: "border-[#008c54]/20",
-              },
-              {
-                step: 3,
-                title: "Tu prends contact",
-                desc: "Pour avancer avec SupdesRH",
-                icon: MessageSquare,
-                color: "#f37021",
-                bg: "bg-[#f37021]/10",
-                border: "border-[#f37021]/20",
-              },
-            ].map((item) => {
-              const Icon = item.icon;
-              return (
-                <Card
-                  key={item.step}
-                  className="rounded-2xl border border-border bg-card hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out animate-in fade-in slide-in-from-bottom-4"
-                  style={{ animationDelay: `${item.step * 80}ms` }}
-                >
-                  <CardContent className="p-6 text-center space-y-4">
-                    <div
-                      className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${item.bg} border ${item.border}`}
-                    >
-                      <Icon className="h-5 w-5" style={{ color: item.color }} />
-                    </div>
-                    <div
-                      className="text-[10px] font-bold uppercase tracking-widest"
-                      style={{ color: item.color }}
-                    >
-                      Étape {item.step}
-                    </div>
-                    <p className="text-sm font-heading font-bold text-foreground">{item.title}</p>
-                    <p className="text-xs text-muted-foreground">{item.desc}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Info sections */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Card
-              className="rounded-2xl border border-border bg-card hover:shadow-md hover:border-primary/30 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4"
-              style={{ animationDelay: "300ms" }}
-            >
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                  </div>
-                  <h2 className="text-sm font-heading font-bold text-foreground">
-                    Pourquoi ce quiz ?
-                  </h2>
-                </div>
-                <ul className="space-y-2.5 text-xs text-muted-foreground">
-                  <li className="flex items-start gap-2.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                    <span>
-                      Tu t&apos;intéresses aux{" "}
-                      <span className="text-foreground font-medium">Ressources Humaines</span> et tu
-                      hésites sur ton orientation
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary mt-1.5 shrink-0" />
-                    <span>
-                      Ce quiz t&apos;aide à{" "}
-                      <span className="text-foreground font-medium">identifier</span> le domaine RH
-                      qui te correspond, en 2 minutes
-                    </span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card
-              className="rounded-2xl border border-border bg-card hover:shadow-md hover:border-success/30 transition-all duration-300 animate-in fade-in slide-in-from-bottom-4"
-              style={{ animationDelay: "380ms" }}
-            >
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-success/10 border border-success/20 flex items-center justify-center">
-                    <Play className="h-5 w-5 text-success" />
-                  </div>
-                  <h2 className="text-sm font-heading font-bold text-foreground">
-                    Ce que tu obtiens
-                  </h2>
-                </div>
-                <ul className="space-y-2.5 text-xs text-muted-foreground">
-                  <li className="flex items-start gap-2.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-success mt-1.5 shrink-0" />
-                    <span>
-                      Un <span className="text-foreground font-medium">profil RH personnalisé</span>{" "}
-                      avec score de correspondance
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-success mt-1.5 shrink-0" />
-                    <span>
-                      La <span className="text-foreground font-medium">fiche métier complète</span>{" "}
-                      du domaine qui te correspond
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-success mt-1.5 shrink-0" />
-                    <span>
-                      Les <span className="text-foreground font-medium">contacts</span> pour
-                      alternance ou stage chez SupdesRH
-                    </span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

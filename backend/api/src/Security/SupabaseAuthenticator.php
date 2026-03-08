@@ -83,7 +83,9 @@ final class SupabaseAuthenticator extends AbstractAuthenticator
         $email = $decoded['email'] ?? null;
         $profile = $this->profileService->ensureProfile($userId, $email);
         // Accès admin : on vérifie uniquement le rôle en BDD (pas d’email ni d’invitation spécifique)
-        $roles = $profile->getRole() === 'ADMIN' ? ['ROLE_USER', 'ROLE_ADMIN'] : ['ROLE_USER'];
+        $roles = strtoupper((string) $profile->getRole()) === 'ADMIN'
+            ? ['ROLE_USER', 'ROLE_ADMIN']
+            : ['ROLE_USER'];
 
         $user = new AuthUser(
             id: $userId,

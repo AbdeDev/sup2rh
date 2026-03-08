@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   Shield,
   ShieldCheck,
@@ -73,7 +74,7 @@ export function AdminUsersPage() {
       await updateUserRole(user.id, newRole);
       await loadData();
     } catch (e) {
-      alert(e instanceof Error ? e.message : "Erreur lors de la mise à jour");
+      toast.error(e instanceof Error ? e.message : "Erreur lors de la mise à jour");
     } finally {
       setUpdating(null);
     }

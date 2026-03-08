@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { LoginForm } from "../components/login-form";
 import { AppLogo } from "../components/AppLogo";
@@ -6,6 +6,14 @@ import { ThemeToggle } from "../components/ThemeToggle";
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Mémorise la destination originale pour rediriger après connexion
+  const fromPath = (location.state as { from?: { pathname: string } } | null)?.from?.pathname;
+  if (fromPath && fromPath !== "/login") {
+    sessionStorage.setItem("redirectAfterLogin", fromPath);
+  }
+
   const fromResult =
     typeof window !== "undefined" &&
     sessionStorage.getItem("redirectAfterLogin")?.startsWith("/result");
@@ -21,7 +29,7 @@ export function LoginPage() {
           <div className="inline-flex h-20 w-20 items-center justify-center mb-5 transition-transform duration-300 hover:scale-110">
             <AppLogo className="h-20 w-20 object-contain" />
           </div>
-          <h1 className="text-2xl font-heading font-bold text-foreground mb-2">Quiz SupDesRh</h1>
+          <h1 className="text-2xl font-heading font-bold text-foreground mb-2">Quiz SUP des RH</h1>
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
             Découvre ton métier RH idéal grâce à notre quiz personnalisé
           </p>

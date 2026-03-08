@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import { Toaster } from "sonner";
 
 import { RequireAuth } from "./auth/RequireAuth";
 import { CheckEmailPage } from "./pages/CheckEmailPage";
@@ -17,62 +18,65 @@ import { LegalPrivacyPage } from "./pages/LegalPrivacyPage";
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomeRedirect />} />
+    <>
+      <Toaster position="top-right" richColors closeButton />
+      <Routes>
+        <Route path="/" element={<HomeRedirect />} />
 
-      {/* Public */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/check-email" element={<CheckEmailPage />} />
-      <Route path="/verify" element={<VerifyPage />} />
-      <Route path="/auth/callback" element={<AuthCallbackPage />} />
-      <Route path="/legal/conditions" element={<LegalConditionsPage />} />
-      <Route path="/legal/confidentialite" element={<LegalPrivacyPage />} />
+        {/* Public */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/check-email" element={<CheckEmailPage />} />
+        <Route path="/verify" element={<VerifyPage />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/legal/conditions" element={<LegalConditionsPage />} />
+        <Route path="/legal/confidentialite" element={<LegalPrivacyPage />} />
 
-      {/* Private */}
-      <Route
-        path="/quiz"
-        element={
-          <RequireAuth>
-            <QuizLandingPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/quiz/start"
-        element={
-          <RequireAuth>
-            <QuizStartPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/result/:id"
-        element={
-          <RequireAuth>
-            <ResultPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <RequireAuth>
-            <ProfilePage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/sessions"
-        element={
-          <RequireAuth>
-            <SessionsPage />
-          </RequireAuth>
-        }
-      />
-      <Route path="/fiches" element={<FichesPage />} />
+        {/* Private */}
+        <Route
+          path="/quiz"
+          element={
+            <RequireAuth>
+              <QuizLandingPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/quiz/start"
+          element={
+            <RequireAuth>
+              <QuizStartPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/result/:id"
+          element={
+            <RequireAuth>
+              <ResultPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <ProfilePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/sessions"
+          element={
+            <RequireAuth>
+              <SessionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route path="/fiches" element={<FichesPage />} />
 
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/quiz" replace />} />
+      </Routes>
+    </>
   );
 }
