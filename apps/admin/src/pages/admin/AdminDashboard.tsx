@@ -10,6 +10,7 @@ import {
   Building2,
   PanelLeftClose,
   PanelLeft,
+  LayoutGrid,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -21,6 +22,7 @@ import { AppLogo } from "../../components/AppLogo";
 
 const navItems = [
   { id: "jobs", label: "Fiches métier", icon: Briefcase, path: "/admin/jobs" },
+  { id: "job-categories", label: "Domaines RH", icon: LayoutGrid, path: "/admin/job-categories" },
   { id: "quizzes", label: "Quiz", icon: FileQuestion, path: "/admin/quizzes" },
   { id: "users", label: "Utilisateurs", icon: Users, path: "/admin/users" },
   { id: "contact-requests", label: "Demandes", icon: Mail, path: "/admin/contact-requests" },

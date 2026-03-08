@@ -13,6 +13,7 @@ import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
 import { AdminContactRequestsPage } from "./pages/admin/AdminContactRequestsPage";
 import { AdminCompanyContactsPage } from "./pages/admin/AdminCompanyContactsPage";
 import { AdminFeedbacksPage } from "./pages/admin/AdminFeedbacksPage";
+import { AdminJobCategoriesPage } from "./pages/admin/AdminJobCategoriesPage";
 
 export default function App() {
   return (
@@ -92,6 +93,17 @@ export default function App() {
             <RequireAuth>
               <RequireAdmin>
                 <AdminFeedbacksPage />
+              </RequireAdmin>
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/admin/job-categories"
+          element={
+            <RequireAuth>
+              <RequireAdmin>
+                <AdminJobCategoriesPage />
               </RequireAdmin>
             </RequireAuth>
           }

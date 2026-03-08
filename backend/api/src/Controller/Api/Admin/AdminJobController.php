@@ -73,6 +73,7 @@ final class AdminJobController extends AbstractController
         $job->setTurnoverRate(isset($data['turnoverRate']) ? (float) $data['turnoverRate'] : null);
         $job->setIndicators(self::normalizeIndicators($data['indicators'] ?? null));
         $job->setVideoUrl(isset($data['videoUrl']) && is_string($data['videoUrl']) ? $data['videoUrl'] : null);
+        $job->setCategory(isset($data['category']) && is_string($data['category']) ? $data['category'] : null);
 
         $em->persist($job);
         $em->flush();
@@ -114,6 +115,9 @@ final class AdminJobController extends AbstractController
         if (array_key_exists('videoUrl', $data)) {
             $job->setVideoUrl(is_string($data['videoUrl']) ? $data['videoUrl'] : null);
         }
+        if (array_key_exists('category', $data)) {
+            $job->setCategory(is_string($data['category']) ? $data['category'] : null);
+        }
 
         $em->flush();
         return $this->json($this->jobToArray($job));
@@ -143,6 +147,7 @@ final class AdminJobController extends AbstractController
             'turnoverRate' => $job->getTurnoverRate(),
             'indicators' => $job->getIndicators(),
             'videoUrl' => $job->getVideoUrl(),
+            'category' => $job->getCategory(),
             'createdAt' => $job->getCreatedAt()->format(DATE_ATOM),
         ];
     }

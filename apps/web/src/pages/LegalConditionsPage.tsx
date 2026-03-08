@@ -58,7 +58,7 @@ export function LegalConditionsPage() {
                     Conditions d&apos;utilisation
                   </h1>
                   <p className="text-[11px] text-muted-foreground">
-                    Quizz SupDesRh &middot; Lamascott
+                    Quiz SUP des RH &middot; Lamascott
                   </p>
                 </div>
               </div>
@@ -73,7 +73,7 @@ export function LegalConditionsPage() {
                 {
                   title: "1. Objet du service",
                   content:
-                    "Le service Quizz SupDesRh a pour objectif de t'aider à découvrir les métiers des Ressources Humaines qui te correspondent le mieux, à travers un quiz court et personnalisé et des fiches métiers pédagogiques. Il s'agit d'un outil d'orientation et de réflexion, sans valeur contractuelle ni engagement d'admission.",
+                    "Le service Quiz SUP des RH a pour objectif de t'aider à découvrir les métiers des Ressources Humaines qui te correspondent le mieux, à travers un quiz court et personnalisé et des fiches métiers pédagogiques. Il s'agit d'un outil d'orientation et de réflexion, sans valeur contractuelle ni engagement d'admission.",
                 },
                 {
                   title: "2. Création de compte",

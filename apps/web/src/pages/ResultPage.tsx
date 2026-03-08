@@ -44,10 +44,13 @@ export function ResultPage() {
   const [error, setError] = useState<string | null>(null);
   const [contactLoading, setContactLoading] = useState(false);
   const [showAllScores, setShowAllScores] = useState(false);
+  const [allJobs, setAllJobs] = useState<JobFiche[]>([]);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
   const buildResultFromScores = useCallback(
     async (finalJobId: string, scores: Record<string, number>, answerCount?: number) => {
       const { items } = await getJobs();
+      setAllJobs(items);
       const job = items.find((j) => j.id === finalJobId) as JobFiche | undefined;
       const topScore = Math.max(...Object.values(scores), 0.5);
       const result: AnalysisResult = {
@@ -96,6 +99,7 @@ export function ResultPage() {
 
       if (s.finalJobId && s.scores && Object.keys(s.scores).length > 0) {
         const { items } = await getJobs();
+        setAllJobs(items);
         const job = items.find((j) => j.id === s.finalJobId!) as JobFiche | undefined;
         const topScore = Math.max(...Object.values(s.scores), 0.5);
         result = {
@@ -188,6 +192,21 @@ export function ResultPage() {
     }));
   }, [analysis]);
 
+  // Job sélectionné (via clic sur le graphique) ou job principal
+  const activeJobId = selectedJobId ?? analysis?.jobId ?? null;
+  const selectedJob = useMemo(() => {
+    if (!activeJobId) return analysis?.job ?? null;
+    return (allJobs.find((j) => j.id === activeJobId) ?? analysis?.job) as JobFiche | null;
+  }, [activeJobId, allJobs, analysis]);
+
+  // Tous les jobs du même sous-thème
+  const categoryJobs = useMemo(() => {
+    const cat = selectedJob?.category;
+    if (!cat || allJobs.length === 0) return selectedJob ? [selectedJob] : [];
+    const inCat = allJobs.filter((j) => j.category === cat);
+    return inCat.length > 0 ? inCat : selectedJob ? [selectedJob] : [];
+  }, [selectedJob, allJobs]);
+
   const INITIAL_VISIBLE = 5;
   const visibleChartData = showAllScores
     ? scoresChartData
@@ -198,7 +217,7 @@ export function ResultPage() {
   const remainingPercent = Math.max(0, 100 - confidencePercent);
   const topJobLabel =
     analysis?.job?.name ?? (analysis?.jobId ? jobLabel(analysis.jobId) : "Métier RH");
-  const fiche = analysis?.job;
+  const fiche = selectedJob ?? analysis?.job ?? null;
 
   const chartConfig: ChartConfig = {
     value: { label: "Correspondance", color: "--chart-1" },
@@ -313,15 +332,31 @@ export function ResultPage() {
 
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-6 md:space-y-8">
-          {/* Résultat principal */}
+          {/* Résultat principal — Grand domaine RH */}
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center">
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-success/15 border border-success/25 mb-5 transition-transform duration-200 hover:scale-105">
                 <CheckCircle2 className="h-8 w-8 text-success" />
               </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-3">
-                {topJobLabel}
-              </h1>
+              {/* Domaine = titre principal */}
+              {analysis?.job?.category ? (
+                <>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">
+                    Ton domaine RH
+                  </p>
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-2 leading-tight">
+                    {analysis.job.category}
+                  </h1>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Métier le plus proche :{" "}
+                    <span className="font-semibold text-foreground">{topJobLabel}</span>
+                  </p>
+                </>
+              ) : (
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-3">
+                  {topJobLabel}
+                </h1>
+              )}
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-sm font-semibold text-primary">
                   {confidencePercent}% de correspondance
@@ -330,10 +365,15 @@ export function ResultPage() {
                   {answerCount} question{answerCount > 1 ? "s" : ""} répondue
                   {answerCount > 1 ? "s" : ""}
                 </span>
+                {categoryJobs.length > 1 && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#008c54]/10 border border-[#008c54]/20 px-3 py-1 text-xs font-semibold text-[#008c54]">
+                    {categoryJobs.length} fiches dans ce domaine
+                  </span>
+                )}
               </div>
               {!!remainingPercent && (
                 <p className="mt-3 text-xs text-muted-foreground max-w-md mx-auto">
-                  Il reste {remainingPercent}% de marge pour explorer d&apos;autres métiers RH.
+                  Il reste {remainingPercent}% de marge pour explorer d&apos;autres domaines RH.
                 </p>
               )}
             </div>
@@ -402,9 +442,43 @@ export function ResultPage() {
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-1">
                     {scoresChartData.length} métier{scoresChartData.length > 1 ? "s" : ""} analysé
-                    {scoresChartData.length > 1 ? "s" : ""} — Plus la barre est haute, plus le
-                    métier te correspond.
+                    {scoresChartData.length > 1 ? "s" : ""} — Clique sur une barre pour explorer le
+                    domaine associé.
                   </p>
+                  {selectedJob?.category && (
+                    <div className="mt-3 flex items-center gap-2 flex-wrap">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-[#008c54]/10 border border-[#008c54]/20 px-3 py-1 text-xs font-semibold text-[#008c54]">
+                        <svg
+                          className="h-3 w-3"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                          />
+                        </svg>
+                        {selectedJob.category}
+                      </span>
+                      {categoryJobs.length > 1 && (
+                        <span className="text-[10px] text-muted-foreground">
+                          {categoryJobs.length} fiches dans ce sous-thème
+                        </span>
+                      )}
+                      {selectedJobId && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedJobId(null)}
+                          className="text-[10px] text-primary hover:underline ml-1"
+                        >
+                          ← Retour au résultat principal
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <ChartContainer
                   config={chartConfig}
@@ -438,19 +512,28 @@ export function ResultPage() {
                         ? "#004080"
                         : (barColors[idx % barColors.length] ?? "#6b7280");
 
+                      const isSelected = item.jobId === activeJobId;
                       return (
-                        <div
+                        <button
+                          type="button"
                           key={item.jobId}
-                          className="flex flex-col items-center gap-1.5 animate-in fade-in"
+                          onClick={() =>
+                            setSelectedJobId(item.jobId === analysis?.jobId ? null : item.jobId)
+                          }
+                          title={`Voir les fiches : ${item.label}`}
+                          className="flex flex-col items-center gap-1.5 animate-in fade-in cursor-pointer group transition-transform duration-150 hover:scale-105 focus:outline-none"
                           style={{
                             animationDelay: `${idx * 50}ms`,
                             minWidth: visibleChartData.length > 8 ? "56px" : undefined,
                             flex: visibleChartData.length <= 8 ? "1 1 0" : undefined,
                             maxWidth: "100px",
+                            background: "none",
+                            border: "none",
+                            padding: 0,
                           }}
                         >
                           <span
-                            className={`text-[10px] sm:text-xs tabular-nums font-bold ${item.isMain ? "text-foreground" : "text-muted-foreground"}`}
+                            className={`text-[10px] sm:text-xs tabular-nums font-bold ${isSelected ? "text-foreground" : "text-muted-foreground"}`}
                           >
                             {item.value}%
                           </span>
@@ -459,29 +542,32 @@ export function ResultPage() {
                             style={{ height: "160px" }}
                           >
                             <div
-                              className="w-full rounded-t-lg transition-all duration-700 ease-out hover:opacity-80"
+                              className="w-full rounded-t-lg transition-all duration-700 ease-out"
                               style={{
                                 height: `${barHeight}px`,
-                                background: item.isMain
+                                background: isSelected
                                   ? `linear-gradient(180deg, ${barColor} 0%, ${barColor}cc 100%)`
-                                  : `linear-gradient(180deg, ${barColor}99 0%, ${barColor}66 100%)`,
-                                boxShadow: item.isMain ? `0 -4px 16px ${barColor}33` : undefined,
+                                  : `linear-gradient(180deg, ${barColor}55 0%, ${barColor}33 100%)`,
+                                boxShadow: isSelected ? `0 -4px 16px ${barColor}44` : undefined,
+                                outline: isSelected ? `2px solid ${barColor}` : undefined,
+                                outlineOffset: "2px",
+                                borderRadius: "6px 6px 0 0",
                                 minWidth: "24px",
                               }}
                             />
                           </div>
                           <span
                             className={`text-[9px] sm:text-[10px] text-center leading-tight line-clamp-2 ${
-                              item.isMain
+                              isSelected
                                 ? "font-semibold text-foreground"
-                                : "text-muted-foreground"
+                                : "text-muted-foreground group-hover:text-foreground"
                             }`}
                             title={item.label}
                             style={{ minHeight: "24px" }}
                           >
                             {item.label.length > 14 ? item.label.slice(0, 12) + "…" : item.label}
                           </span>
-                        </div>
+                        </button>
                       );
                     })}
                   </div>
@@ -504,6 +590,117 @@ export function ResultPage() {
             </Card>
           )}
 
+          {/* ── Carrousel fiches du domaine ── toujours visible si catégorie connue */}
+          {categoryJobs.length > 0 && (
+            <Card
+              className="border border-[#008c54]/25 bg-card animate-in fade-in slide-in-from-bottom-4 duration-500"
+              style={{ animationDelay: "140ms" }}
+            >
+              <CardContent className="p-5 md:p-6">
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="h-9 w-9 rounded-lg bg-[#008c54]/15 border border-[#008c54]/25 flex items-center justify-center shrink-0">
+                      <svg
+                        className="h-4 w-4 text-[#008c54]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                        />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="text-sm font-heading font-semibold text-foreground truncate">
+                        {selectedJob?.category ?? "Fiches de ce domaine"}
+                      </h2>
+                      <p className="text-[10px] text-muted-foreground">
+                        {categoryJobs.length === 1
+                          ? "1 fiche dans ce domaine"
+                          : `${categoryJobs.length} fiches · Glisse pour explorer →`}
+                      </p>
+                    </div>
+                  </div>
+                  {selectedJobId && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedJobId(null)}
+                      className="text-[10px] text-primary hover:underline shrink-0"
+                    >
+                      ← Retour
+                    </button>
+                  )}
+                </div>
+                <div
+                  className="flex gap-3 overflow-x-auto pb-3 hide-scrollbar"
+                  style={{ scrollSnapType: "x mandatory" }}
+                >
+                  {categoryJobs.map((j) => {
+                    const isActive = j.id === activeJobId;
+                    const isTop = j.id === analysis?.jobId;
+                    return (
+                      <button
+                        key={j.id}
+                        type="button"
+                        onClick={() => setSelectedJobId(j.id === analysis?.jobId ? null : j.id)}
+                        className="shrink-0 text-left rounded-xl border transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary active:scale-[0.98]"
+                        style={{
+                          width: categoryJobs.length === 1 ? "100%" : "clamp(200px, 60vw, 240px)",
+                          scrollSnapAlign: "start",
+                          borderColor: isActive ? "#004080" : "var(--border)",
+                          background: isActive ? "rgba(0,64,128,0.07)" : "var(--card)",
+                          padding: "16px",
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <div
+                            className="h-7 w-7 rounded-md flex items-center justify-center"
+                            style={{ background: isActive ? "#004080" : "rgba(0,64,128,0.1)" }}
+                          >
+                            <Sparkles
+                              className="h-3.5 w-3.5"
+                              style={{ color: isActive ? "#fff" : "#004080" }}
+                            />
+                          </div>
+                          {isTop && (
+                            <span className="text-[9px] font-bold text-[#008c54] bg-[#008c54]/10 rounded-full px-2 py-0.5">
+                              ✓ Recommandé
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs font-semibold text-foreground leading-snug mb-2 line-clamp-2">
+                          {j.name}
+                        </p>
+                        {j.salary && (
+                          <p className="text-[10px] text-muted-foreground">💰 {j.salary}</p>
+                        )}
+                        {j.hiringRate != null && (
+                          <p className="text-[10px] text-muted-foreground">
+                            📊 {j.hiringRate}% embauche
+                          </p>
+                        )}
+                        {j.description && (
+                          <p className="text-[10px] text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+                            {j.description}
+                          </p>
+                        )}
+                        {isActive && (
+                          <p className="text-[9px] font-semibold text-primary mt-2">
+                            → Fiche détaillée ci-dessous
+                          </p>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Fiche métier RH */}
           <Card
             className="border border-border bg-card animate-in fade-in slide-in-from-bottom-4 duration-500"
@@ -514,9 +711,14 @@ export function ResultPage() {
                 <div className="h-8 w-8 rounded-lg bg-primary/15 border border-primary/25 flex items-center justify-center">
                   <Sparkles className="h-4 w-4 text-primary" />
                 </div>
-                <h2 className="text-base font-heading font-semibold text-foreground">
-                  Fiche métier RH
-                </h2>
+                <div>
+                  <h2 className="text-base font-heading font-semibold text-foreground">
+                    {fiche?.name ?? "Fiche métier RH"}
+                  </h2>
+                  {fiche?.category && (
+                    <p className="text-[10px] text-muted-foreground">{fiche.category}</p>
+                  )}
+                </div>
               </div>
               <div className="space-y-5">
                 {fiche?.description && (
@@ -660,7 +862,7 @@ export function ResultPage() {
                 Intéressé par ce métier ?
               </h3>
               <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
-                L&apos;équipe SupdesRH peut t&apos;aider à trouver une alternance ou un stage dans
+                L&apos;équipe SUP des RH peut t&apos;aider à trouver une alternance ou un stage dans
                 ce domaine.
               </p>
               <Button

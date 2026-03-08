@@ -31,6 +31,7 @@ final class JobsController extends AbstractController
             'turnoverRate' => $job->getTurnoverRate(),
             'indicators' => $job->getIndicators(),
             'videoUrl' => $job->getVideoUrl(),
+            'category' => $job->getCategory(),
             'createdAt' => $job->getCreatedAt()->format(DATE_ATOM),
         ];
     }

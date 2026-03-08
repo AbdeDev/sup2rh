@@ -243,6 +243,15 @@ a:hover {
   -webkit-filter: none !important;
 }
 
+/* Scrollbar masquée pour les carrousels horizontaux */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Palette SUP des RH — Bleu #004080, Vert #008C54, Orange #F37021, Gris #6B7280 */
 .dark {
   color-scheme: dark;
@@ -263,8 +272,8 @@ a:hover {
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   --border: #334155;
-  --input: #1e293b;
-  --ring: #004080;
+  --input: #475569;
+  --ring: #4d8fdb;
   --success: #008c54;
   --orange: #f37021;
   --chart-1: #004080;

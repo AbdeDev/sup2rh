@@ -106,6 +106,7 @@ export interface Job {
   turnoverRate?: number;
   indicators?: JobIndicator[];
   videoUrl?: string;
+  category?: string;
   createdAt: string;
 }
 
@@ -118,6 +119,7 @@ export interface CreateJobRequest {
   turnoverRate?: number;
   indicators?: JobIndicator[];
   videoUrl?: string;
+  category?: string;
 }
 
 export interface UpdateJobRequest {
@@ -128,6 +130,7 @@ export interface UpdateJobRequest {
   turnoverRate?: number;
   indicators?: JobIndicator[];
   videoUrl?: string;
+  category?: string;
 }
 
 export async function getJobs(): Promise<{ items: Job[] }> {
@@ -348,4 +351,60 @@ export interface AdminSessionDetail {
 
 export async function getAdminSessionDetail(sessionId: string): Promise<AdminSessionDetail> {
   return request<AdminSessionDetail>(`/admin/sessions/${sessionId}`);
+}
+
+// ─── Grands domaines RH (Job Categories) ────────────────────────────────────
+
+export interface JobCategory {
+  id: string;
+  name: string;
+  emoji: string | null;
+  description: string | null;
+  status: "established" | "emerging" | null;
+  position: number;
+  createdAt: string;
+}
+
+export interface CreateJobCategoryRequest {
+  id?: string;
+  name: string;
+  emoji?: string;
+  description?: string;
+  status?: "established" | "emerging";
+  position?: number;
+}
+
+export interface UpdateJobCategoryRequest {
+  name?: string;
+  emoji?: string | null;
+  description?: string | null;
+  status?: "established" | "emerging" | null;
+  position?: number;
+}
+
+export async function getJobCategories(): Promise<{ items: JobCategory[] }> {
+  return request<{ items: JobCategory[] }>("/admin/job-categories");
+}
+
+export async function createJobCategory(data: CreateJobCategoryRequest): Promise<JobCategory> {
+  return request<JobCategory>("/admin/job-categories", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateJobCategory(
+  id: string,
+  data: UpdateJobCategoryRequest,
+): Promise<JobCategory> {
+  return request<JobCategory>(`/admin/job-categories/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteJobCategory(id: string): Promise<void> {
+  return request<void>(`/admin/job-categories/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
 }

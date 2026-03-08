@@ -47,6 +47,10 @@ class Job
     #[ORM\Column(type: Types::STRING, length: 1024, nullable: true)]
     private ?string $videoUrl = null;
 
+    /** Sous-thème / catégorie RH (ex: "Formation et Développement des Compétences") */
+    #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+    private ?string $category = null;
+
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private \DateTimeImmutable $createdAt;
 
@@ -140,6 +144,17 @@ class Job
     public function setVideoUrl(?string $videoUrl): static
     {
         $this->videoUrl = $videoUrl;
+        return $this;
+    }
+
+    public function getCategory(): ?string
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?string $category): static
+    {
+        $this->category = $category;
         return $this;
     }
 

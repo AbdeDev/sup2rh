@@ -58,14 +58,14 @@ export function LegalPrivacyPage() {
                     Politique de confidentialité
                   </h1>
                   <p className="text-[11px] text-muted-foreground">
-                    Quizz SupDesRh &middot; Lamascott
+                    Quiz SUP des RH &middot; Lamascott
                   </p>
                 </div>
               </div>
 
               <p>
                 Cette politique de confidentialité explique quelles données personnelles sont
-                collectées lorsque tu utilises l&apos;outil d&apos;orientation Quizz SupDesRh
+                collectées lorsque tu utilises l&apos;outil d&apos;orientation Quiz SUP des RH
                 (Lamascott), comment elles sont utilisées et quels sont tes droits.
               </p>
 
@@ -126,7 +126,7 @@ export function LegalPrivacyPage() {
                 {
                   title: "5. Partage des données",
                   content:
-                    "Les données collectées via l'outil Quizz SupDesRh sont utilisées uniquement par Sup des RH et ses prestataires techniques pour le fonctionnement du service. Elles ne sont ni revendues, ni utilisées à des fins publicitaires pour des tiers.",
+                    "Les données collectées via l'outil Quiz SUP des RH sont utilisées uniquement par Sup des RH et ses prestataires techniques pour le fonctionnement du service. Elles ne sont ni revendues, ni utilisées à des fins publicitaires pour des tiers.",
                 },
                 {
                   title: "6. Tes droits",
