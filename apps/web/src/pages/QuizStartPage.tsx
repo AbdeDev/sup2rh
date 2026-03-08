@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowRight, ArrowLeft, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
 
 import {
   createQuizSession,
@@ -12,8 +12,6 @@ import {
   type QuizQuestion,
 } from "../lib/api";
 import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
-import { Slider } from "../components/ui/slider";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { AppLogo } from "../components/AppLogo";
 
@@ -35,28 +33,13 @@ const FALLBACK_QUESTIONS: QuizQuestion[] = [
   { id: "q15", text: "Je préfère les environnements structurés" },
 ];
 
-const MASCOTT_LOGOS = [
-  "/logo-1.png",
-  "/logo-2.png",
-  "/logo-3.png",
-  "/logo-4.png",
-  "/logo-5.png",
-  "/logo-6.png",
-  "/logo-7.png",
-  "/logo-8.png",
-];
-
-function useRandomLogoIndices(questionIds: string[]) {
-  const idsKey = questionIds.join(",");
-  return useMemo(() => {
-    const map: Record<string, number> = {};
-    questionIds.forEach((id) => {
-      map[id] = Math.floor(Math.random() * MASCOTT_LOGOS.length);
-    });
-    return map;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idsKey]);
-}
+const SCORE_CONFIG: Record<number, { label: string; color: string; bg: string }> = {
+  1: { label: "Pas du tout", color: "#ef4444", bg: "bg-red-50 dark:bg-red-950/30" },
+  2: { label: "Plutôt non", color: "#f97316", bg: "bg-orange-50 dark:bg-orange-950/30" },
+  3: { label: "Neutre", color: "#64748b", bg: "bg-slate-100 dark:bg-slate-800/40" },
+  4: { label: "Plutôt oui", color: "#22c55e", bg: "bg-green-50 dark:bg-green-950/30" },
+  5: { label: "Tout à fait", color: "#008c54", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
+};
 
 export function QuizStartPage() {
   const navigate = useNavigate();
@@ -69,9 +52,6 @@ export function QuizStartPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [questionsPerPage, setQuestionsPerPage] = useState(5);
-
-  const questionIds = useMemo(() => questions.map((q) => q.id), [questions]);
-  const logoIndices = useRandomLogoIndices(questionIds);
 
   useEffect(() => {
     loadQuestions();
@@ -138,10 +118,6 @@ export function QuizStartPage() {
     }
   }
 
-  function handleSliderChange(questionId: string, value: number) {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
-  }
-
   async function handleNext() {
     const currentQuestions = questions.slice(
       currentPage * questionsPerPage,
@@ -158,11 +134,9 @@ export function QuizStartPage() {
         sessionToUse = fullSession;
       }
       for (const q of currentQuestions) {
-        const answerValue = answers[q.id];
-        const answerId = `a${answerValue}`;
         await submitAnswer(sessionToUse!.id, {
           questionId: q.id,
-          answerId,
+          answerId: `a${answers[q.id]}`,
           jobId: q.jobId ?? undefined,
           questionText: q.text ?? undefined,
         });
@@ -184,10 +158,6 @@ export function QuizStartPage() {
     }
   }
 
-  function handlePrevious() {
-    if (currentPage > 0) setCurrentPage((p) => p - 1);
-  }
-
   if (loading && questions.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3">
@@ -197,52 +167,53 @@ export function QuizStartPage() {
     );
   }
 
-  if (questions.length === 0 && !loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 gap-4">
-        <p className="text-sm text-muted-foreground text-center">
-          {error || "Impossible de démarrer le quiz."}
-        </p>
-        <Button
-          variant="outline"
-          className="h-10 text-sm rounded-xl"
-          onClick={() => navigate("/quiz")}
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Retour au quiz
-        </Button>
-      </div>
-    );
-  }
-
   const totalPages = Math.ceil(questions.length / questionsPerPage);
   const startIdx = currentPage * questionsPerPage;
-  const endIdx = startIdx + questionsPerPage;
+  const endIdx = Math.min(startIdx + questionsPerPage, questions.length);
   const currentQuestions = questions.slice(startIdx, endIdx);
   const isLastPage = currentPage === totalPages - 1;
   const canProceed = currentQuestions.every((q) => answers[q.id] !== undefined);
   const progress = ((currentPage + 1) / totalPages) * 100;
+  const answeredTotal = Object.keys(answers).filter((k) =>
+    questions.some((q) => q.id === k),
+  ).length;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
       <header className="flex h-14 shrink-0 items-center border-b border-border bg-card/95 backdrop-blur-md sticky top-0 z-50">
         <div className="flex w-full items-center gap-2.5 px-4 lg:px-6">
           <button
             type="button"
             onClick={() => navigate("/quiz")}
-            className="flex items-center gap-2.5 min-w-0 hover:opacity-80 transition-opacity"
-            aria-label="Accueil"
+            className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity"
           >
-            <AppLogo className="h-9 w-9 shrink-0 object-contain" />
-            <div className="hidden sm:block">
-              <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                SUP des RH
-              </p>
-              <p className="text-[10px] text-muted-foreground leading-tight">Quiz d'orientation</p>
-            </div>
+            <AppLogo className="h-8 w-8 shrink-0 object-contain" />
+            <span className="hidden sm:block text-sm font-heading font-bold text-foreground">
+              SUP des RH
+            </span>
           </button>
-          <div className="ml-auto flex items-center gap-2">
-            <span className="text-xs text-muted-foreground hidden sm:block">
+
+          {/* Step dots */}
+          <div className="flex-1 flex justify-center px-4">
+            <div className="flex items-center gap-1.5">
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`rounded-full transition-all duration-300 ${
+                    i < currentPage
+                      ? "h-2 w-2 bg-[#008c54]"
+                      : i === currentPage
+                        ? "h-2 w-6 bg-primary"
+                        : "h-2 w-2 bg-muted-foreground/25"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground tabular-nums">
               {currentPage + 1}/{totalPages}
             </span>
             <ThemeToggle />
@@ -251,9 +222,9 @@ export function QuizStartPage() {
       </header>
 
       {/* Progress bar */}
-      <div className="h-1 bg-muted">
+      <div className="h-0.5 bg-muted shrink-0">
         <div
-          className="h-full bg-gradient-to-r from-primary to-[#008c54] transition-all duration-500 ease-out rounded-r-full"
+          className="h-full bg-gradient-to-r from-[#004080] to-[#008c54] transition-all duration-700 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -261,117 +232,184 @@ export function QuizStartPage() {
       <div className="flex-1 overflow-y-auto">
         <div
           key={currentPage}
-          className="max-w-2xl mx-auto px-4 py-6 md:py-10 animate-in fade-in duration-200"
+          className="max-w-xl mx-auto px-4 py-6 md:py-10 animate-in fade-in slide-in-from-right-4 duration-300"
         >
+          {/* Section header */}
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-foreground">
-                Questions {startIdx + 1}–{Math.min(endIdx, questions.length)}
+              <span className="text-sm font-semibold text-foreground">
+                {startIdx + 1}–{endIdx}
+                <span className="font-normal text-muted-foreground"> sur {questions.length}</span>
               </span>
-              <span className="text-xs text-muted-foreground">sur {questions.length}</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    i === currentPage
-                      ? "w-8 bg-primary"
-                      : i < currentPage
-                        ? "w-2 bg-success"
-                        : "w-2 bg-muted"
-                  }`}
-                />
-              ))}
-            </div>
+            <span className="text-xs text-muted-foreground">
+              {answeredTotal}/{questions.length} répondues
+            </span>
           </div>
 
           {error && (
-            <div className="mb-4 p-3.5 rounded-xl border border-destructive/20 bg-destructive/5 text-destructive text-xs">
+            <div className="mb-5 p-3 rounded-xl border border-destructive/20 bg-destructive/5 text-destructive text-xs">
               {error}
             </div>
           )}
 
-          <div className="space-y-4 mb-8">
-            {currentQuestions.map((question, idx) => (
-              <Card
-                key={question.id}
-                className="border border-border bg-card rounded-2xl overflow-hidden transition-all duration-300 ease-out hover:border-primary/40 hover:shadow-md animate-in fade-in slide-in-from-bottom-2"
-                style={{ animationDelay: `${idx * 60}ms` }}
-              >
-                <CardContent className="p-5 space-y-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="h-7 w-7 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
-                        {startIdx + idx + 1}
-                      </div>
-                      <p className="text-sm text-foreground font-medium pt-0.5 leading-relaxed">
-                        {question.text}
-                      </p>
-                    </div>
-                    <div className="h-10 w-10 shrink-0 flex items-center justify-center">
-                      <img
-                        src={MASCOTT_LOGOS[logoIndices[question.id] ?? 0]}
-                        alt=""
-                        className="h-10 w-10 object-contain logo-theme-safe"
-                        loading="lazy"
-                      />
-                    </div>
-                  </div>
-                  <Slider
-                    value={answers[question.id] ?? 3}
-                    onChange={(value) => handleSliderChange(question.id, value)}
-                    min={1}
-                    max={5}
-                    disabled={loading}
-                  />
-                </CardContent>
-              </Card>
-            ))}
+          {/* Question cards */}
+          <div className="space-y-3 mb-8">
+            {currentQuestions.map((question, idx) => {
+              const score = answers[question.id] ?? 3;
+              const cfg = SCORE_CONFIG[score];
+              return (
+                <QuestionCard
+                  key={question.id}
+                  question={question}
+                  index={startIdx + idx + 1}
+                  score={score}
+                  cfg={cfg}
+                  delay={idx * 60}
+                  loading={loading}
+                  onChange={(v) => setAnswers((p) => ({ ...p, [question.id]: v }))}
+                />
+              );
+            })}
           </div>
 
+          {/* Navigation */}
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage((p) => p - 1)}
+              disabled={currentPage === 0 || loading}
+              className="h-11 px-5 text-sm rounded-xl gap-1.5"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Précédent</span>
+            </Button>
+
+            {session && (
               <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentPage === 0 || loading}
-                className="h-10 text-xs border-border rounded-xl"
+                variant="ghost"
+                onClick={() => navigate("/sessions")}
+                disabled={loading}
+                className="h-11 text-xs text-muted-foreground hidden sm:flex"
               >
-                <ArrowLeft className="h-4 w-4 mr-1.5" />
-                Précédent
+                Quitter
               </Button>
-              {session && (
-                <Button
-                  variant="ghost"
-                  onClick={() => navigate("/sessions")}
-                  disabled={loading}
-                  className="h-10 text-xs text-muted-foreground"
-                >
-                  Quitter
-                </Button>
-              )}
-            </div>
+            )}
+
             <Button
               onClick={handleNext}
               disabled={!canProceed || loading}
-              className="h-10 px-6 text-sm rounded-xl font-semibold transition-all duration-200 active:scale-[0.98] shadow-sm"
-              style={{
-                backgroundColor: canProceed ? "#004080" : "#6b7280",
-                color: "#ffffff",
-              }}
+              className="h-11 px-6 text-sm rounded-xl font-semibold gap-2 flex-1 sm:flex-none"
+              style={{ backgroundColor: canProceed ? "#004080" : "#6b7280", color: "#ffffff" }}
             >
               {loading ? (
-                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isLastPage ? (
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
+                  Voir mon résultat
+                </>
               ) : (
                 <>
-                  {isLastPage ? "Terminer le quiz" : "Suivant"}
-                  <ArrowRight className="h-4 w-4 ml-1.5" />
+                  Suivant
+                  <ArrowRight className="h-4 w-4" />
                 </>
               )}
             </Button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Question Card ────────────────────────────────────────────────────────────
+
+interface QuestionCardProps {
+  question: QuizQuestion;
+  index: number;
+  score: number;
+  cfg: { label: string; color: string; bg: string };
+  delay: number;
+  loading: boolean;
+  onChange: (v: number) => void;
+}
+
+function QuestionCard({
+  question,
+  index,
+  score,
+  cfg,
+  delay,
+  loading,
+  onChange,
+}: QuestionCardProps) {
+  const percentage = ((score - 1) / 4) * 100;
+
+  return (
+    <div
+      className="rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-md animate-in fade-in slide-in-from-bottom-2"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      {/* Colored top accent */}
+      <div className="h-0.5 transition-all duration-300" style={{ backgroundColor: cfg.color }} />
+
+      <div className="p-4 sm:p-5">
+        {/* Question text */}
+        <div className="flex items-start gap-3 mb-4">
+          <span
+            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold text-white mt-0.5"
+            style={{ backgroundColor: cfg.color }}
+          >
+            {index}
+          </span>
+          <p className="text-sm font-medium text-foreground leading-relaxed">{question.text}</p>
+        </div>
+
+        {/* Score buttons */}
+        <div className="flex items-center gap-2">
+          {[1, 2, 3, 4, 5].map((v) => {
+            const c = SCORE_CONFIG[v];
+            const isSelected = score === v;
+            return (
+              <button
+                key={v}
+                type="button"
+                disabled={loading}
+                onClick={() => onChange(v)}
+                className={`flex-1 h-9 rounded-xl text-xs font-semibold transition-all duration-200 border ${
+                  isSelected
+                    ? "text-white shadow-sm scale-105"
+                    : "border-border bg-muted/30 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                }`}
+                style={isSelected ? { backgroundColor: c.color, borderColor: c.color } : {}}
+                title={c.label}
+              >
+                {v}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Labels + current */}
+        <div className="flex items-center justify-between mt-2">
+          <span className="text-[10px] text-muted-foreground/70">Pas du tout</span>
+          <span
+            className="text-[11px] font-semibold px-2 py-0.5 rounded-full transition-all duration-200"
+            style={{ color: cfg.color, backgroundColor: `${cfg.color}15` }}
+          >
+            {cfg.label}
+          </span>
+          <span className="text-[10px] text-muted-foreground/70">Tout à fait</span>
+        </div>
+
+        {/* Progress bar */}
+        <div className="mt-2.5 h-1 rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-300"
+            style={{ width: `${percentage}%`, backgroundColor: cfg.color }}
+          />
         </div>
       </div>
     </div>
