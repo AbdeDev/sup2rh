@@ -15,6 +15,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 
 import { supabase } from "../lib/supabase";
+import { getJobs } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
@@ -74,6 +75,18 @@ export function QuizLandingPage() {
   const navigate = useNavigate();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [metrics, setMetrics] = useState<{ domaines: number; fiches: number } | null>(null);
+  const [domainLabels, setDomainLabels] = useState<string[]>([]);
+
+  useEffect(() => {
+    getJobs()
+      .then(({ items }) => {
+        const categories = new Set(items.map((j) => j.category).filter(Boolean));
+        setMetrics({ domaines: categories.size, fiches: items.length });
+        setDomainLabels(Array.from(categories) as string[]);
+      })
+      .catch(() => setMetrics(null));
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -213,20 +226,28 @@ export function QuizLandingPage() {
             </div>
 
             <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3.5 py-1.5 text-[11px] font-semibold text-primary mb-5">
-              <Sparkles className="h-3 w-3" />
-              Quiz gratuit · Résultat immédiat · Basé sur 18 domaines RH
+              <Sparkles className="h-3 w-3 shrink-0" />
+              Quiz gratuit · Résultat immédiat
+              {metrics && (
+                <span>
+                  {" "}
+                  · {metrics.domaines} domaines RH · {metrics.fiches} fiches
+                </span>
+              )}
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-foreground mb-5 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-foreground mb-5 leading-tight px-1">
               Quel métier RH est{" "}
               <span className="bg-gradient-to-r from-[#004080] via-[#008c54] to-[#f37021] bg-clip-text text-transparent">
                 fait pour toi ?
               </span>
             </h1>
 
-            <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed">
-              Réponds à quelques questions et découvre ton grand domaine RH parmi les 18 métiers
-              référencés par <strong className="text-foreground">SUP des RH</strong>.
+            <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed px-1">
+              Réponds à quelques questions et découvre ton{" "}
+              <strong className="text-foreground">grand domaine RH</strong> et les fiches métiers
+              qui te correspondent, référencés par{" "}
+              <strong className="text-foreground">SUP des RH</strong>.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -248,34 +269,60 @@ export function QuizLandingPage() {
               </Button>
             </div>
 
-            {/* Stats */}
-            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mt-10 pt-8 border-t border-border/60">
-              {[
-                { value: "18", label: "Domaines RH" },
-                { value: "~2 min", label: "Durée du quiz" },
-                { value: "100%", label: "Gratuit" },
-                { value: "IA", label: "Analyse instantanée" },
-              ].map((s) => (
-                <div key={s.label} className="text-center">
-                  <p className="text-lg font-heading font-bold text-foreground">{s.value}</p>
-                  <p className="text-[11px] text-muted-foreground">{s.label}</p>
-                </div>
-              ))}
+            {/* Stats — métriques réelles + fixes */}
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 mt-10 pt-8 border-t border-border/60">
+              <div className="text-center">
+                <p className="text-lg font-heading font-bold text-foreground">
+                  {metrics != null ? String(metrics.domaines) : "—"}
+                </p>
+                <p className="text-[11px] text-muted-foreground">Domaines RH</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-heading font-bold text-foreground">
+                  {metrics != null ? String(metrics.fiches) : "—"}
+                </p>
+                <p className="text-[11px] text-muted-foreground">Fiches métier</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-heading font-bold text-foreground">~2 min</p>
+                <p className="text-[11px] text-muted-foreground">Durée du quiz</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-heading font-bold text-foreground">100%</p>
+                <p className="text-[11px] text-muted-foreground">Gratuit</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-heading font-bold text-foreground">IA</p>
+                <p className="text-[11px] text-muted-foreground">Analyse instantanée</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Domaines aperçu */}
+        {/* Domaines aperçu — vrais domaines si chargés, sinon liste statique */}
         <div className="border-y border-border/60 bg-muted/20 py-4 overflow-hidden">
           <div className="flex gap-3 animate-scroll px-4" style={{ width: "max-content" }}>
-            {[...DOMAINS, ...DOMAINS].map((d, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap shrink-0"
-              >
-                {d.emoji} {d.label}
-              </span>
-            ))}
+            {domainLabels.length > 0
+              ? [...domainLabels, ...domainLabels].map((label, i) => {
+                  const staticDom = DOMAINS.find((d) => d.label === label);
+                  return (
+                    <span
+                      key={`${label}-${i}`}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap shrink-0"
+                    >
+                      {staticDom ? `${staticDom.emoji} ` : ""}
+                      {label}
+                    </span>
+                  );
+                })
+              : [...DOMAINS, ...DOMAINS].map((d, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap shrink-0"
+                  >
+                    {d.emoji} {d.label}
+                  </span>
+                ))}
           </div>
         </div>
 
