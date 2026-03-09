@@ -333,6 +333,25 @@ export function ResultPage() {
 
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-6 md:space-y-8">
+          {/* Bloc explicite : domaine RH auquel tu es lié (toujours celui du résultat, pas la sélection graphique) */}
+          <Card className="border-[#008c54]/30 bg-[#008c54]/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <CardContent className="p-4 sm:p-5">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">
+                Domaine RH auquel tu es lié
+              </p>
+              <p className="text-lg sm:text-xl font-heading font-bold text-foreground">
+                {analysis?.job?.category ??
+                  (analysis?.jobId && allJobs.find((j) => j.id === analysis.jobId)?.category) ??
+                  topJobLabel ??
+                  "Métier RH"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Métier le plus proche :{" "}
+                <span className="font-semibold text-foreground">{topJobLabel}</span>
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Résultat principal — Grand domaine RH */}
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center">
@@ -354,9 +373,14 @@ export function ResultPage() {
                   </p>
                 </>
               ) : (
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-3">
-                  {topJobLabel}
-                </h1>
+                <>
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-2">
+                    {topJobLabel}
+                  </h1>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Domaine : {selectedJob?.category ?? "Métier RH"}
+                  </p>
+                </>
               )}
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-sm font-semibold text-primary">
@@ -800,12 +824,12 @@ export function ResultPage() {
                         {fiche.indicators.map((ind, i) => (
                           <div
                             key={i}
-                            className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2 min-w-0"
+                            className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2 min-w-0 overflow-hidden"
                           >
-                            <span className="text-xs text-muted-foreground truncate">
+                            <span className="text-xs text-muted-foreground truncate min-w-0 break-words">
                               {ind.label}
                             </span>
-                            <span className="text-xs font-medium text-foreground shrink-0">
+                            <span className="text-xs font-medium text-foreground shrink-0 max-w-[50%] truncate">
                               {String(ind.value)}
                             </span>
                           </div>
@@ -1025,10 +1049,12 @@ export function ResultPage() {
                     {ficheModalJob.indicators.map((ind, i) => (
                       <div
                         key={i}
-                        className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2 gap-2"
+                        className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2 gap-2 min-w-0 overflow-hidden"
                       >
-                        <span className="text-xs text-muted-foreground truncate">{ind.label}</span>
-                        <span className="text-xs font-medium text-foreground shrink-0">
+                        <span className="text-xs text-muted-foreground truncate min-w-0 break-words">
+                          {ind.label}
+                        </span>
+                        <span className="text-xs font-medium text-foreground shrink-0 max-w-[50%] truncate">
                           {String(ind.value)}
                         </span>
                       </div>
@@ -1038,16 +1064,19 @@ export function ResultPage() {
               )}
               {ficheModalJob.videoUrl &&
                 (() => {
-                  const rawUrl = ficheModalJob.videoUrl.trim();
+                  const rawUrl = (ficheModalJob.videoUrl as string).trim();
                   const yt =
                     rawUrl &&
-                    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/.exec(rawUrl);
+                    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/.exec(
+                      rawUrl,
+                    );
                   const vimeo = rawUrl && /vimeo\.com\/(?:video\/)?(\d+)/.exec(rawUrl);
                   const embedUrl = yt
                     ? `https://www.youtube.com/embed/${yt[1]}?rel=0`
                     : vimeo
                       ? `https://player.vimeo.com/video/${vimeo[1]}`
                       : null;
+                  const isAbsolute = rawUrl.startsWith("http://") || rawUrl.startsWith("https://");
                   return (
                     <div>
                       <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
@@ -1062,24 +1091,29 @@ export function ResultPage() {
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
                           />
-                        ) : (
+                        ) : isAbsolute ? (
                           <video
                             src={rawUrl}
                             controls
                             className="w-full h-full min-h-[180px]"
                             playsInline
                           />
+                        ) : (
+                          <div className="w-full h-full min-h-[180px] flex items-center justify-center bg-muted/30 text-muted-foreground text-xs p-3 text-center">
+                            Utilise le bouton ci-dessous pour ouvrir la vidéo.
+                          </div>
                         )}
                       </div>
-                      <a
-                        href={rawUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 mt-2 text-sm text-primary hover:underline font-medium"
+                      <button
+                        type="button"
+                        onClick={() =>
+                          rawUrl && window.open(rawUrl, "_blank", "noopener,noreferrer")
+                        }
+                        className="inline-flex items-center gap-1.5 mt-2 text-sm text-primary hover:underline font-medium cursor-pointer bg-transparent border-0 p-0"
                       >
                         <ExternalLink className="h-4 w-4 shrink-0" />
                         Ouvrir la vidéo dans un nouvel onglet
-                      </a>
+                      </button>
                     </div>
                   );
                 })()}

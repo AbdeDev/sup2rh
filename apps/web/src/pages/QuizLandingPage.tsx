@@ -220,20 +220,25 @@ export function QuizLandingPage() {
             }}
           />
 
-          <div className="relative max-w-4xl mx-auto px-4 py-12 md:py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="inline-flex h-24 w-24 items-center justify-center mb-6 transition-transform duration-300 hover:scale-110 drop-shadow-lg">
-              <AppLogo className="h-24 w-24 object-contain" />
-            </div>
-
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3.5 py-1.5 text-[11px] font-semibold text-primary mb-5">
-              <Sparkles className="h-3 w-3 shrink-0" />
-              Quiz gratuit · Résultat immédiat
-              {metrics && (
+          <div className="relative max-w-4xl mx-auto px-4 py-12 md:py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-center">
+            {/* Logo tout en haut, au-dessus du badge */}
+            <div className="flex flex-col items-center w-full">
+              <div className="inline-flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center mb-5 transition-transform duration-300 hover:scale-110 drop-shadow-lg shrink-0">
+                <AppLogo className="h-24 w-24 sm:h-28 sm:w-28 object-contain" />
+              </div>
+              <div className="inline-flex flex-wrap items-center justify-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3.5 py-1.5 text-[11px] font-semibold text-primary mb-5">
+                <Sparkles className="h-3 w-3 shrink-0" />
                 <span>
-                  {" "}
-                  · {metrics.domaines} domaines RH · {metrics.fiches} fiches
+                  Quiz gratuit · Résultat immédiat
+                  {metrics != null && (
+                    <>
+                      {" "}
+                      · {metrics.domaines} domaine{metrics.domaines !== 1 ? "s" : ""} RH ·{" "}
+                      {metrics.fiches} fiche{metrics.fiches !== 1 ? "s" : ""}
+                    </>
+                  )}
                 </span>
-              )}
+              </div>
             </div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-foreground mb-5 leading-tight px-1">
@@ -299,8 +304,17 @@ export function QuizLandingPage() {
           </div>
         </div>
 
-        {/* Domaines aperçu — vrais domaines si chargés, sinon liste statique */}
-        <div className="border-y border-border/60 bg-muted/20 py-4 overflow-hidden">
+        {/* Grands domaines RH — titre + bandeau */}
+        <div className="border-y border-border/60 bg-muted/20 py-6 sm:py-8 overflow-hidden">
+          <div className="max-w-4xl mx-auto px-4 text-center mb-4">
+            <h2 className="text-base sm:text-lg font-heading font-bold text-foreground">
+              Grands domaines RH
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              Ces domaines sont explorés dans le quiz : selon tes réponses, tu seras orienté vers
+              l’un d’entre eux et les fiches métiers associées.
+            </p>
+          </div>
           <div className="flex gap-3 animate-scroll px-4" style={{ width: "max-content" }}>
             {domainLabels.length > 0
               ? [...domainLabels, ...domainLabels].map((label, i) => {
