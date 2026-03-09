@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Loader2, User, Sparkles, CheckCircle2 } from "lucide-react";
+import { Loader2, User, Sparkles, CheckCircle2, X, ExternalLink, Briefcase } from "lucide-react";
 
 import { toast } from "sonner";
 import {
@@ -46,6 +46,7 @@ export function ResultPage() {
   const [showAllScores, setShowAllScores] = useState(false);
   const [allJobs, setAllJobs] = useState<JobFiche[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [ficheModalJob, setFicheModalJob] = useState<JobFiche | null>(null);
 
   const buildResultFromScores = useCallback(
     async (finalJobId: string, scores: Record<string, number>, answerCount?: number) => {
@@ -382,7 +383,7 @@ export function ResultPage() {
           {/* Profil + Statistiques rapides */}
           {user && (
             <div
-              className="grid grid-cols-1 sm:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: "50ms" }}
             >
               <Card className="border border-border bg-card">
@@ -643,11 +644,18 @@ export function ResultPage() {
                     const isActive = j.id === activeJobId;
                     const isTop = j.id === analysis?.jobId;
                     return (
-                      <button
+                      <div
                         key={j.id}
-                        type="button"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => setSelectedJobId(j.id === analysis?.jobId ? null : j.id)}
-                        className="shrink-0 text-left rounded-xl border transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary active:scale-[0.98]"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setSelectedJobId(j.id === analysis?.jobId ? null : j.id);
+                          }
+                        }}
+                        className="shrink-0 text-left rounded-xl border transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary active:scale-[0.98] cursor-pointer"
                         style={{
                           width: categoryJobs.length === 1 ? "100%" : "clamp(200px, 60vw, 240px)",
                           scrollSnapAlign: "start",
@@ -693,7 +701,17 @@ export function ResultPage() {
                             → Fiche détaillée ci-dessous
                           </p>
                         )}
-                      </button>
+                        <button
+                          type="button"
+                          className="mt-1 text-[9px] font-semibold text-primary hover:underline text-left w-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFicheModalJob(j);
+                          }}
+                        >
+                          Voir le détail de la fiche
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -732,7 +750,7 @@ export function ResultPage() {
                 {(fiche?.salary ?? fiche?.hiringRate ?? fiche?.turnoverRate) && (
                   <>
                     <Separator className="bg-border" />
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 gap-4">
                       {fiche?.salary && (
                         <div className="rounded-lg border border-border bg-muted/30 p-3">
                           <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
@@ -778,14 +796,16 @@ export function ResultPage() {
                       <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
                         Autres indicateurs
                       </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-2 gap-2">
                         {fiche.indicators.map((ind, i) => (
                           <div
                             key={i}
-                            className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2"
+                            className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2 min-w-0"
                           >
-                            <span className="text-xs text-muted-foreground">{ind.label}</span>
-                            <span className="text-xs font-medium text-foreground">
+                            <span className="text-xs text-muted-foreground truncate">
+                              {ind.label}
+                            </span>
+                            <span className="text-xs font-medium text-foreground shrink-0">
                               {String(ind.value)}
                             </span>
                           </div>
@@ -854,7 +874,7 @@ export function ResultPage() {
                       variant="outline"
                       size="sm"
                       className="rounded-xl gap-2"
-                      onClick={() => navigate(`/fiches/${fiche.id}`)}
+                      onClick={() => setFicheModalJob(fiche)}
                     >
                       Voir la fiche complète
                     </Button>
@@ -896,7 +916,7 @@ export function ResultPage() {
 
           {/* Actions secondaires */}
           <div
-            className="flex gap-3 justify-center pb-6 animate-in fade-in duration-500"
+            className="flex flex-wrap gap-3 justify-center pb-6 animate-in fade-in duration-500"
             style={{ animationDelay: "300ms" }}
           >
             <Button
@@ -916,6 +936,157 @@ export function ResultPage() {
           </div>
         </div>
       </main>
+
+      {/* Modal détail fiche — sans quitter la page */}
+      {ficheModalJob && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => setFicheModalJob(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="fiche-modal-title"
+        >
+          <div
+            className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-3 p-4 border-b border-border shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                  <Briefcase className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h2
+                    id="fiche-modal-title"
+                    className="text-base sm:text-lg font-heading font-bold text-foreground truncate"
+                  >
+                    {ficheModalJob.name}
+                  </h2>
+                  {ficheModalJob.category && (
+                    <p className="text-xs text-muted-foreground truncate">
+                      {ficheModalJob.category}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0 rounded-xl"
+                onClick={() => setFicheModalJob(null)}
+                aria-label="Fermer"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {ficheModalJob.description && (
+                <div>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    Description
+                  </p>
+                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                    {ficheModalJob.description}
+                  </p>
+                </div>
+              )}
+              {(ficheModalJob.salary ||
+                ficheModalJob.hiringRate != null ||
+                ficheModalJob.turnoverRate != null) && (
+                <div>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    Indicateurs
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {ficheModalJob.salary && (
+                      <span className="inline-flex items-center gap-1.5 text-sm text-foreground">
+                        {ficheModalJob.salary}
+                      </span>
+                    )}
+                    {ficheModalJob.hiringRate != null && (
+                      <span className="text-sm text-foreground">
+                        Taux d&apos;embauche : {ficheModalJob.hiringRate}%
+                      </span>
+                    )}
+                    {ficheModalJob.turnoverRate != null && (
+                      <span className="text-sm text-muted-foreground">
+                        Turnover : {ficheModalJob.turnoverRate}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+              {Array.isArray(ficheModalJob.indicators) && ficheModalJob.indicators.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    Autres indicateurs
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {ficheModalJob.indicators.map((ind, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2 gap-2"
+                      >
+                        <span className="text-xs text-muted-foreground truncate">{ind.label}</span>
+                        <span className="text-xs font-medium text-foreground shrink-0">
+                          {String(ind.value)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {ficheModalJob.videoUrl &&
+                (() => {
+                  const rawUrl = ficheModalJob.videoUrl.trim();
+                  const yt =
+                    rawUrl &&
+                    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/.exec(rawUrl);
+                  const vimeo = rawUrl && /vimeo\.com\/(?:video\/)?(\d+)/.exec(rawUrl);
+                  const embedUrl = yt
+                    ? `https://www.youtube.com/embed/${yt[1]}?rel=0`
+                    : vimeo
+                      ? `https://player.vimeo.com/video/${vimeo[1]}`
+                      : null;
+                  return (
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                        Vidéo explicative
+                      </p>
+                      <div className="rounded-xl overflow-hidden border border-border bg-muted/20 aspect-video w-full">
+                        {embedUrl ? (
+                          <iframe
+                            src={embedUrl}
+                            title="Vidéo du métier"
+                            className="w-full h-full min-h-[180px]"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <video
+                            src={rawUrl}
+                            controls
+                            className="w-full h-full min-h-[180px]"
+                            playsInline
+                          />
+                        )}
+                      </div>
+                      <a
+                        href={rawUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 mt-2 text-sm text-primary hover:underline font-medium"
+                      >
+                        <ExternalLink className="h-4 w-4 shrink-0" />
+                        Ouvrir la vidéo dans un nouvel onglet
+                      </a>
+                    </div>
+                  );
+                })()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

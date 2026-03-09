@@ -60,8 +60,15 @@ export function FicheDetailPage() {
     );
   }
 
-  const isYoutube = job.videoUrl?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-  const isVimeo = job.videoUrl?.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  const rawUrl = job.videoUrl?.trim() ?? "";
+  const isYoutube =
+    rawUrl && /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/.exec(rawUrl);
+  const isVimeo = rawUrl && /vimeo\.com\/(?:video\/)?(\d+)/.exec(rawUrl);
+  const embedUrl = isYoutube
+    ? `https://www.youtube.com/embed/${isYoutube[1]}?rel=0`
+    : isVimeo
+      ? `https://player.vimeo.com/video/${isVimeo[1]}`
+      : null;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -179,41 +186,40 @@ export function FicheDetailPage() {
             </Card>
           )}
 
-          {job.videoUrl && (
+          {rawUrl && (
             <Card className="border border-border bg-card">
               <CardContent className="p-4">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Vidéo explicative
                 </p>
-                <div className="rounded-xl overflow-hidden border border-border bg-muted/20 aspect-video">
-                  {isYoutube ? (
+                <div className="rounded-xl overflow-hidden border border-border bg-muted/20 aspect-video w-full">
+                  {embedUrl ? (
                     <iframe
-                      src={`https://www.youtube.com/embed/${isYoutube[1]}?rel=0`}
+                      src={embedUrl}
                       title="Vidéo du métier"
-                      className="w-full h-full"
+                      className="w-full h-full min-h-[200px]"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />
-                  ) : isVimeo ? (
-                    <iframe
-                      src={`https://player.vimeo.com/video/${isVimeo[1]}`}
-                      title="Vidéo du métier"
-                      className="w-full h-full"
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      allowFullScreen
-                    />
                   ) : (
-                    <video src={job.videoUrl} controls className="w-full h-full" />
+                    <video
+                      src={rawUrl}
+                      controls
+                      className="w-full h-full min-h-[200px]"
+                      playsInline
+                    >
+                      <track kind="captions" />
+                    </video>
                   )}
                 </div>
                 <a
-                  href={job.videoUrl}
+                  href={rawUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 mt-2 text-sm text-primary hover:underline font-medium"
+                  className="inline-flex items-center gap-1.5 mt-3 text-sm text-primary hover:underline font-medium"
                 >
-                  <ExternalLink className="h-4 w-4" />
-                  Ouvrir la vidéo
+                  <ExternalLink className="h-4 w-4 shrink-0" />
+                  Ouvrir la vidéo dans un nouvel onglet
                 </a>
               </CardContent>
             </Card>
