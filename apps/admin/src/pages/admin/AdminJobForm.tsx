@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { X, Loader2, Plus, Trash2 } from "lucide-react";
 
 import {
@@ -147,7 +148,10 @@ export function AdminJobForm({ job, onClose }: AdminJobFormProps) {
       }
       onClose();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erreur lors de l'enregistrement");
+      const msg = e instanceof Error ? e.message : "Erreur lors de l'enregistrement";
+      setError(msg);
+      const hint = msg.toLowerCase().includes("fetch") ? " Vérifie VITE_API_URL et CORS." : "";
+      toast.error(msg + hint);
     } finally {
       setLoading(false);
     }

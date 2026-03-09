@@ -281,7 +281,13 @@ export function FichesPage() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                       {catJobs.map((job, idx) => (
-                        <JobCard key={job.id} job={job} color={color} delay={idx * 50} />
+                        <JobCard
+                          key={job.id}
+                          job={job}
+                          color={color}
+                          delay={idx * 50}
+                          onSelect={() => navigate(`/fiches/${job.id}`)}
+                        />
                       ))}
                     </div>
                   </section>
@@ -295,7 +301,15 @@ export function FichesPage() {
                 const color = job.category
                   ? colorForCategory(job.category, categories)
                   : ACCENT_COLORS[idx % ACCENT_COLORS.length];
-                return <JobCard key={job.id} job={job} color={color} delay={idx * 50} />;
+                return (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    color={color}
+                    delay={idx * 50}
+                    onSelect={() => navigate(`/fiches/${job.id}`)}
+                  />
+                );
               })}
             </div>
           )}
@@ -329,10 +343,24 @@ export function FichesPage() {
   );
 }
 
-function JobCard({ job, color, delay }: { job: JobFiche; color: string; delay: number }) {
+function JobCard({
+  job,
+  color,
+  delay,
+  onSelect,
+}: {
+  job: JobFiche;
+  color: string;
+  delay: number;
+  onSelect: () => void;
+}) {
   return (
     <Card
-      className="rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 group animate-in fade-in slide-in-from-bottom-4"
+      role="button"
+      tabIndex={0}
+      onClick={onSelect}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect()}
+      className="rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 group animate-in fade-in slide-in-from-bottom-4 cursor-pointer"
       style={{ animationDelay: `${delay}ms` }}
     >
       {/* Top accent bar */}

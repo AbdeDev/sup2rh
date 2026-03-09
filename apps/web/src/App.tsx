@@ -10,6 +10,7 @@ import { QuizStartPage } from "./pages/QuizStartPage";
 import { ResultPage } from "./pages/ResultPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { FichesPage } from "./pages/FichesPage";
+import { FicheDetailPage } from "./pages/FicheDetailPage";
 import { VerifyPage } from "./pages/VerifyPage";
 import { SessionsPage } from "./pages/SessionsPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
@@ -73,6 +74,7 @@ export default function App() {
           }
         />
         <Route path="/fiches" element={<FichesPage />} />
+        <Route path="/fiches/:id" element={<FicheDetailPage />} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/quiz" replace />} />
