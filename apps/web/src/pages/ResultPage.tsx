@@ -848,6 +848,18 @@ export function ResultPage() {
                     </div>
                   </>
                 )}
+                {fiche?.id && (
+                  <div className="pt-4 border-t border-border">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl gap-2"
+                      onClick={() => navigate(`/fiches/${fiche.id}`)}
+                    >
+                      Voir la fiche complète
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

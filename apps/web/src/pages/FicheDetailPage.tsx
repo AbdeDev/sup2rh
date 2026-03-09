@@ -1,0 +1,239 @@
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Loader2,
+  Briefcase,
+  DollarSign,
+  TrendingUp,
+  Play,
+  ExternalLink,
+} from "lucide-react";
+
+import { getJobs, type JobFiche } from "../lib/api";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { ThemeToggle } from "../components/ThemeToggle";
+import { AppLogo } from "../components/AppLogo";
+
+export function FicheDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [job, setJob] = useState<JobFiche | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) {
+      setLoading(false);
+      setError("Identifiant manquant");
+      return;
+    }
+    getJobs()
+      .then(({ items }) => {
+        const found = items.find((j) => j.id === id) ?? null;
+        setJob(found);
+        if (!found) setError("Fiche métier introuvable");
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : "Erreur"))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3">
+        <Loader2 className="h-7 w-7 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Chargement de la fiche…</p>
+      </div>
+    );
+  }
+
+  if (error || !job) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 gap-4">
+        <p className="text-sm text-destructive text-center">{error || "Fiche introuvable"}</p>
+        <Button variant="outline" className="rounded-xl" onClick={() => navigate("/fiches")}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Retour aux fiches
+        </Button>
+      </div>
+    );
+  }
+
+  const isYoutube = job.videoUrl?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+  const isVimeo = job.videoUrl?.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="flex h-14 shrink-0 items-center border-b border-border bg-card/95 backdrop-blur-md sticky top-0 z-50">
+        <div className="flex w-full items-center gap-2.5 px-4 lg:px-6">
+          <button
+            type="button"
+            onClick={() => navigate("/fiches")}
+            className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity"
+          >
+            <AppLogo className="h-8 w-8 object-contain" />
+            <span className="hidden sm:block text-sm font-heading font-bold text-foreground">
+              Fiche métier
+            </span>
+          </button>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs rounded-xl"
+              onClick={() => navigate("/quiz")}
+            >
+              Faire le quiz
+            </Button>
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6 md:py-10 space-y-6">
+          <button
+            type="button"
+            onClick={() => navigate("/fiches")}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Retour aux fiches
+          </button>
+
+          <div className="flex items-start gap-4">
+            <div className="h-14 w-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <Briefcase className="h-7 w-7 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-heading font-bold text-foreground">
+                {job.name}
+              </h1>
+              {job.category && <p className="text-sm text-muted-foreground mt-1">{job.category}</p>}
+            </div>
+          </div>
+
+          {(job.salary || job.hiringRate != null || job.turnoverRate != null) && (
+            <Card className="border border-border bg-card">
+              <CardContent className="p-4">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                  Indicateurs
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  {job.salary && (
+                    <span className="inline-flex items-center gap-1.5 text-sm text-foreground">
+                      <DollarSign className="h-4 w-4 text-primary" />
+                      {job.salary}
+                    </span>
+                  )}
+                  {job.hiringRate != null && (
+                    <span className="inline-flex items-center gap-1.5 text-sm text-foreground">
+                      <TrendingUp className="h-4 w-4 text-success" />
+                      Taux d&apos;embauche : {job.hiringRate}%
+                    </span>
+                  )}
+                  {job.turnoverRate != null && (
+                    <span className="text-sm text-muted-foreground">
+                      Turnover : {job.turnoverRate}%
+                    </span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {job.description && (
+            <Card className="border border-border bg-card">
+              <CardContent className="p-4">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                  Description
+                </p>
+                <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                  {job.description}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {job.indicators && job.indicators.length > 0 && (
+            <Card className="border border-border bg-card">
+              <CardContent className="p-4">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                  Autres indicateurs
+                </p>
+                <div className="space-y-2">
+                  {job.indicators.map((ind, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2"
+                    >
+                      <span className="text-xs text-muted-foreground">{ind.label}</span>
+                      <span className="text-xs font-medium text-foreground">
+                        {String(ind.value)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {job.videoUrl && (
+            <Card className="border border-border bg-card">
+              <CardContent className="p-4">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+                  Vidéo explicative
+                </p>
+                <div className="rounded-xl overflow-hidden border border-border bg-muted/20 aspect-video">
+                  {isYoutube ? (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${isYoutube[1]}?rel=0`}
+                      title="Vidéo du métier"
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : isVimeo ? (
+                    <iframe
+                      src={`https://player.vimeo.com/video/${isVimeo[1]}`}
+                      title="Vidéo du métier"
+                      className="w-full h-full"
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video src={job.videoUrl} controls className="w-full h-full" />
+                  )}
+                </div>
+                <a
+                  href={job.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 mt-2 text-sm text-primary hover:underline font-medium"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Ouvrir la vidéo
+                </a>
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={() => navigate("/quiz/start")}
+              className="rounded-xl gap-2"
+              style={{ backgroundColor: "#004080", color: "#fff" }}
+            >
+              Faire le quiz
+              <Play className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" className="rounded-xl" onClick={() => navigate("/fiches")}>
+              Voir toutes les fiches
+            </Button>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
