@@ -391,10 +391,10 @@ export function SessionsPage() {
                           navigate(`/result/${session.id}`, { state: { sessionSummary: session } })
                         }
                       >
-                        <CardContent className="p-5">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded-xl bg-success/10 border border-success/20 flex items-center justify-center">
+                        <CardContent className="p-5 flex flex-col min-h-[120px]">
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <div className="h-10 w-10 rounded-xl bg-success/10 border border-success/20 flex items-center justify-center shrink-0">
                                 <Trophy className="h-5 w-5 text-success" />
                               </div>
                               <div className="min-w-0">
@@ -402,19 +402,17 @@ export function SessionsPage() {
                                   {jobLabel(session.finalJobId)}
                                 </h3>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                  {session.answerCount ?? 0} réponses
+                                  {session.answerCount ?? 0} réponses ·{" "}
+                                  {formatDate(session.createdAt)}
                                 </p>
                               </div>
                             </div>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0 opacity-0 group-hover:opacity-100" />
+                            <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0 opacity-70 group-hover:opacity-100 mt-1" />
                           </div>
-                          <div className="flex items-center justify-between pt-3 border-t border-border">
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Calendar className="h-3.5 w-3.5 shrink-0" />
-                              <span title={formatFullDate(session.createdAt)}>
-                                {formatDate(session.createdAt)}
-                              </span>
-                            </div>
+                          <div className="flex items-center justify-between pt-3 mt-auto border-t border-border">
+                            <span className="text-[11px] font-medium text-primary group-hover:underline">
+                              Voir le résultat
+                            </span>
                             <button
                               type="button"
                               onClick={(e) => {

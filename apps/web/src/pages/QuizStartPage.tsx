@@ -12,6 +12,7 @@ import {
   type QuizQuestion,
 } from "../lib/api";
 import { Button } from "../components/ui/button";
+import { Slider } from "../components/ui/slider";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { AppLogo } from "../components/AppLogo";
 
@@ -345,8 +346,6 @@ function QuestionCard({
   loading,
   onChange,
 }: QuestionCardProps) {
-  const percentage = ((score - 1) / 4) * 100;
-
   return (
     <div
       className="rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:border-primary/30 hover:shadow-md animate-in fade-in slide-in-from-bottom-2"
@@ -367,49 +366,38 @@ function QuestionCard({
           <p className="text-sm font-medium text-foreground leading-relaxed">{question.text}</p>
         </div>
 
-        {/* Score buttons */}
-        <div className="flex items-center gap-2">
-          {[1, 2, 3, 4, 5].map((v) => {
-            const c = SCORE_CONFIG[v];
-            const isSelected = score === v;
-            return (
-              <button
-                key={v}
-                type="button"
-                disabled={loading}
-                onClick={() => onChange(v)}
-                className={`flex-1 h-9 rounded-xl text-xs font-semibold transition-all duration-200 border ${
-                  isSelected
-                    ? "text-white shadow-sm scale-105"
-                    : "border-border bg-muted/30 text-muted-foreground hover:border-primary/30 hover:text-foreground"
-                }`}
-                style={isSelected ? { backgroundColor: c.color, borderColor: c.color } : {}}
-                title={c.label}
-              >
-                {v}
-              </button>
-            );
-          })}
+        {/* Slider : glisser de Pas d'accord à D'accord */}
+        <div className="space-y-2">
+          <Slider value={score} onChange={onChange} min={1} max={5} step={1} disabled={loading} />
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-muted-foreground">Pas d&apos;accord</span>
+            <span
+              className="text-[11px] font-semibold px-2 py-0.5 rounded-full"
+              style={{ color: cfg.color, backgroundColor: `${cfg.color}18` }}
+            >
+              {cfg.label}
+            </span>
+            <span className="text-[10px] text-muted-foreground">D&apos;accord</span>
+          </div>
         </div>
 
-        {/* Labels + current */}
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-[10px] text-muted-foreground/70">Pas du tout</span>
-          <span
-            className="text-[11px] font-semibold px-2 py-0.5 rounded-full transition-all duration-200"
-            style={{ color: cfg.color, backgroundColor: `${cfg.color}15` }}
-          >
-            {cfg.label}
-          </span>
-          <span className="text-[10px] text-muted-foreground/70">Tout à fait</span>
-        </div>
-
-        {/* Progress bar */}
-        <div className="mt-2.5 h-1 rounded-full bg-muted overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-300"
-            style={{ width: `${percentage}%`, backgroundColor: cfg.color }}
-          />
+        {/* Boutons rapides 1–5 (optionnel, pour mobile) */}
+        <div className="flex items-center gap-1 mt-2">
+          {[1, 2, 3, 4, 5].map((v) => (
+            <button
+              key={v}
+              type="button"
+              disabled={loading}
+              onClick={() => onChange(v)}
+              className={`flex-1 h-7 rounded-lg text-[10px] font-semibold transition-all ${
+                score === v ? "text-white" : "text-muted-foreground hover:text-foreground"
+              }`}
+              style={score === v ? { backgroundColor: SCORE_CONFIG[v].color } : {}}
+              title={SCORE_CONFIG[v].label}
+            >
+              {v}
+            </button>
+          ))}
         </div>
       </div>
     </div>

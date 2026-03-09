@@ -169,6 +169,9 @@ try {
 									<span class="tag tag-muted">{Number(job.turnoverRate).toFixed(0)}% turnover</span>
 								)}
 							</div>
+							<a href={WEB_APP_URL + "/fiches/" + job.id} class="job-card-link">
+								Voir le détail de la fiche →
+							</a>
 						</article>
 					))}
 				</div>
@@ -1125,6 +1128,23 @@ try {
 		flex-wrap: wrap;
 		gap: 0.4rem;
 		margin-top: 0.25rem;
+	}
+
+	.job-card-link {
+		display: inline-block;
+		margin-top: 0.75rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: #004080;
+		text-decoration: none;
+		transition: opacity 0.2s;
+	}
+	.job-card-link:hover {
+		opacity: 0.85;
+		text-decoration: underline;
+	}
+	html.dark .job-card-link {
+		color: #38bdf8;
 	}
 
 	.tag {

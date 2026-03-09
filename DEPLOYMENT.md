@@ -230,6 +230,12 @@ apps/landing/.env.example       → Landing page (API URL + Web URL)
 - [ ] Au moins une clé AI (GROQ recommandé) configurée
 - [ ] `RUN_MIGRATIONS=true` sur le premier déploiement
 
+### Dépannage
+
+- **Landing : "Impossible de charger les fiches (API 500)"** — Définis `PUBLIC_API_URL` dans `.env` (landing). L’API doit être démarrée et les migrations exécutées (Koyeb : `RUN_MIGRATIONS=true` puis redéploiement).
+- **Admin : "Failed to fetch" (ex. en sauvegardant une fiche avec vidéo)** — Vérifie `VITE_API_URL` et que `CORS_ALLOW_ORIGIN` sur le backend autorise l’origine de ton admin (ex. `https://quizsupdesrh-admin.pages.dev`).
+- **Domaines RH invisibles** — Dans l’admin, ouvre la sidebar : le lien **Domaines RH** mène à `/admin/job-categories`.
+
 ## Tags Docker
 
 | Tag                               | Description                          |
