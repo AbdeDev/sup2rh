@@ -60,15 +60,25 @@ export function FicheDetailPage() {
     );
   }
 
-  const rawUrl = job.videoUrl?.trim() ?? "";
+  const rawUrl = (job.videoUrl?.trim() ?? "").replace(/^\/+/, "");
+  const isAbsoluteVideo = rawUrl.startsWith("http://") || rawUrl.startsWith("https://");
   const isYoutube =
-    rawUrl && /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/.exec(rawUrl);
+    rawUrl &&
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/.exec(rawUrl);
   const isVimeo = rawUrl && /vimeo\.com\/(?:video\/)?(\d+)/.exec(rawUrl);
   const embedUrl = isYoutube
     ? `https://www.youtube.com/embed/${isYoutube[1]}?rel=0`
     : isVimeo
       ? `https://player.vimeo.com/video/${isVimeo[1]}`
       : null;
+  const videoHref = isAbsoluteVideo
+    ? rawUrl
+    : rawUrl
+      ? `${typeof window !== "undefined" ? window.location.origin : ""}/${rawUrl}`.replace(
+          /([^:]\/)\/+/g,
+          "$1",
+        )
+      : "";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -173,10 +183,12 @@ export function FicheDetailPage() {
                   {job.indicators.map((ind, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2"
+                      className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2 min-w-0"
                     >
-                      <span className="text-xs text-muted-foreground">{ind.label}</span>
-                      <span className="text-xs font-medium text-foreground">
+                      <span className="text-xs text-muted-foreground truncate break-words min-w-0">
+                        {ind.label}
+                      </span>
+                      <span className="text-xs font-medium text-foreground shrink-0 max-w-[60%] truncate">
                         {String(ind.value)}
                       </span>
                     </div>
@@ -201,7 +213,7 @@ export function FicheDetailPage() {
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />
-                  ) : (
+                  ) : isAbsoluteVideo ? (
                     <video
                       src={rawUrl}
                       controls
@@ -210,17 +222,23 @@ export function FicheDetailPage() {
                     >
                       <track kind="captions" />
                     </video>
+                  ) : (
+                    <div className="w-full h-full min-h-[200px] flex items-center justify-center bg-muted/30 text-muted-foreground text-sm p-4 text-center">
+                      Lecture non disponible ici. Utilise le bouton ci-dessous pour ouvrir la vidéo.
+                    </div>
                   )}
                 </div>
-                <a
-                  href={rawUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 mt-3 text-sm text-primary hover:underline font-medium"
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = videoHref || rawUrl;
+                    if (url) window.open(url, "_blank", "noopener,noreferrer");
+                  }}
+                  className="inline-flex items-center gap-1.5 mt-3 text-sm text-primary hover:underline font-medium cursor-pointer bg-transparent border-0 p-0"
                 >
                   <ExternalLink className="h-4 w-4 shrink-0" />
                   Ouvrir la vidéo dans un nouvel onglet
-                </a>
+                </button>
               </CardContent>
             </Card>
           )}
