@@ -1,6 +1,15 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Loader2, FileQuestion, Search, Edit2, HelpCircle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Loader2,
+  FileQuestion,
+  Briefcase,
+  Search,
+  Edit2,
+  HelpCircle,
+} from "lucide-react";
 
 import { getQuizzes, deleteQuiz, getJobs, type QuizDefinition, type Job } from "../../lib/api";
 import { Button } from "../../components/ui/button";
@@ -162,9 +171,10 @@ export function AdminQuizzesPage() {
                           {quiz.name}
                         </h3>
                         <div className="text-[11px] space-y-0.5">
-                          <p className="font-medium text-foreground">
+                          <p className="font-medium text-foreground flex items-center gap-1.5">
+                            <Briefcase className="h-3 w-3 shrink-0 text-muted-foreground" />
                             Métier RH actuellement lié :{" "}
-                            <span className="text-muted-foreground font-normal truncate block">
+                            <span className="text-muted-foreground font-normal truncate">
                               {getJobName(quiz.jobId)}
                             </span>
                           </p>
