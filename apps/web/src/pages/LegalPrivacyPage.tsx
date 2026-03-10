@@ -86,7 +86,7 @@ export function LegalPrivacyPage() {
                 <p className="mb-2">Nous collectons principalement :</p>
                 <ul className="list-none space-y-2">
                   {[
-                    "Ton adresse e‑mail pour créer ton compte et t'envoyer le lien de connexion (magic link).",
+                    "Ton adresse e‑mail pour créer ton compte et t'envoyer le lien de connexion (magic link). Elle n'est jamais utilisée à des fins commerciales ou de prospection.",
                     "Les réponses au quiz (sans données sensibles) afin de calculer ton profil métier RH et te recommander un métier adapté.",
                     "Éventuellement ton retour d'expérience (avis, commentaires) si tu choisis d'en laisser un.",
                   ].map((item, i) => (
