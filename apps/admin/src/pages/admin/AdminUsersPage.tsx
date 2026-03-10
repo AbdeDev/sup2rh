@@ -37,6 +37,7 @@ export function AdminUsersPage() {
   const [popupUser, setPopupUser] = useState<AdminUser | null>(null);
   const [resultSessionId, setResultSessionId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"ALL" | "ADMIN" | "USER">("ALL");
 
   useEffect(() => {
     loadData();
@@ -98,9 +99,22 @@ export function AdminUsersPage() {
     }).format(new Date(dateString));
   }
 
-  const filteredUsers = search.trim()
-    ? users.filter((u) => u.email.toLowerCase().includes(search.toLowerCase()))
-    : users;
+  function getLastActivity(user: AdminUser): string | null {
+    const sessions = sessionsByUser[user.id];
+    if (!sessions || !sessions.sessions || sessions.sessions.length === 0) return null;
+    return sessions.sessions.reduce<string | null>((latest, s) => {
+      if (!latest) return s.createdAt;
+      return new Date(s.createdAt) > new Date(latest) ? s.createdAt : latest;
+    }, null);
+  }
+
+  const filteredUsers = users
+    .filter((u) => {
+      if (roleFilter === "ALL") return true;
+      return u.role === roleFilter;
+    })
+    .filter((u) => (search.trim() ? u.email.toLowerCase().includes(search.toLowerCase()) : true))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const userSessions = popupUser ? sessionsByUser[popupUser.id] : null;
   const totalSessions = Object.values(sessionsByUser).reduce((acc, s) => acc + s.sessionCount, 0);
@@ -150,6 +164,45 @@ export function AdminUsersPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 className="h-9 text-sm pl-9 border-border"
               />
+            </div>
+          )}
+
+          {users.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mt-1">
+              <span className="uppercase tracking-wider">Filtrer par rôle :</span>
+              <button
+                type="button"
+                onClick={() => setRoleFilter("ALL")}
+                className={`px-2 py-0.5 rounded-full border text-[11px] ${
+                  roleFilter === "ALL"
+                    ? "border-primary/60 text-primary bg-primary/5"
+                    : "border-border hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                Tous
+              </button>
+              <button
+                type="button"
+                onClick={() => setRoleFilter("ADMIN")}
+                className={`px-2 py-0.5 rounded-full border text-[11px] ${
+                  roleFilter === "ADMIN"
+                    ? "border-primary/60 text-primary bg-primary/5"
+                    : "border-border hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => setRoleFilter("USER")}
+                className={`px-2 py-0.5 rounded-full border text-[11px] ${
+                  roleFilter === "USER"
+                    ? "border-primary/60 text-primary bg-primary/5"
+                    : "border-border hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                Utilisateur
+              </button>
             </div>
           )}
         </div>
