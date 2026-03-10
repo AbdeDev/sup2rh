@@ -826,10 +826,10 @@ export function ResultPage() {
                             key={i}
                             className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2 min-w-0 overflow-hidden"
                           >
-                            <span className="text-xs text-muted-foreground truncate min-w-0 break-words">
+                            <span className="text-xs text-muted-foreground min-w-0 break-words">
                               {ind.label}
                             </span>
-                            <span className="text-xs font-medium text-foreground shrink-0 max-w-[50%] truncate">
+                            <span className="text-xs font-medium text-foreground shrink-0 max-w-[50%] text-right break-words">
                               {String(ind.value)}
                             </span>
                           </div>
@@ -915,11 +915,15 @@ export function ResultPage() {
           >
             <CardContent className="p-5 md:p-8 text-center">
               <h3 className="text-lg font-heading font-semibold text-foreground mb-2">
-                Intéressé par ce métier ?
+                Intéressé·e par ce métier ?
               </h3>
-              <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
+              <p className="text-sm text-muted-foreground mb-3 max-w-md mx-auto">
                 L&apos;équipe SUP des RH peut t&apos;aider à trouver une alternance ou un stage dans
                 ce domaine.
+              </p>
+              <p className="text-[11px] text-muted-foreground/80 mb-4 max-w-md mx-auto">
+                Ton e‑mail ne sera jamais utilisé à des fins commerciales. Nous te contacterons
+                uniquement si tu en fais la demande via ce bouton.
               </p>
               <Button
                 onClick={handleContact}
@@ -932,7 +936,7 @@ export function ResultPage() {
                     Envoi…
                   </>
                 ) : (
-                  "Être contacté par SUP des RH"
+                  "Être contacté·e par SUP des RH"
                 )}
               </Button>
             </CardContent>
@@ -1051,10 +1055,10 @@ export function ResultPage() {
                         key={i}
                         className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2 gap-2 min-w-0 overflow-hidden"
                       >
-                        <span className="text-xs text-muted-foreground truncate min-w-0 break-words">
+                        <span className="text-xs text-muted-foreground min-w-0 break-words">
                           {ind.label}
                         </span>
-                        <span className="text-xs font-medium text-foreground shrink-0 max-w-[50%] truncate">
+                        <span className="text-xs font-medium text-foreground shrink-0 max-w-[50%] text-right break-words">
                           {String(ind.value)}
                         </span>
                       </div>

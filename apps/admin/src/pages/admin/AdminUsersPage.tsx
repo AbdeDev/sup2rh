@@ -37,6 +37,7 @@ export function AdminUsersPage() {
   const [popupUser, setPopupUser] = useState<AdminUser | null>(null);
   const [resultSessionId, setResultSessionId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"recent" | "email">("recent");
 
   useEffect(() => {
     loadData();
@@ -98,9 +99,27 @@ export function AdminUsersPage() {
     }).format(new Date(dateString));
   }
 
+  function getLastActivity(user: AdminUser): string | null {
+    const sessions = sessionsByUser[user.id];
+    if (!sessions || !sessions.sessions || sessions.sessions.length === 0) return null;
+    return sessions.sessions.reduce<string | null>((latest, s) => {
+      if (!latest) return s.createdAt;
+      return new Date(s.createdAt) > new Date(latest) ? s.createdAt : latest;
+    }, null);
+  }
+
   const filteredUsers = search.trim()
     ? users.filter((u) => u.email.toLowerCase().includes(search.toLowerCase()))
     : users;
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    if (sortBy === "email") {
+      return a.email.localeCompare(b.email);
+    }
+    const aLast = getLastActivity(a) ?? a.createdAt;
+    const bLast = getLastActivity(b) ?? b.createdAt;
+    return new Date(bLast).getTime() - new Date(aLast).getTime();
+  });
 
   const userSessions = popupUser ? sessionsByUser[popupUser.id] : null;
   const totalSessions = Object.values(sessionsByUser).reduce((acc, s) => acc + s.sessionCount, 0);
@@ -142,7 +161,7 @@ export function AdminUsersPage() {
           )}
 
           {users.length > 4 && (
-            <div className="relative">
+            <div className="relative mb-2">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 placeholder="Rechercher un utilisateur…"
@@ -150,6 +169,34 @@ export function AdminUsersPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 className="h-9 text-sm pl-9 border-border"
               />
+            </div>
+          )}
+
+          {users.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mt-1">
+              <span className="uppercase tracking-wider">Trier par :</span>
+              <button
+                type="button"
+                onClick={() => setSortBy("recent")}
+                className={`px-2 py-0.5 rounded-full border text-[11px] ${
+                  sortBy === "recent"
+                    ? "border-primary/60 text-primary bg-primary/5"
+                    : "border-border hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                Dernière activité
+              </button>
+              <button
+                type="button"
+                onClick={() => setSortBy("email")}
+                className={`px-2 py-0.5 rounded-full border text-[11px] ${
+                  sortBy === "email"
+                    ? "border-primary/60 text-primary bg-primary/5"
+                    : "border-border hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                Email
+              </button>
             </div>
           )}
         </div>
@@ -173,7 +220,7 @@ export function AdminUsersPage() {
             <Loader2 className="h-7 w-7 animate-spin text-primary" />
             <p className="text-xs text-muted-foreground">Chargement des utilisateurs…</p>
           </div>
-        ) : filteredUsers.length === 0 ? (
+        ) : sortedUsers.length === 0 ? (
           <Card className="border border-border bg-card animate-in fade-in duration-500">
             <CardContent className="p-10 text-center">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
@@ -184,9 +231,10 @@ export function AdminUsersPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredUsers.map((user, index) => {
+            {sortedUsers.map((user, index) => {
               const sessions = sessionsByUser[user.id];
               const quizCount = sessions?.sessionCount ?? 0;
+              const lastActivity = getLastActivity(user);
               return (
                 <Card
                   key={user.id}
@@ -223,11 +271,17 @@ export function AdminUsersPage() {
                           {user.email}
                         </span>
                       </div>
-                      <div className="flex items-center gap-4 text-[11px] text-muted-foreground mb-3">
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mb-3">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           {formatDate(user.createdAt)}
                         </span>
+                        {lastActivity && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            Dernière activité&nbsp;: {formatFullDate(lastActivity)}
+                          </span>
+                        )}
                         {quizCount > 0 && (
                           <span className="flex items-center gap-1 text-primary font-medium">
                             <ClipboardList className="h-3 w-3" />
