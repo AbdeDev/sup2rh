@@ -60,8 +60,6 @@ export function FicheDetailPage() {
     );
   }
 
-  const LANDING_URL = import.meta.env.VITE_LANDING_URL || "https://quizsupdesrh-web.pages.dev";
-
   const rawUrl = (job.videoUrl?.trim() ?? "").replace(/^\/+/, "");
   const isAbsoluteVideo = rawUrl.startsWith("http://") || rawUrl.startsWith("https://");
   const isYoutube =
@@ -256,6 +254,17 @@ export function FicheDetailPage() {
             </Button>
             <Button variant="outline" className="rounded-xl" onClick={() => navigate("/fiches")}>
               Voir toutes les fiches
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-xl"
+              onClick={() => {
+                const url =
+                  import.meta.env.VITE_LANDING_URL || "https://quizsupdesrh-web.pages.dev";
+                window.location.href = url;
+              }}
+            >
+              Revenir à la page de présentation
             </Button>
           </div>
         </div>
