@@ -20,6 +20,29 @@ import { ThemeToggle } from "../components/ThemeToggle";
 import { AppLogo } from "../components/AppLogo";
 import { ChartContainer, type ChartConfig } from "../components/ui/chart";
 
+/** Formate une description qui peut contenir des puces "•" en liste visuelle */
+function FormatDescription({ text }: { text: string }) {
+  const parts = text.split(/\s*•\s*/).filter(Boolean);
+  if (parts.length <= 1) {
+    return <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{text}</p>;
+  }
+  const intro = parts[0].trim();
+  const bullets = parts.slice(1);
+  return (
+    <div className="space-y-2">
+      {intro && <p className="text-sm text-foreground/90 leading-relaxed">{intro}</p>}
+      <ul className="space-y-1.5">
+        {bullets.map((b, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span className="mt-[5px] h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+            <span className="text-sm text-foreground/90 leading-relaxed">{b.trim()}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function ResultPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -768,7 +791,7 @@ export function ResultPage() {
                     <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
                       Description du métier
                     </p>
-                    <p className="text-sm text-foreground leading-relaxed">{fiche.description}</p>
+                    <FormatDescription text={fiche.description} />
                   </div>
                 )}
                 {(fiche?.salary ?? fiche?.hiringRate ?? fiche?.turnoverRate) && (
@@ -820,18 +843,18 @@ export function ResultPage() {
                       <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
                         Autres indicateurs
                       </p>
-                      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 md:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-2">
                         {fiche.indicators.map((ind, i) => (
                           <div
                             key={i}
-                            className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2 min-w-0 overflow-hidden"
+                            className="rounded-lg border border-border bg-muted/20 px-3 py-2.5"
                           >
-                            <span className="text-xs text-muted-foreground truncate min-w-0 break-words">
+                            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5 break-words">
                               {ind.label}
-                            </span>
-                            <span className="text-xs font-medium text-foreground shrink-0 max-w-[50%] truncate">
+                            </p>
+                            <p className="text-xs font-semibold text-foreground break-words">
                               {String(ind.value)}
-                            </span>
+                            </p>
                           </div>
                         ))}
                       </div>
@@ -1009,9 +1032,7 @@ export function ResultPage() {
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                     Description
                   </p>
-                  <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                    {ficheModalJob.description}
-                  </p>
+                  <FormatDescription text={ficheModalJob.description} />
                 </div>
               )}
               {(ficheModalJob.salary ||
@@ -1049,14 +1070,14 @@ export function ResultPage() {
                     {ficheModalJob.indicators.map((ind, i) => (
                       <div
                         key={i}
-                        className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2 gap-2 min-w-0 overflow-hidden"
+                        className="rounded-lg border border-border bg-muted/20 px-3 py-2.5"
                       >
-                        <span className="text-xs text-muted-foreground truncate min-w-0 break-words">
+                        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5 break-words">
                           {ind.label}
-                        </span>
-                        <span className="text-xs font-medium text-foreground shrink-0 max-w-[50%] truncate">
+                        </p>
+                        <p className="text-xs font-semibold text-foreground break-words">
                           {String(ind.value)}
-                        </span>
+                        </p>
                       </div>
                     ))}
                   </div>

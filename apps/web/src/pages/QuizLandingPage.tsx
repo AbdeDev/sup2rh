@@ -60,6 +60,17 @@ const STEPS = [
   },
 ];
 
+const DOMAIN_COLORS = [
+  { bg: "rgba(0,64,128,0.08)", border: "rgba(0,64,128,0.25)", text: "#004080" },
+  { bg: "rgba(0,140,84,0.08)", border: "rgba(0,140,84,0.25)", text: "#008c54" },
+  { bg: "rgba(243,112,33,0.08)", border: "rgba(243,112,33,0.25)", text: "#c05000" },
+  { bg: "rgba(107,33,168,0.08)", border: "rgba(107,33,168,0.25)", text: "#6b21a8" },
+  { bg: "rgba(8,145,178,0.08)", border: "rgba(8,145,178,0.25)", text: "#0891b2" },
+  { bg: "rgba(190,24,93,0.08)", border: "rgba(190,24,93,0.25)", text: "#be185d" },
+  { bg: "rgba(15,118,110,0.08)", border: "rgba(15,118,110,0.25)", text: "#0f766e" },
+  { bg: "rgba(180,83,9,0.08)", border: "rgba(180,83,9,0.25)", text: "#b45309" },
+];
+
 const DOMAINS = [
   { emoji: "🎯", label: "Recrutement & Talents" },
   { emoji: "📚", label: "Formation & Compétences" },
@@ -319,24 +330,38 @@ export function QuizLandingPage() {
             {domainLabels.length > 0
               ? [...domainLabels, ...domainLabels].map((label, i) => {
                   const staticDom = DOMAINS.find((d) => d.label === label);
+                  const color = DOMAIN_COLORS[i % DOMAIN_COLORS.length];
                   return (
                     <span
                       key={`${label}-${i}`}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap shrink-0"
+                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0"
+                      style={{
+                        background: color.bg,
+                        border: `1px solid ${color.border}`,
+                        color: color.text,
+                      }}
                     >
                       {staticDom ? `${staticDom.emoji} ` : ""}
                       {label}
                     </span>
                   );
                 })
-              : [...DOMAINS, ...DOMAINS].map((d, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap shrink-0"
-                  >
-                    {d.emoji} {d.label}
-                  </span>
-                ))}
+              : [...DOMAINS, ...DOMAINS].map((d, i) => {
+                  const color = DOMAIN_COLORS[i % DOMAIN_COLORS.length];
+                  return (
+                    <span
+                      key={i}
+                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0"
+                      style={{
+                        background: color.bg,
+                        border: `1px solid ${color.border}`,
+                        color: color.text,
+                      }}
+                    >
+                      {d.emoji} {d.label}
+                    </span>
+                  );
+                })}
           </div>
         </div>
 
