@@ -306,7 +306,7 @@ export function QuizPage() {
                   <Sparkles className="h-8 w-8 text-primary" />
                 </div>
                 <h2 className="text-lg font-heading font-bold text-foreground mb-2">
-                  Prêt·e à découvrir ton profil ?
+                  Prêt à découvrir ton profil ?
                 </h2>
                 <p className="text-sm text-muted-foreground max-w-xs mb-6">
                   Réponds à quelques questions pour découvrir ton métier RH idéal.
