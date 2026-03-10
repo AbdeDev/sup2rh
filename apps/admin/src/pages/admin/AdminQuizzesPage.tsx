@@ -1,15 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  Plus,
-  Trash2,
-  Loader2,
-  FileQuestion,
-  Briefcase,
-  Search,
-  Edit2,
-  HelpCircle,
-} from "lucide-react";
+import { Plus, Trash2, Loader2, FileQuestion, Search, Edit2, HelpCircle } from "lucide-react";
 
 import { getQuizzes, deleteQuiz, getJobs, type QuizDefinition, type Job } from "../../lib/api";
 import { Button } from "../../components/ui/button";
