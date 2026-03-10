@@ -37,7 +37,7 @@ export function AdminUsersPage() {
   const [popupUser, setPopupUser] = useState<AdminUser | null>(null);
   const [resultSessionId, setResultSessionId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [sortBy, setSortBy] = useState<"recent" | "email">("recent");
+  const [roleFilter, setRoleFilter] = useState<"ALL" | "ADMIN" | "USER">("ALL");
 
   useEffect(() => {
     loadData();
@@ -108,18 +108,14 @@ export function AdminUsersPage() {
     }, null);
   }
 
-  const filteredUsers = search.trim()
-    ? users.filter((u) => u.email.toLowerCase().includes(search.toLowerCase()))
-    : users;
-
-  const sortedUsers = [...filteredUsers].sort((a, b) => {
-    if (sortBy === "email") {
-      return a.email.localeCompare(b.email);
-    }
-    const aLast = getLastActivity(a) ?? a.createdAt;
-    const bLast = getLastActivity(b) ?? b.createdAt;
-    return new Date(bLast).getTime() - new Date(aLast).getTime();
-  });
+  const filteredUsers = users
+    .filter((u) => {
+      if (roleFilter === "ALL") return true;
+      return u.role === roleFilter;
+    })
+    .filter((u) => (search.trim() ? u.email.toLowerCase().includes(search.toLowerCase()) : true))
+    // option : les plus récents en premier
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const userSessions = popupUser ? sessionsByUser[popupUser.id] : null;
   const totalSessions = Object.values(sessionsByUser).reduce((acc, s) => acc + s.sessionCount, 0);
@@ -174,28 +170,39 @@ export function AdminUsersPage() {
 
           {users.length > 0 && (
             <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mt-1">
-              <span className="uppercase tracking-wider">Trier par :</span>
+              <span className="uppercase tracking-wider">Filtrer par rôle :</span>
               <button
                 type="button"
-                onClick={() => setSortBy("recent")}
+                onClick={() => setRoleFilter("ALL")}
                 className={`px-2 py-0.5 rounded-full border text-[11px] ${
-                  sortBy === "recent"
+                  roleFilter === "ALL"
                     ? "border-primary/60 text-primary bg-primary/5"
                     : "border-border hover:border-primary/40 hover:text-foreground"
                 }`}
               >
-                Dernière activité
+                Tous
               </button>
               <button
                 type="button"
-                onClick={() => setSortBy("email")}
+                onClick={() => setRoleFilter("ADMIN")}
                 className={`px-2 py-0.5 rounded-full border text-[11px] ${
-                  sortBy === "email"
+                  roleFilter === "ADMIN"
                     ? "border-primary/60 text-primary bg-primary/5"
                     : "border-border hover:border-primary/40 hover:text-foreground"
                 }`}
               >
-                Email
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => setRoleFilter("USER")}
+                className={`px-2 py-0.5 rounded-full border text-[11px] ${
+                  roleFilter === "USER"
+                    ? "border-primary/60 text-primary bg-primary/5"
+                    : "border-border hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                Utilisateur
               </button>
             </div>
           )}
@@ -220,7 +227,7 @@ export function AdminUsersPage() {
             <Loader2 className="h-7 w-7 animate-spin text-primary" />
             <p className="text-xs text-muted-foreground">Chargement des utilisateurs…</p>
           </div>
-        ) : sortedUsers.length === 0 ? (
+        ) : filteredUsers.length === 0 ? (
           <Card className="border border-border bg-card animate-in fade-in duration-500">
             <CardContent className="p-10 text-center">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
@@ -231,7 +238,7 @@ export function AdminUsersPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sortedUsers.map((user, index) => {
+            {filteredUsers.map((user, index) => {
               const sessions = sessionsByUser[user.id];
               const quizCount = sessions?.sessionCount ?? 0;
               const lastActivity = getLastActivity(user);
