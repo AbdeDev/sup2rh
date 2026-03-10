@@ -157,7 +157,7 @@ export function AdminUsersPage() {
           )}
 
           {users.length > 4 && (
-            <div className="relative mb-2">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 placeholder="Rechercher un utilisateur…"
@@ -241,7 +241,6 @@ export function AdminUsersPage() {
             {filteredUsers.map((user, index) => {
               const sessions = sessionsByUser[user.id];
               const quizCount = sessions?.sessionCount ?? 0;
-              const lastActivity = getLastActivity(user);
               return (
                 <Card
                   key={user.id}
@@ -278,17 +277,11 @@ export function AdminUsersPage() {
                           {user.email}
                         </span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mb-3">
+                      <div className="flex items-center gap-4 text-[11px] text-muted-foreground mb-3">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           {formatDate(user.createdAt)}
                         </span>
-                        {lastActivity && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            Dernière activité&nbsp;: {formatFullDate(lastActivity)}
-                          </span>
-                        )}
                         {quizCount > 0 && (
                           <span className="flex items-center gap-1 text-primary font-medium">
                             <ClipboardList className="h-3 w-3" />
