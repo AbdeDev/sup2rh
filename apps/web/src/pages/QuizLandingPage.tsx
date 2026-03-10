@@ -311,7 +311,7 @@ export function QuizLandingPage() {
               Grands domaines RH
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-              Ces domaines sont explorés dans le quiz : selon tes réponses, tu seras orienté vers
+              Ces domaines sont explorés dans le quiz : selon tes réponses, tu seras orienté·e vers
               l’un d’entre eux et les fiches métiers associées.
             </p>
           </div>
@@ -392,7 +392,7 @@ export function QuizLandingPage() {
               <Sparkles className="h-7 w-7 text-primary" />
             </div>
             <h2 className="text-xl sm:text-2xl font-heading font-bold text-foreground mb-3">
-              Prêt à découvrir ton profil RH ?
+              Prêt·e à découvrir ton profil RH ?
             </h2>
             <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
               Gratuit, sans engagement, résultat personnalisé en moins de 2 minutes.

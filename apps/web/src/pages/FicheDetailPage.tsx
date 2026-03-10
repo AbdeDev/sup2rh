@@ -255,6 +255,17 @@ export function FicheDetailPage() {
             <Button variant="outline" className="rounded-xl" onClick={() => navigate("/fiches")}>
               Voir toutes les fiches
             </Button>
+            <Button
+              variant="outline"
+              className="rounded-xl"
+              onClick={() => {
+                const url =
+                  import.meta.env.VITE_LANDING_URL || "https://quizsupdesrh-web.pages.dev";
+                window.location.href = url;
+              }}
+            >
+              Revenir à la page de présentation
+            </Button>
           </div>
         </div>
       </main>
