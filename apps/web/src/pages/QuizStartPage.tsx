@@ -355,15 +355,25 @@ function QuestionCard({
       <div className="h-0.5 transition-all duration-300" style={{ backgroundColor: cfg.color }} />
 
       <div className="p-4 sm:p-5">
-        {/* Question text */}
+        {/* Lama mascotte + question */}
         <div className="flex items-start gap-3 mb-4">
-          <span
-            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold text-white mt-0.5"
-            style={{ backgroundColor: cfg.color }}
-          >
-            {index}
-          </span>
-          <p className="text-sm font-medium text-foreground leading-relaxed">{question.text}</p>
+          <div className="flex shrink-0 items-center gap-2">
+            <img
+              src="/lamascott-hero.png"
+              alt=""
+              className="h-10 w-10 object-contain"
+              aria-hidden
+            />
+            <span
+              className="inline-flex h-6 w-6 items-center justify-center rounded-lg text-[11px] font-bold text-white"
+              style={{ backgroundColor: cfg.color }}
+            >
+              {index}
+            </span>
+          </div>
+          <p className="text-sm font-medium text-foreground leading-relaxed min-w-0 flex-1">
+            {question.text}
+          </p>
         </div>
 
         {/* Slider : glisser de Pas d'accord à D'accord */}

@@ -114,7 +114,7 @@ export function FichesPage() {
             <AppLogo className="h-9 w-9 object-contain" />
             <div className="hidden sm:block">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Quiz SUP des RH
+                Rh et moi by SUP des RH
               </p>
               <p className="text-[10px] text-muted-foreground leading-tight">Fiches métier</p>
             </div>

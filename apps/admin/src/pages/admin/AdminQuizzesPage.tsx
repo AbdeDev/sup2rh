@@ -46,7 +46,7 @@ export function AdminQuizzesPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Es-tu sûr de vouloir supprimer ce quiz ?")) return;
+    if (!confirm("Es-tu sûr de vouloir supprimer ce quiz ? Cette action est irréversible.")) return;
     try {
       await deleteQuiz(id);
       await loadData();
@@ -68,6 +68,9 @@ export function AdminQuizzesPage() {
 
   function getJobName(jobId: string) {
     return jobs.find((j) => j.id === jobId)?.name || jobId;
+  }
+  function getJobCategory(jobId: string) {
+    return jobs.find((j) => j.id === jobId)?.category ?? null;
   }
 
   const filteredQuizzes = search.trim()
@@ -167,9 +170,19 @@ export function AdminQuizzesPage() {
                         <h3 className="text-sm font-heading font-bold text-foreground truncate mb-0.5 group-hover:text-primary transition-colors">
                           {quiz.name}
                         </h3>
-                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                          <Briefcase className="h-3 w-3" />
-                          <span className="truncate">{getJobName(quiz.jobId)}</span>
+                        <div className="text-[11px] space-y-0.5">
+                          <p className="font-medium text-foreground flex items-center gap-1.5">
+                            <Briefcase className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            Métier RH actuellement lié :{" "}
+                            <span className="text-muted-foreground font-normal truncate">
+                              {getJobName(quiz.jobId)}
+                            </span>
+                          </p>
+                          {getJobCategory(quiz.jobId) && (
+                            <p className="text-[10px] text-primary">
+                              Domaine : {getJobCategory(quiz.jobId)}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>

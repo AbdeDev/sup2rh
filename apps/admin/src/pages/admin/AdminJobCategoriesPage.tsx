@@ -122,7 +122,7 @@ export function AdminJobCategoriesPage() {
   async function handleDelete(cat: JobCategory) {
     if (
       !confirm(
-        `Supprimer le domaine "${cat.name}" ? Les fiches associées perdront cette catégorie.`,
+        `Es-tu sûr de vouloir supprimer le domaine « ${cat.name} » ? Les fiches associées perdront cette catégorie. Cette action est irréversible.`,
       )
     )
       return;
@@ -209,59 +209,76 @@ export function AdminJobCategoriesPage() {
                 <CardContent className="p-0 flex flex-col sm:flex-row">
                   {/* Bloc principal */}
                   <div className="flex flex-1 min-w-0 p-4 sm:p-5 gap-4">
-                    <div
-                      className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 cursor-pointer text-2xl"
-                      title="Cliquer pour modifier l'emoji"
-                      onClick={() =>
-                        setInlineEdit({ id: cat.id, field: "emoji", value: cat.emoji ?? "" })
-                      }
-                    >
-                      {inlineEdit?.id === cat.id && inlineEdit.field === "emoji" ? (
-                        <div className="flex items-center gap-1">
-                          <Input
-                            autoFocus
-                            value={inlineEdit.value}
-                            onChange={(e) =>
-                              setInlineEdit({ ...inlineEdit, value: e.target.value })
-                            }
-                            className="w-12 h-8 text-center px-1 text-base"
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") saveInline();
-                              if (e.key === "Escape") setInlineEdit(null);
-                            }}
-                          />
-                          <button
-                            type="button"
-                            onClick={saveInline}
-                            className="text-green-600 hover:text-green-700 p-0.5"
-                          >
-                            <Check className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setInlineEdit(null)}
-                            className="text-muted-foreground hover:text-foreground p-0.5"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <div
+                        className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl cursor-pointer hover:bg-primary/15 transition-colors overflow-hidden"
+                        title="Cliquer pour modifier l'emoji"
+                        onClick={() =>
+                          setInlineEdit({ id: cat.id, field: "emoji", value: cat.emoji ?? "" })
+                        }
+                      >
+                        <span className="truncate block" title={cat.emoji ?? "📁"}>
+                          {cat.emoji ?? "📁"}
+                        </span>
+                      </div>
+                      {inlineEdit?.id === cat.id && inlineEdit.field === "emoji" && (
+                        <div className="flex flex-col gap-1.5 p-2 rounded-lg border border-border bg-muted/30">
+                          <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                            Nouvel emoji
+                          </label>
+                          <div className="flex gap-1.5 items-center">
+                            <Input
+                              autoFocus
+                              value={inlineEdit.value}
+                              onChange={(e) =>
+                                setInlineEdit({ ...inlineEdit, value: e.target.value })
+                              }
+                              className="h-8 flex-1 text-center text-base"
+                              placeholder="ex: 📁"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") saveInline();
+                                if (e.key === "Escape") setInlineEdit(null);
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-500/10"
+                              onClick={saveInline}
+                              title="Valider"
+                            >
+                              <Check className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                              onClick={() => setInlineEdit(null)}
+                              title="Annuler"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      ) : (
-                        (cat.emoji ?? "📁")
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold text-foreground text-base">{cat.name}</span>
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="flex flex-wrap items-center gap-2 min-w-0">
+                        <span className="font-semibold text-foreground text-base truncate">
+                          {cat.name}
+                        </span>
                         {cat.status && (
                           <span
-                            className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[cat.status] ?? ""}`}
+                            className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${STATUS_COLORS[cat.status] ?? ""}`}
                           >
                             {STATUS_LABELS[cat.status] ?? cat.status}
                           </span>
                         )}
                       </div>
                       {cat.description && (
-                        <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
+                        <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 break-words">
                           {cat.description}
                         </p>
                       )}
