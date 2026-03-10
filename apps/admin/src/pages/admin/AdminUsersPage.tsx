@@ -168,30 +168,41 @@ export function AdminUsersPage() {
           )}
 
           {users.length > 0 && (
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-3">
-              <span className="text-xs font-medium text-muted-foreground">Filtrer par rôle</span>
-              <div
-                className="inline-flex rounded-xl border border-border bg-muted/30 p-0.5"
-                role="tablist"
-                aria-label="Rôle"
+            <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mt-1">
+              <span className="uppercase tracking-wider">Filtrer par rôle :</span>
+              <button
+                type="button"
+                onClick={() => setRoleFilter("ALL")}
+                className={`px-2 py-0.5 rounded-full border text-[11px] ${
+                  roleFilter === "ALL"
+                    ? "border-primary/60 text-primary bg-primary/5"
+                    : "border-border hover:border-primary/40 hover:text-foreground"
+                }`}
               >
-                {(["ALL", "ADMIN", "USER"] as const).map((role) => (
-                  <button
-                    key={role}
-                    type="button"
-                    role="tab"
-                    aria-selected={roleFilter === role}
-                    onClick={() => setRoleFilter(role)}
-                    className={`min-w-[88px] py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
-                      roleFilter === role
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-background"
-                    }`}
-                  >
-                    {role === "ALL" ? "Tous" : role === "ADMIN" ? "Admin" : "Utilisateur"}
-                  </button>
-                ))}
-              </div>
+                Tous
+              </button>
+              <button
+                type="button"
+                onClick={() => setRoleFilter("ADMIN")}
+                className={`px-2 py-0.5 rounded-full border text-[11px] ${
+                  roleFilter === "ADMIN"
+                    ? "border-primary/60 text-primary bg-primary/5"
+                    : "border-border hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => setRoleFilter("USER")}
+                className={`px-2 py-0.5 rounded-full border text-[11px] ${
+                  roleFilter === "USER"
+                    ? "border-primary/60 text-primary bg-primary/5"
+                    : "border-border hover:border-primary/40 hover:text-foreground"
+                }`}
+              >
+                Utilisateur
+              </button>
             </div>
           )}
         </div>

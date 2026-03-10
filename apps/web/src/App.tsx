@@ -77,8 +77,7 @@ export default function App() {
         <Route path="/fiches/:id" element={<FicheDetailPage />} />
 
         {/* Fallback */}
-        {/* Fallback : vers fiches (public) pour éviter de forcer la connexion */}
-        <Route path="*" element={<Navigate to="/fiches" replace />} />
+        <Route path="*" element={<Navigate to="/quiz" replace />} />
       </Routes>
     </>
   );
