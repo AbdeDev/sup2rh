@@ -17,7 +17,7 @@ export function AppLogo({ className = "h-10 w-10" }: { className?: string }) {
   return (
     <img
       src={src}
-      alt="Rh et moi by SUP des RH - Logo"
+      alt="Quiz SUP des RH - Logo"
       className={`${className} logo-theme-safe`}
       width={40}
       height={40}
