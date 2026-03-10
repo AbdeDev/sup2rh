@@ -122,7 +122,7 @@ export function AdminJobCategoriesPage() {
   async function handleDelete(cat: JobCategory) {
     if (
       !confirm(
-        `Supprimer le domaine "${cat.name}" ? Les fiches associées perdront cette catégorie.`,
+        `Es-tu sûr de vouloir supprimer le domaine « ${cat.name} » ? Les fiches associées perdront cette catégorie. Cette action est irréversible.`,
       )
     )
       return;
@@ -210,7 +210,7 @@ export function AdminJobCategoriesPage() {
                   {/* Bloc principal */}
                   <div className="flex flex-1 min-w-0 p-4 sm:p-5 gap-4">
                     <div
-                      className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 cursor-pointer text-2xl"
+                      className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 cursor-pointer text-2xl overflow-hidden"
                       title="Cliquer pour modifier l'emoji"
                       onClick={() =>
                         setInlineEdit({ id: cat.id, field: "emoji", value: cat.emoji ?? "" })
@@ -246,22 +246,26 @@ export function AdminJobCategoriesPage() {
                           </button>
                         </div>
                       ) : (
-                        (cat.emoji ?? "📁")
+                        <span className="truncate block" title={cat.emoji ?? "📁"}>
+                          {cat.emoji ?? "📁"}
+                        </span>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold text-foreground text-base">{cat.name}</span>
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="flex flex-wrap items-center gap-2 min-w-0">
+                        <span className="font-semibold text-foreground text-base truncate">
+                          {cat.name}
+                        </span>
                         {cat.status && (
                           <span
-                            className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[cat.status] ?? ""}`}
+                            className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${STATUS_COLORS[cat.status] ?? ""}`}
                           >
                             {STATUS_LABELS[cat.status] ?? cat.status}
                           </span>
                         )}
                       </div>
                       {cat.description && (
-                        <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2">
+                        <p className="text-sm text-muted-foreground mt-1.5 line-clamp-2 break-words">
                           {cat.description}
                         </p>
                       )}

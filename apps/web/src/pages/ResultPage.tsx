@@ -69,6 +69,7 @@ export function ResultPage() {
   const [showAllScores, setShowAllScores] = useState(false);
   const [allJobs, setAllJobs] = useState<JobFiche[]>([]);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [ficheModalJob, setFicheModalJob] = useState<JobFiche | null>(null);
 
   const buildResultFromScores = useCallback(
@@ -201,41 +202,51 @@ export function ResultPage() {
   }, []);
 
   const jobLabel = (jid: string) => jid.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  const mainCategory =
+    analysis?.job?.category ??
+    (analysis?.jobId && allJobs.find((j) => j.id === analysis.jobId)?.category) ??
+    null;
 
-  const scoresChartData = useMemo(() => {
+  // Graphique par domaine RH : une barre par domaine, score = max des scores des fiches du domaine
+  const domainChartData = useMemo(() => {
     const scores = analysis?.scores;
-    if (!scores || typeof scores !== "object") return [];
-    const entries = Object.entries(scores);
-    if (entries.length === 0) return [];
-    const sorted = [...entries].sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
-    return sorted.map(([jId, value]) => ({
-      jobId: jId,
-      label: jId === analysis.jobId && analysis.job?.name ? analysis.job.name : jobLabel(jId),
-      value: Math.round((Number(value) || 0) * 100),
-      isMain: jId === analysis.jobId,
-    }));
-  }, [analysis]);
+    if (!scores || typeof scores !== "object" || allJobs.length === 0) return [];
+    const byCategory: Record<string, number> = {};
+    for (const [jobId, val] of Object.entries(scores)) {
+      const job = allJobs.find((j) => j.id === jobId);
+      const cat = job?.category ?? "Autres";
+      const num = Number(val) || 0;
+      if (num > (byCategory[cat] ?? 0)) byCategory[cat] = num;
+    }
+    return Object.entries(byCategory)
+      .map(([category, value]) => ({
+        category,
+        value: Math.round(value * 100),
+        isMain: category === mainCategory,
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [analysis, allJobs, mainCategory]);
 
-  // Job sélectionné (via clic sur le graphique) ou job principal
+  const activeCategory = selectedCategory ?? mainCategory;
+  const categoryJobs = useMemo(() => {
+    if (!activeCategory || allJobs.length === 0) {
+      return analysis?.job ? [analysis.job] : [];
+    }
+    const inCat = allJobs.filter((j) => j.category === activeCategory);
+    return inCat.length > 0 ? inCat : analysis?.job ? [analysis.job] : [];
+  }, [activeCategory, allJobs, analysis?.job]);
+
   const activeJobId = selectedJobId ?? analysis?.jobId ?? null;
   const selectedJob = useMemo(() => {
     if (!activeJobId) return analysis?.job ?? null;
     return (allJobs.find((j) => j.id === activeJobId) ?? analysis?.job) as JobFiche | null;
   }, [activeJobId, allJobs, analysis]);
 
-  // Tous les jobs du même sous-thème
-  const categoryJobs = useMemo(() => {
-    const cat = selectedJob?.category;
-    if (!cat || allJobs.length === 0) return selectedJob ? [selectedJob] : [];
-    const inCat = allJobs.filter((j) => j.category === cat);
-    return inCat.length > 0 ? inCat : selectedJob ? [selectedJob] : [];
-  }, [selectedJob, allJobs]);
-
   const INITIAL_VISIBLE = 5;
   const visibleChartData = showAllScores
-    ? scoresChartData
-    : scoresChartData.slice(0, INITIAL_VISIBLE);
-  const hasMoreScores = scoresChartData.length > INITIAL_VISIBLE;
+    ? domainChartData
+    : domainChartData.slice(0, INITIAL_VISIBLE);
+  const hasMoreScores = domainChartData.length > INITIAL_VISIBLE;
   const answerCount = session?.answers?.length ?? 0;
   const confidencePercent = Math.round((analysis?.confidence ?? 0) * 100);
   const remainingPercent = Math.max(0, 100 - confidencePercent);
@@ -335,7 +346,7 @@ export function ResultPage() {
             <AppLogo className="h-9 w-9 object-contain" />
             <div className="hidden sm:block">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Quiz SUP des RH
+                Rh et moi by SUP des RH
               </p>
               <p className="text-[10px] text-muted-foreground leading-tight">Résultat</p>
             </div>
@@ -401,7 +412,7 @@ export function ResultPage() {
                     {topJobLabel}
                   </h1>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Domaine : {selectedJob?.category ?? "Métier RH"}
+                    Domaine : {activeCategory ?? "Métier RH"}
                   </p>
                 </>
               )}
@@ -466,10 +477,10 @@ export function ResultPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                      Métiers analysés
+                      Domaines analysés
                     </p>
                     <p className="text-xs text-foreground">
-                      {scoresChartData.length} fiche{scoresChartData.length > 1 ? "s" : ""}
+                      {domainChartData.length} domaine{domainChartData.length > 1 ? "s" : ""}
                     </p>
                   </div>
                 </CardContent>
@@ -477,8 +488,8 @@ export function ResultPage() {
             </div>
           )}
 
-          {/* Comparaison des métiers — barres verticales avec couleurs du projet */}
-          {scoresChartData.length > 0 && (
+          {/* Comparaison des domaines RH — barres verticales */}
+          {domainChartData.length > 0 && (
             <Card
               className="border border-border bg-card animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: "100ms" }}
@@ -486,14 +497,13 @@ export function ResultPage() {
               <CardContent className="p-5 md:p-6">
                 <div className="mb-5">
                   <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                    Comparaison des métiers
+                    Comparaison des domaines RH
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    {scoresChartData.length} métier{scoresChartData.length > 1 ? "s" : ""} analysé
-                    {scoresChartData.length > 1 ? "s" : ""} — Clique sur une barre pour explorer le
-                    domaine associé.
+                    {domainChartData.length} domaine{domainChartData.length > 1 ? "s" : ""} — Clique
+                    sur une barre pour voir les fiches métier du domaine.
                   </p>
-                  {selectedJob?.category && (
+                  {activeCategory && (
                     <div className="mt-3 flex items-center gap-2 flex-wrap">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-[#008c54]/10 border border-[#008c54]/20 px-3 py-1 text-xs font-semibold text-[#008c54]">
                         <svg
@@ -509,20 +519,19 @@ export function ResultPage() {
                             d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                           />
                         </svg>
-                        {selectedJob.category}
+                        {activeCategory}
                       </span>
-                      {categoryJobs.length > 1 && (
-                        <span className="text-[10px] text-muted-foreground">
-                          {categoryJobs.length} fiches dans ce sous-thème
-                        </span>
-                      )}
-                      {selectedJobId && (
+                      <span className="text-[10px] text-muted-foreground">
+                        {categoryJobs.length} fiche{categoryJobs.length > 1 ? "s" : ""} dans ce
+                        domaine
+                      </span>
+                      {selectedCategory && (
                         <button
                           type="button"
-                          onClick={() => setSelectedJobId(null)}
+                          onClick={() => setSelectedCategory(null)}
                           className="text-[10px] text-primary hover:underline ml-1"
                         >
-                          ← Retour au résultat principal
+                          ← Retour au domaine principal
                         </button>
                       )}
                     </div>
@@ -537,7 +546,7 @@ export function ResultPage() {
                     style={{ minHeight: "200px" }}
                   >
                     {visibleChartData.map((item, idx) => {
-                      const maxVal = scoresChartData[0]?.value || 100;
+                      const maxVal = domainChartData[0]?.value || 100;
                       const barHeight = Math.max((item.value / Math.max(maxVal, 1)) * 160, 16);
                       const barColors = [
                         "#004080",
@@ -560,15 +569,22 @@ export function ResultPage() {
                         ? "#004080"
                         : (barColors[idx % barColors.length] ?? "#6b7280");
 
-                      const isSelected = item.jobId === activeJobId;
+                      const isSelected = item.category === activeCategory;
+                      const label =
+                        item.category.length > 14
+                          ? item.category.slice(0, 12) + "…"
+                          : item.category;
                       return (
                         <button
                           type="button"
-                          key={item.jobId}
-                          onClick={() =>
-                            setSelectedJobId(item.jobId === analysis?.jobId ? null : item.jobId)
-                          }
-                          title={`Voir les fiches : ${item.label}`}
+                          key={item.category}
+                          onClick={() => {
+                            setSelectedCategory(
+                              item.category === activeCategory ? null : item.category,
+                            );
+                            setSelectedJobId(null);
+                          }}
+                          title={`Voir les fiches : ${item.category}`}
                           className="flex flex-col items-center gap-1.5 animate-in fade-in cursor-pointer group transition-transform duration-150 hover:scale-105 focus:outline-none"
                           style={{
                             animationDelay: `${idx * 50}ms`,
@@ -610,10 +626,10 @@ export function ResultPage() {
                                 ? "font-semibold text-foreground"
                                 : "text-muted-foreground group-hover:text-foreground"
                             }`}
-                            title={item.label}
+                            title={item.category}
                             style={{ minHeight: "24px" }}
                           >
-                            {item.label.length > 14 ? item.label.slice(0, 12) + "…" : item.label}
+                            {label}
                           </span>
                         </button>
                       );
@@ -629,7 +645,7 @@ export function ResultPage() {
                       >
                         {showAllScores
                           ? "Voir moins"
-                          : `Voir les ${scoresChartData.length - INITIAL_VISIBLE} autres métiers`}
+                          : `Voir les ${domainChartData.length - INITIAL_VISIBLE} autres domaines`}
                       </button>
                     </div>
                   )}
@@ -664,7 +680,7 @@ export function ResultPage() {
                     </div>
                     <div className="min-w-0">
                       <h2 className="text-sm font-heading font-semibold text-foreground truncate">
-                        {selectedJob?.category ?? "Fiches de ce domaine"}
+                        {activeCategory ?? "Fiches de ce domaine"}
                       </h2>
                       <p className="text-[10px] text-muted-foreground">
                         {categoryJobs.length === 1

@@ -44,7 +44,10 @@ export function AdminJobsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Es-tu sûr de vouloir supprimer cette fiche métier ?")) return;
+    if (
+      !confirm("Es-tu sûr de vouloir supprimer cette fiche métier ? Cette action est irréversible.")
+    )
+      return;
     try {
       await deleteJob(id);
       await loadJobs();
