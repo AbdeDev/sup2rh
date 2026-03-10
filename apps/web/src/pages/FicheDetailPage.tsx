@@ -16,6 +16,28 @@ import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { AppLogo } from "../components/AppLogo";
 
+function FormatDescription({ text }: { text: string }) {
+  const parts = text.split(/\s*•\s*/).filter(Boolean);
+  if (parts.length <= 1) {
+    return <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{text}</p>;
+  }
+  const intro = parts[0].trim();
+  const bullets = parts.slice(1);
+  return (
+    <div className="space-y-2">
+      {intro && <p className="text-sm text-foreground/90 leading-relaxed">{intro}</p>}
+      <ul className="space-y-1.5">
+        {bullets.map((b, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span className="mt-[5px] h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+            <span className="text-sm text-foreground/90 leading-relaxed">{b.trim()}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function FicheDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -162,35 +184,33 @@ export function FicheDetailPage() {
 
           {job.description && (
             <Card className="border border-border bg-card">
-              <CardContent className="p-4">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              <CardContent className="p-4 sm:p-5">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Description
                 </p>
-                <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                  {job.description}
-                </p>
+                <FormatDescription text={job.description} />
               </CardContent>
             </Card>
           )}
 
           {job.indicators && job.indicators.length > 0 && (
             <Card className="border border-border bg-card">
-              <CardContent className="p-4">
+              <CardContent className="p-4 sm:p-5">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Autres indicateurs
                 </p>
-                <div className="space-y-2">
+                <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-2">
                   {job.indicators.map((ind, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between gap-2 rounded-lg border border-border bg-muted/20 px-3 py-2 min-w-0"
+                      className="rounded-lg border border-border bg-muted/20 px-3 py-2.5"
                     >
-                      <span className="text-xs text-muted-foreground truncate break-words min-w-0">
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5 break-words">
                         {ind.label}
-                      </span>
-                      <span className="text-xs font-medium text-foreground shrink-0 max-w-[60%] truncate">
+                      </p>
+                      <p className="text-xs font-semibold text-foreground break-words">
                         {String(ind.value)}
-                      </span>
+                      </p>
                     </div>
                   ))}
                 </div>

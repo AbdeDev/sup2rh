@@ -147,33 +147,29 @@ try {
 					{!fetchError && jobs.length === 0 && (
 						<p class="jobs-empty">Aucune fiche métier pour le moment. Démarre l'API backend si besoin.</p>
 					)}
-					{!fetchError && jobs.map((job, idx) => (
-						<article class={`job-card${idx >= 6 ? " job-card-extra" : ""}`} id={`job-${job.id}`} style={`animation-delay: ${(idx % 6) * 60}ms`}>
-							<div class="job-head">
-								<span class="job-badge">RH</span>
-								<h3 class="job-name">{job.name}</h3>
-							</div>
-							<p class="job-desc">
-								{job.description
-									? job.description.length > 180
-										? job.description.slice(0, 180) + "…"
-										: job.description
-									: "Fiche détaillée disponible après connexion au quiz."}
-							</p>
-							<div class="job-tags">
-								{job.salary && <span class="tag tag-salary">{job.salary}</span>}
-								{job.hiringRate != null && (
-									<span class="tag tag-green">{Number(job.hiringRate).toFixed(0)}% embauche</span>
-								)}
-								{job.turnoverRate != null && (
-									<span class="tag tag-muted">{Number(job.turnoverRate).toFixed(0)}% turnover</span>
-								)}
-							</div>
-							<a href={WEB_APP_URL + "/fiches/" + job.id} class="job-card-link">
-								Voir le détail de la fiche →
-							</a>
-						</article>
-					))}
+				{!fetchError && jobs.map((job, idx) => (
+					<a href={WEB_APP_URL + "/fiches/" + job.id} class={`job-card job-card-link-wrap${idx >= 6 ? " job-card-extra" : ""}`} id={`job-${job.id}`} style={`animation-delay: ${(idx % 6) * 60}ms`}>
+						<div class="job-head">
+							<span class="job-badge">RH</span>
+							<h3 class="job-name">{job.name}</h3>
+						</div>
+						<p class="job-desc">
+							{job.description
+								? job.description.replace(/\s*•\s*/g, ' • ').slice(0, 200) + (job.description.length > 200 ? "…" : "")
+								: "Clique pour découvrir ce métier RH en détail."}
+						</p>
+						<div class="job-tags">
+							{job.salary && <span class="tag tag-salary">{job.salary}</span>}
+							{job.hiringRate != null && (
+								<span class="tag tag-green">{Number(job.hiringRate).toFixed(0)}% embauche</span>
+							)}
+							{job.turnoverRate != null && (
+								<span class="tag tag-muted">{Number(job.turnoverRate).toFixed(0)}% turnover</span>
+							)}
+						</div>
+						<span class="job-card-cta">Voir le détail de la fiche →</span>
+					</a>
+				))}
 				</div>
 
 				{jobs.length > 6 && (
@@ -1130,7 +1126,18 @@ try {
 		margin-top: 0.25rem;
 	}
 
-	.job-card-link {
+	/* Card entière cliquable */
+	.job-card-link-wrap {
+		display: flex;
+		flex-direction: column;
+		text-decoration: none;
+		color: inherit;
+		cursor: pointer;
+	}
+	.job-card-link-wrap:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.10); transform: translateY(-2px); border-color: rgba(0,64,128,0.4); }
+	html.dark .job-card-link-wrap:hover { border-color: rgba(56,189,248,0.4); }
+
+	.job-card-cta {
 		display: inline-block;
 		margin-top: 0.75rem;
 		font-size: 0.8rem;
@@ -1139,13 +1146,7 @@ try {
 		text-decoration: none;
 		transition: opacity 0.2s;
 	}
-	.job-card-link:hover {
-		opacity: 0.85;
-		text-decoration: underline;
-	}
-	html.dark .job-card-link {
-		color: #38bdf8;
-	}
+	html.dark .job-card-cta { color: #38bdf8; }
 
 	.tag {
 		font-size: 0.7rem;
