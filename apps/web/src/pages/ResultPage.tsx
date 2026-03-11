@@ -11,6 +11,7 @@ import {
   type AnalysisResult,
   type QuizSessionWithAnswers,
   type JobFiche,
+  type JobFicheIndicator,
   getMe,
 } from "../lib/api";
 import { Button } from "../components/ui/button";
@@ -1032,7 +1033,7 @@ export function ResultPage() {
                     Autres indicateurs
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {ficheModalJob.indicators.map((ind, i) => (
+                    {ficheModalJob.indicators.map((ind: JobFicheIndicator, i: number) => (
                       <div
                         key={i}
                         className="rounded-lg border border-border bg-muted/20 px-3 py-2.5"
