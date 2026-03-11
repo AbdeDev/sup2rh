@@ -46,7 +46,8 @@ export function AdminQuizzesPage() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Es-tu sûr de vouloir supprimer ce quiz ?")) return;
+    if (!confirm("Es-tu sûr de vouloir supprimer ce quiz ?\n\nCette action est irréversible."))
+      return;
     try {
       await deleteQuiz(id);
       await loadData();
