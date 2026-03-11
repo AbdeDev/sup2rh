@@ -204,7 +204,7 @@ export function AdminJobCategoriesPage() {
             {categories.map((cat) => (
               <Card
                 key={cat.id}
-                className="group transition-all hover:shadow-lg border-border overflow-hidden"
+                className="group transition-all hover:shadow-md border-border overflow-hidden rounded-xl bg-card"
               >
                 <CardContent className="p-0 flex flex-col sm:flex-row">
                   {/* Bloc principal */}
@@ -222,49 +222,49 @@ export function AdminJobCategoriesPage() {
                         </span>
                       </div>
                       {inlineEdit?.id === cat.id && inlineEdit.field === "emoji" && (
-                        <div className="flex flex-col gap-1.5 p-2 rounded-lg border border-border bg-muted/30 min-w-[140px]">
+                        <div className="flex flex-col gap-2 p-3 rounded-xl border border-border bg-muted/40 shadow-sm min-w-[180px]">
                           <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                            Nouvel emoji
+                            Modifier l&apos;emoji
                           </label>
-                          <div className="flex gap-1.5 items-center">
-                            <Input
-                              autoFocus
-                              value={inlineEdit.value}
-                              onChange={(e) =>
-                                setInlineEdit({ ...inlineEdit, value: e.target.value })
-                              }
-                              className="h-8 flex-1 min-w-0 text-center text-base"
-                              placeholder="ex: 📁"
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") saveInline();
-                                if (e.key === "Escape") setInlineEdit(null);
-                              }}
-                            />
+                          <Input
+                            autoFocus
+                            value={inlineEdit.value}
+                            onChange={(e) =>
+                              setInlineEdit({ ...inlineEdit, value: e.target.value })
+                            }
+                            className="h-9 text-center text-lg"
+                            placeholder="ex: 📁"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") saveInline();
+                              if (e.key === "Escape") setInlineEdit(null);
+                            }}
+                          />
+                          <div className="flex gap-2">
                             <Button
                               type="button"
                               size="sm"
-                              variant="ghost"
-                              className="h-8 w-8 p-0 shrink-0 text-green-600 hover:text-green-700 hover:bg-green-500/10"
+                              variant="outline"
+                              className="flex-1 h-8 text-xs gap-1.5 border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950/50"
                               onClick={saveInline}
-                              title="Valider"
                             >
-                              <Check className="h-4 w-4" />
+                              <Check className="h-3.5 w-3.5" />
+                              Valider
                             </Button>
                             <Button
                               type="button"
                               size="sm"
-                              variant="ghost"
-                              className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-foreground"
+                              variant="outline"
+                              className="flex-1 h-8 text-xs gap-1.5"
                               onClick={() => setInlineEdit(null)}
-                              title="Annuler"
                             >
-                              <X className="h-4 w-4" />
+                              <X className="h-3.5 w-3.5" />
+                              Annuler
                             </Button>
                           </div>
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0 overflow-hidden">
+                    <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
                       <div className="flex flex-wrap items-center gap-2">
                         <span
                           className="font-semibold text-foreground text-base break-words"
@@ -281,12 +281,12 @@ export function AdminJobCategoriesPage() {
                         )}
                       </div>
                       {cat.description && (
-                        <p
-                          className="text-sm text-muted-foreground mt-1.5 break-words overflow-hidden"
+                        <div
+                          className="mt-1.5 max-h-20 overflow-y-auto rounded-md border border-border/50 bg-muted/20 px-2.5 py-2 text-sm text-muted-foreground break-words"
                           title={cat.description}
                         >
                           {cat.description}
-                        </p>
+                        </div>
                       )}
                       <p className="text-[11px] text-muted-foreground/70 mt-2 shrink-0">
                         Ordre : {cat.position}

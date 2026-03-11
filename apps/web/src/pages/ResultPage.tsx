@@ -225,6 +225,22 @@ export function ResultPage() {
       .sort((a, b) => b.value - a.value);
   }, [analysis, allJobs]);
 
+  /** Fallback : graphique par métier quand aucun domaine n'est disponible */
+  const scoresChartDataFallback = useMemo(() => {
+    const scores = analysis?.scores;
+    if (!scores || typeof scores !== "object") return [];
+    const entries = Object.entries(scores);
+    if (entries.length === 0) return [];
+    const sorted = [...entries].sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
+    return sorted.map(([jId, value]) => ({
+      jobId: jId,
+      label: jId === analysis.jobId && analysis.job?.name ? analysis.job.name : jobLabel(jId),
+      value: Math.round((Number(value) || 0) * 100),
+      isMain: jId === analysis.jobId,
+    }));
+  }, [analysis]);
+
+  const hasDomains = domainChartData.length > 0;
   const activeCategory =
     selectedCategory ?? analysis?.job?.category ?? domainChartData[0]?.category ?? null;
 
@@ -233,6 +249,20 @@ export function ResultPage() {
     return allJobs.filter((j) => j.category === activeCategory);
   }, [activeCategory, allJobs]);
 
+  /** Fallback carrousel : top métiers par score quand pas de domaine sélectionnable */
+  const fallbackJobs = useMemo(() => {
+    const scores = analysis?.scores;
+    if (!scores || allJobs.length === 0) return [];
+    const sorted = Object.entries(scores)
+      .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0))
+      .slice(0, 12)
+      .map(([jobId]) => allJobs.find((j) => j.id === jobId))
+      .filter(Boolean) as JobFiche[];
+    return sorted;
+  }, [analysis?.scores, allJobs]);
+
+  const carouselJobs = categoryJobs.length > 0 ? categoryJobs : fallbackJobs;
+
   const activeJobId = selectedJobId ?? analysis?.jobId ?? null;
   const selectedJob = useMemo(() => {
     if (!activeJobId) return analysis?.job ?? null;
@@ -240,10 +270,22 @@ export function ResultPage() {
   }, [activeJobId, allJobs, analysis]);
 
   const INITIAL_VISIBLE = 5;
+  const chartDataForDisplay = hasDomains ? domainChartData : scoresChartDataFallback;
   const visibleChartData = showAllScores
-    ? domainChartData
-    : domainChartData.slice(0, INITIAL_VISIBLE);
-  const hasMoreScores = domainChartData.length > INITIAL_VISIBLE;
+    ? chartDataForDisplay
+    : chartDataForDisplay.slice(0, INITIAL_VISIBLE);
+  const hasMoreScores = chartDataForDisplay.length > INITIAL_VISIBLE;
+  const chartCount = chartDataForDisplay.length;
+  type ChartItem =
+    | { category: string; value: number; isMain: boolean }
+    | { jobId: string; label: string; value: number; isMain: boolean };
+  const getChartLabel = (item: ChartItem): string =>
+    "category" in item ? item.category : item.label;
+  const getChartId = (item: ChartItem): string => ("category" in item ? item.category : item.jobId);
+  const isChartItemSelected = (item: ChartItem): boolean =>
+    hasDomains
+      ? "category" in item && item.category === activeCategory
+      : "jobId" in item && item.jobId === activeJobId;
   const answerCount = session?.answers?.length ?? 0;
   const confidencePercent = Math.round((analysis?.confidence ?? 0) * 100);
   const remainingPercent = Math.max(0, 100 - confidencePercent);
@@ -477,7 +519,10 @@ export function ResultPage() {
                       Métiers analysés
                     </p>
                     <p className="text-xs text-foreground">
-                      {domainChartData.length} domaine{domainChartData.length > 1 ? "s" : ""} RH
+                      {chartCount}{" "}
+                      {hasDomains
+                        ? `domaine${chartCount > 1 ? "s" : ""} RH`
+                        : `métier${chartCount > 1 ? "s" : ""}`}
                     </p>
                   </div>
                 </CardContent>
@@ -485,8 +530,8 @@ export function ResultPage() {
             </div>
           )}
 
-          {/* Comparaison des domaines RH */}
-          {domainChartData.length > 0 && (
+          {/* Graphique : domaines RH ou métiers (fallback) */}
+          {chartDataForDisplay.length > 0 && (
             <Card
               className="border border-border bg-card animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: "100ms" }}
@@ -494,13 +539,15 @@ export function ResultPage() {
               <CardContent className="p-5 md:p-6">
                 <div className="mb-5">
                   <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                    Comparaison des domaines RH
+                    {hasDomains ? "Comparaison des domaines RH" : "Comparaison des métiers"}
                   </p>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    {domainChartData.length} domaine{domainChartData.length > 1 ? "s" : ""} — Clique
-                    sur une barre pour voir les fiches métier du domaine.
+                    {chartCount}{" "}
+                    {hasDomains
+                      ? `domaine${chartCount > 1 ? "s" : ""} — Clique sur une barre pour voir les fiches du domaine.`
+                      : `métier${chartCount > 1 ? "s" : ""} — Clique sur une barre pour voir la fiche.`}
                   </p>
-                  {activeCategory && (
+                  {hasDomains && activeCategory && (
                     <div className="mt-3 flex items-center gap-2 flex-wrap">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-[#008c54]/10 border border-[#008c54]/20 px-3 py-1 text-xs font-semibold text-[#008c54]">
                         <Briefcase className="h-3 w-3" />
@@ -530,8 +577,8 @@ export function ResultPage() {
                     className={`flex items-end gap-2 sm:gap-3 md:gap-4 ${visibleChartData.length > 8 ? "overflow-x-auto pb-2" : "justify-center"}`}
                     style={{ minHeight: "200px" }}
                   >
-                    {visibleChartData.map((item, idx) => {
-                      const maxVal = domainChartData[0]?.value || 100;
+                    {(visibleChartData as ChartItem[]).map((item, idx) => {
+                      const maxVal = chartDataForDisplay[0]?.value || 100;
                       const barHeight = Math.max((item.value / Math.max(maxVal, 1)) * 160, 16);
                       const barColors = [
                         "#004080",
@@ -553,23 +600,24 @@ export function ResultPage() {
                       const barColor = item.isMain
                         ? "#004080"
                         : (barColors[idx % barColors.length] ?? "#6b7280");
-                      const isSelected = item.category === activeCategory;
-                      const labelShort =
-                        item.category.length > 18
-                          ? item.category.slice(0, 16) + "…"
-                          : item.category;
+                      const isSelected = isChartItemSelected(item);
+                      const label = getChartLabel(item);
+                      const id = getChartId(item);
+                      const labelShort = label.length > 18 ? label.slice(0, 16) + "…" : label;
                       return (
                         <button
                           type="button"
-                          key={item.category}
-                          onClick={() =>
-                            setSelectedCategory(
-                              item.category === activeCategory && !selectedCategory
-                                ? null
-                                : item.category,
-                            )
-                          }
-                          title={`Voir les fiches : ${item.category}`}
+                          key={id}
+                          onClick={() => {
+                            if (hasDomains) {
+                              setSelectedCategory(
+                                id === activeCategory && !selectedCategory ? null : id,
+                              );
+                            } else {
+                              setSelectedJobId(id === activeJobId ? null : id);
+                            }
+                          }}
+                          title={`Voir : ${label}`}
                           className="flex flex-col items-center gap-1.5 animate-in fade-in cursor-pointer group transition-transform duration-150 hover:scale-105 focus:outline-none"
                           style={{
                             animationDelay: `${idx * 50}ms`,
@@ -611,7 +659,7 @@ export function ResultPage() {
                                 ? "font-semibold text-foreground"
                                 : "text-muted-foreground group-hover:text-foreground"
                             }`}
-                            title={item.category}
+                            title={label}
                             style={{ minHeight: "24px" }}
                           >
                             {labelShort}
@@ -630,7 +678,7 @@ export function ResultPage() {
                       >
                         {showAllScores
                           ? "Voir moins"
-                          : `Voir les ${domainChartData.length - INITIAL_VISIBLE} autres domaines`}
+                          : `Voir les ${chartDataForDisplay.length - INITIAL_VISIBLE} autres`}
                       </button>
                     </div>
                   )}
@@ -639,8 +687,8 @@ export function ResultPage() {
             </Card>
           )}
 
-          {/* ── Carrousel fiches du domaine ── toujours visible si catégorie connue */}
-          {categoryJobs.length > 0 && (
+          {/* Carrousel fiches métier (domaine ou top métiers) */}
+          {carouselJobs.length > 0 && (
             <Card
               className="border border-[#008c54]/25 bg-card animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: "140ms" }}
@@ -649,32 +697,22 @@ export function ResultPage() {
                 <div className="flex items-center justify-between gap-2 mb-4">
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="h-9 w-9 rounded-lg bg-[#008c54]/15 border border-[#008c54]/25 flex items-center justify-center shrink-0">
-                      <svg
-                        className="h-4 w-4 text-[#008c54]"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                        />
-                      </svg>
+                      <Briefcase className="h-4 w-4 text-[#008c54]" />
                     </div>
                     <div className="min-w-0">
                       <h2 className="text-sm font-heading font-semibold text-foreground truncate">
-                        {activeCategory ?? "Fiches de ce domaine"}
+                        {hasDomains
+                          ? (activeCategory ?? "Fiches de ce domaine")
+                          : "Fiches métier correspondantes"}
                       </h2>
                       <p className="text-[10px] text-muted-foreground">
-                        {categoryJobs.length === 1
-                          ? "1 fiche dans ce domaine"
-                          : `${categoryJobs.length} fiches · Glisse pour explorer →`}
+                        {carouselJobs.length === 1
+                          ? "1 fiche"
+                          : `${carouselJobs.length} fiches · Glisse pour explorer →`}
                       </p>
                     </div>
                   </div>
-                  {selectedCategory && (
+                  {hasDomains && selectedCategory && (
                     <button
                       type="button"
                       onClick={() => setSelectedCategory(null)}
@@ -688,7 +726,7 @@ export function ResultPage() {
                   className="flex gap-3 overflow-x-auto pb-3 hide-scrollbar"
                   style={{ scrollSnapType: "x mandatory" }}
                 >
-                  {categoryJobs.map((j) => {
+                  {carouselJobs.map((j) => {
                     const isActive = j.id === activeJobId;
                     const isTop = j.id === analysis?.jobId;
                     return (
@@ -705,7 +743,7 @@ export function ResultPage() {
                         }}
                         className="shrink-0 text-left rounded-xl border transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary active:scale-[0.98] cursor-pointer"
                         style={{
-                          width: categoryJobs.length === 1 ? "100%" : "clamp(200px, 60vw, 240px)",
+                          width: carouselJobs.length === 1 ? "100%" : "clamp(200px, 60vw, 240px)",
                           scrollSnapAlign: "start",
                           borderColor: isActive ? "#004080" : "var(--border)",
                           background: isActive ? "rgba(0,64,128,0.07)" : "var(--card)",
@@ -788,11 +826,13 @@ export function ResultPage() {
               </div>
               <div className="space-y-5">
                 {fiche?.description && (
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
                       Description du métier
                     </p>
-                    <FormatDescription text={fiche.description} />
+                    <div className="max-h-64 overflow-y-auto pr-2 rounded-lg border border-border/50 bg-muted/20 p-3">
+                      <FormatDescription text={fiche.description} />
+                    </div>
                   </div>
                 )}
                 {(fiche?.salary ?? fiche?.hiringRate ?? fiche?.turnoverRate) && (

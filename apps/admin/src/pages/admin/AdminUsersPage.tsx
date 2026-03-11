@@ -168,12 +168,12 @@ export function AdminUsersPage() {
           )}
 
           {users.length > 0 && (
-            <div className="flex flex-wrap items-center gap-3 mt-2">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Rôle
+            <div className="flex flex-wrap items-center gap-3 mt-3">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Filtrer par rôle
               </span>
               <div
-                className="inline-flex rounded-lg border border-border bg-muted/30 p-0.5"
+                className="inline-flex rounded-xl bg-muted/40 p-1 gap-0.5 border border-border/80"
                 role="tablist"
                 aria-label="Filtrer par rôle"
               >
@@ -188,13 +188,13 @@ export function AdminUsersPage() {
                     role="tab"
                     aria-selected={roleFilter === value}
                     onClick={() => setRoleFilter(value)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       roleFilter === value
-                        ? "bg-background text-foreground shadow-sm border border-border"
-                        : "text-muted-foreground hover:text-foreground"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                     }`}
                   >
-                    <Icon className="h-3.5 w-3.5" />
+                    <Icon className="h-4 w-4 shrink-0" />
                     {label}
                   </button>
                 ))}
