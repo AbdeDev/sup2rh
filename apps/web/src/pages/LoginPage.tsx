@@ -35,8 +35,8 @@ export function LoginPage() {
         <ThemeToggle />
       </div>
 
-      {/* Colonne Gauche : Marque & Proposition de valeur (Cachée sur mobile, visible sur lg) */}
-      <div className="hidden lg:flex flex-col justify-center w-[45%] max-w-[600px] bg-muted/20 dark:bg-muted/10 border-r border-border relative p-12 xl:p-16 overflow-hidden">
+      {/* Colonne Gauche : Marque & Proposition de valeur (cachée sur mobile/tablette, visible à partir de lg) */}
+      <div className="hidden lg:flex flex-col justify-center w-[45%] max-w-[600px] bg-muted/20 dark:bg-muted/10 border-r border-border relative p-10 xl:p-16 overflow-hidden">
         {/* Fond décoratif gauche */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-[#004080]/[0.08] dark:bg-[#004080]/[0.12] blur-[100px]" />
@@ -100,7 +100,7 @@ export function LoginPage() {
           <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-[#008c54]/[0.05] dark:bg-[#008c54]/[0.08] blur-[80px]" />
         </div>
 
-        <div className="w-full max-w-[380px] animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10 flex flex-col gap-3 my-auto">
+        <div className="w-full max-w-[380px] animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10 flex flex-col gap-3 my-auto min-w-0">
           {/* En-tête (Mobile uniquement) */}
           <div className="lg:hidden text-center flex flex-col items-center gap-2">
             <div className="h-12 w-12 rounded-xl bg-card shadow-md border border-border/60 flex items-center justify-center">
