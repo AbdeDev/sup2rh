@@ -389,18 +389,19 @@ export function ResultPage() {
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
                 Rh et moi <span className="font-normal text-muted-foreground">by</span> SUP des RH
               </p>
-              <p className="text-[10px] text-muted-foreground leading-tight">Résultat</p>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#008c54]/10 text-[#008c54] border border-[#008c54]/20 leading-tight mt-0.5">
+                Résultats
+              </span>
             </div>
           </button>
           <div className="ml-auto flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-border rounded-xl"
+            <button
+              type="button"
               onClick={() => navigate("/sessions")}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all duration-200 bg-card"
             >
               Mes sessions
-            </Button>
+            </button>
             <ThemeToggle />
           </div>
         </div>
@@ -540,14 +541,20 @@ export function ResultPage() {
             >
               <CardContent className="p-4 sm:p-5 md:p-6">
                 <div className="mb-5">
-                  <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                    {hasDomains ? "Comparaison des domaines RH" : "Comparaison des métiers"}
-                  </p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
+                      {hasDomains ? "Domaines RH — affinités" : "Comparaison des métiers"}
+                    </p>
+                    {hasDomains && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/15">
+                        👆 Clique pour explorer
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    {chartCount}{" "}
                     {hasDomains
-                      ? `domaine${chartCount > 1 ? "s" : ""} — Clique sur une barre pour voir les fiches du domaine.`
-                      : `métier${chartCount > 1 ? "s" : ""} — Clique sur une barre pour voir la fiche.`}
+                      ? `${chartCount} domaine${chartCount > 1 ? "s" : ""} RH identifiés · Clique sur une barre pour afficher les fiches métiers du domaine`
+                      : `${chartCount} métier${chartCount > 1 ? "s" : ""} analysés · Clique sur une barre pour voir la fiche`}
                   </p>
                   {hasDomains && activeCategory && (
                     <div className="mt-3 flex items-center gap-2 flex-wrap">
@@ -698,17 +705,24 @@ export function ResultPage() {
                       <Briefcase className="h-4 w-4 text-[#008c54]" />
                     </div>
                     <div className="min-w-0">
-                      <h2 className="text-sm sm:text-base font-heading font-semibold text-foreground truncate">
-                        {hasDomains
-                          ? (activeCategory ?? "Fiches de ce domaine")
-                          : "Fiches métier correspondantes"}
-                      </h2>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-sm sm:text-base font-heading font-semibold text-foreground">
+                          {hasDomains
+                            ? (activeCategory ?? "Fiches de ce domaine")
+                            : "Fiches métier correspondantes"}
+                        </h2>
+                        {hasDomains && carouselJobs.length > 0 && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#008c54]/10 text-[#008c54] border border-[#008c54]/20 shrink-0">
+                            {carouselJobs.length} fiche{carouselJobs.length > 1 ? "s" : ""}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
                         {hasDomains && categoryJobs.length === 0
                           ? "Aucune fiche métier dans ce domaine pour le moment."
                           : carouselJobs.length === 1
-                            ? "1 fiche"
-                            : `${carouselJobs.length} fiches · Glisse pour explorer`}
+                            ? "Clique pour voir le détail"
+                            : "Glisse pour explorer · Clique sur une fiche pour le détail"}
                       </p>
                     </div>
                   </div>

@@ -75,7 +75,7 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
             <AppLogo className="h-9 w-9 shrink-0 object-contain" />
             <div className="hidden sm:block">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                SUP des RH
+                Admin Rh et moi by SUP des RH
               </p>
               <p className="text-[10px] text-muted-foreground leading-tight">Administration</p>
             </div>

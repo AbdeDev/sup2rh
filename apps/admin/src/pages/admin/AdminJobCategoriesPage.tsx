@@ -20,8 +20,17 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  established: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-  emerging: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+  established:
+    "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/40",
+  emerging:
+    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/40",
+};
+
+const STATUS_HEADER_COLORS: Record<string, string> = {
+  established:
+    "bg-gradient-to-r from-emerald-500/10 to-emerald-600/5 border-b border-emerald-200/50 dark:from-emerald-500/10 dark:to-emerald-600/5 dark:border-emerald-800/30",
+  emerging:
+    "bg-gradient-to-r from-amber-500/10 to-amber-600/5 border-b border-amber-200/50 dark:from-amber-500/10 dark:to-amber-600/5 dark:border-amber-800/30",
 };
 
 interface FormState {
@@ -204,44 +213,54 @@ export function AdminJobCategoriesPage() {
             {categories.map((cat) => (
               <Card
                 key={cat.id}
-                className="flex flex-col border border-border bg-card rounded-2xl shadow-sm overflow-hidden transition-shadow hover:shadow-md"
+                className="flex flex-col border border-border bg-card rounded-2xl shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
               >
                 <CardContent className="flex flex-col flex-1 p-0">
-                  {/* En-tête : emoji + nom + statut */}
-                  <div className="flex items-start gap-3 p-4 sm:p-5">
+                  {/* En-tête coloré selon le statut */}
+                  <div
+                    className={`flex items-center gap-3 px-4 sm:px-5 py-3.5 ${
+                      cat.status
+                        ? (STATUS_HEADER_COLORS[cat.status] ?? "bg-muted/30 border-b border-border")
+                        : "bg-muted/30 border-b border-border"
+                    }`}
+                  >
                     <button
                       type="button"
                       onClick={() =>
                         setInlineEdit({ id: cat.id, field: "emoji", value: cat.emoji ?? "" })
                       }
-                      className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl sm:text-3xl shrink-0 hover:bg-primary/15 transition-colors"
+                      className="h-10 w-10 rounded-xl bg-card/80 border border-border/60 flex items-center justify-center text-xl shrink-0 hover:bg-card hover:scale-105 transition-all duration-200 shadow-sm"
                       title="Cliquer pour modifier l'emoji"
                     >
                       {cat.emoji ?? "📁"}
                     </button>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground text-base sm:text-lg leading-tight break-words">
+                      <h3 className="font-semibold text-foreground text-sm sm:text-base leading-tight truncate">
                         {cat.name}
                       </h3>
-                      <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                        {cat.status && (
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        {cat.status ? (
                           <span
-                            className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_COLORS[cat.status] ?? ""}`}
+                            className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border ${STATUS_COLORS[cat.status] ?? ""}`}
                           >
                             {STATUS_LABELS[cat.status] ?? cat.status}
                           </span>
+                        ) : (
+                          <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border border-border bg-muted/40 text-muted-foreground">
+                            Non défini
+                          </span>
                         )}
-                        <span className="text-xs text-muted-foreground">
-                          Ordre · {cat.position}
+                        <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border border-border/60 bg-card/60 text-muted-foreground">
+                          #{cat.position}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Bloc modification emoji (s’affiche sous l’en-tête) */}
+                  {/* Bloc modification emoji */}
                   {inlineEdit?.id === cat.id && inlineEdit.field === "emoji" && (
-                    <div className="mx-4 mb-4 p-4 rounded-xl border border-border bg-muted/30 space-y-3">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <div className="mx-4 my-3 p-3.5 rounded-xl border border-border bg-muted/30 space-y-2.5">
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                         Modifier l&apos;emoji
                       </p>
                       <Input
@@ -260,63 +279,59 @@ export function AdminJobCategoriesPage() {
                           type="button"
                           size="sm"
                           variant="outline"
-                          className="flex-1 gap-2 border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950/50"
+                          className="flex-1 gap-1.5 h-8 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
                           onClick={saveInline}
                         >
-                          <Check className="h-4 w-4" />
+                          <Check className="h-3.5 w-3.5" />
                           Valider
                         </Button>
                         <Button
                           type="button"
                           size="sm"
                           variant="outline"
-                          className="flex-1 gap-2"
+                          className="flex-1 gap-1.5 h-8 text-xs"
                           onClick={() => setInlineEdit(null)}
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-3.5 w-3.5" />
                           Annuler
                         </Button>
                       </div>
                     </div>
                   )}
 
-                  {/* Description : zone lisible avec scroll */}
-                  {cat.description && (
-                    <div className="px-4 sm:px-5 pb-3">
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
-                        Description
-                      </p>
-                      <div className="max-h-24 sm:max-h-28 overflow-y-auto rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-sm text-foreground/90 leading-relaxed break-words">
+                  {/* Description */}
+                  <div className="flex-1 px-4 sm:px-5 py-3">
+                    {cat.description ? (
+                      <div className="max-h-20 sm:max-h-24 overflow-y-auto rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5 text-xs text-foreground/80 leading-relaxed break-words">
                         {cat.description}
                       </div>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="rounded-lg border border-dashed border-border/50 bg-muted/10 px-3 py-2.5 text-xs text-muted-foreground/50 italic text-center">
+                        Aucune description
+                      </div>
+                    )}
+                  </div>
 
-                  {/* Pied : actions toujours visibles */}
-                  <div className="mt-auto flex items-center justify-between gap-2 px-4 sm:px-5 py-3 border-t border-border bg-muted/10">
-                    <span className="text-xs text-muted-foreground">
-                      Ordre d&apos;affichage : {cat.position}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 gap-1.5 text-xs"
-                        onClick={() => openEdit(cat)}
-                      >
-                        <Edit2 className="h-3.5 w-3.5" />
-                        Modifier
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 gap-1.5 text-xs text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDelete(cat)}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        Supprimer
-                      </Button>
-                    </div>
+                  {/* Pied : actions */}
+                  <div className="flex items-center justify-end gap-1 px-3 sm:px-4 py-2.5 border-t border-border/50 bg-muted/5">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/80 rounded-lg"
+                      onClick={() => openEdit(cat)}
+                    >
+                      <Edit2 className="h-3 w-3" />
+                      Modifier
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 gap-1.5 text-xs text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                      onClick={() => handleDelete(cat)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Supprimer
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
