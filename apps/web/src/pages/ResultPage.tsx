@@ -170,6 +170,15 @@ export function ResultPage() {
     }
   }, [id]);
 
+  // Charge les jobs si on arrive avec stateAnalysis (depuis QuizStartPage) — allJobs serait vide sinon
+  useEffect(() => {
+    if (allJobs.length > 0) return;
+    if (!analysis) return;
+    getJobs()
+      .then(({ items }) => setAllJobs(items))
+      .catch(console.error);
+  }, [analysis, allJobs.length]);
+
   const didLoadRef = useRef(false);
 
   useEffect(() => {
@@ -261,8 +270,14 @@ export function ResultPage() {
     return sorted;
   }, [analysis?.scores, allJobs]);
 
-  /** En mode domaines : uniquement les fiches du domaine sélectionné. Sinon : top métiers. */
-  const carouselJobs = hasDomains ? categoryJobs : fallbackJobs;
+  /** En mode domaines : fiches du domaine sélectionné (recommandée en tête). Sinon : top métiers. */
+  const carouselJobs = useMemo(() => {
+    const base = hasDomains ? categoryJobs : fallbackJobs;
+    if (!analysis?.jobId) return base;
+    const recommended = base.find((j) => j.id === analysis.jobId);
+    if (!recommended) return base;
+    return [recommended, ...base.filter((j) => j.id !== analysis.jobId)];
+  }, [hasDomains, categoryJobs, fallbackJobs, analysis?.jobId]);
 
   const activeJobId = selectedJobId ?? analysis?.jobId ?? null;
   const selectedJob = useMemo(() => {
@@ -270,12 +285,9 @@ export function ResultPage() {
     return (allJobs.find((j) => j.id === activeJobId) ?? analysis?.job) as JobFiche | null;
   }, [activeJobId, allJobs, analysis]);
 
-  const INITIAL_VISIBLE = 5;
   const chartDataForDisplay = hasDomains ? domainChartData : scoresChartDataFallback;
-  const visibleChartData = showAllScores
-    ? chartDataForDisplay
-    : chartDataForDisplay.slice(0, INITIAL_VISIBLE);
-  const hasMoreScores = chartDataForDisplay.length > INITIAL_VISIBLE;
+  const visibleChartData = showAllScores ? chartDataForDisplay : chartDataForDisplay.slice(0, 10);
+  const hasMoreScores = chartDataForDisplay.length > 10;
   const chartCount = chartDataForDisplay.length;
   const showCarouselSection = chartCount > 0;
   type ChartItem =
@@ -385,11 +397,11 @@ export function ResultPage() {
             aria-label="Accueil"
           >
             <AppLogo className="h-9 w-9 object-contain" />
-            <div className="hidden sm:block">
+            <div className="hidden sm:flex items-center gap-2">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Rh et moi <span className="font-normal text-muted-foreground">by</span> SUP des RH
+                RH et moi <span className="font-normal text-muted-foreground">by</span> SUP des RH
               </p>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#008c54]/10 text-[#008c54] border border-[#008c54]/20 leading-tight mt-0.5">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#008c54]/10 text-[#008c54] border border-[#008c54]/20 shrink-0">
                 Résultats
               </span>
             </div>
@@ -683,7 +695,7 @@ export function ResultPage() {
                       >
                         {showAllScores
                           ? "Voir moins"
-                          : `Voir les ${chartDataForDisplay.length - INITIAL_VISIBLE} autres`}
+                          : `Voir les ${chartDataForDisplay.length - 10} autres`}
                       </button>
                     </div>
                   )}
@@ -738,7 +750,7 @@ export function ResultPage() {
                 </div>
                 {carouselJobs.length > 0 ? (
                   <div
-                    className="flex gap-3 overflow-x-auto pb-3 -mx-1 px-1 sm:mx-0 sm:px-0 hide-scrollbar"
+                    className="flex gap-3 overflow-x-auto pb-3 -mx-4 sm:-mx-5 md:-mx-6 px-4 sm:px-5 md:px-6 hide-scrollbar"
                     style={{ scrollSnapType: "x mandatory" }}
                   >
                     {carouselJobs.map((j) => {
@@ -749,71 +761,79 @@ export function ResultPage() {
                           key={j.id}
                           role="button"
                           tabIndex={0}
-                          onClick={() => setSelectedJobId(j.id === analysis?.jobId ? null : j.id)}
+                          onClick={() => {
+                            setFicheModalJob(j);
+                          }}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") {
                               e.preventDefault();
-                              setSelectedJobId(j.id === analysis?.jobId ? null : j.id);
+                              setFicheModalJob(j);
                             }
                           }}
-                          className="shrink-0 text-left rounded-xl border transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-[0.98] cursor-pointer scroll-snap-align-start"
+                          className="shrink-0 text-left rounded-2xl border-2 transition-all duration-200 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-[0.98] flex flex-col"
                           style={{
-                            width: carouselJobs.length === 1 ? "100%" : "clamp(260px, 75vw, 280px)",
+                            width: carouselJobs.length === 1 ? "100%" : "clamp(220px, 65vw, 260px)",
                             scrollSnapAlign: "start",
-                            borderColor: isActive ? "#004080" : "var(--border)",
-                            background: isActive ? "rgba(0,64,128,0.07)" : "var(--card)",
+                            borderColor: isTop ? "#004080" : isActive ? "#004080" : "var(--border)",
+                            background: isTop
+                              ? "rgba(0,64,128,0.06)"
+                              : isActive
+                                ? "rgba(0,64,128,0.04)"
+                                : "var(--card)",
+                            boxShadow: isTop ? "0 4px 20px rgba(0,64,128,0.12)" : undefined,
                             padding: "1rem",
                           }}
                         >
-                          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+                          <div className="flex items-start justify-between gap-2 mb-3">
                             <div
-                              className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center shrink-0"
-                              style={{ background: isActive ? "#004080" : "rgba(0,64,128,0.1)" }}
+                              className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105"
+                              style={{
+                                background: isTop
+                                  ? "#004080"
+                                  : isActive
+                                    ? "rgba(0,64,128,0.15)"
+                                    : "rgba(0,64,128,0.08)",
+                              }}
                             >
                               <Sparkles
-                                className="h-4 w-4 sm:h-4 sm:w-4"
-                                style={{ color: isActive ? "#fff" : "#004080" }}
+                                className="h-4 w-4"
+                                style={{ color: isTop ? "#fff" : "#004080" }}
                               />
                             </div>
                             {isTop && (
-                              <span className="text-[10px] sm:text-xs font-bold text-[#008c54] bg-[#008c54]/10 rounded-full px-2 py-1 shrink-0">
-                                ✓ Recommandé
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-[#008c54] rounded-full px-2.5 py-1 shrink-0 shadow-sm">
+                                ★ Recommandé
                               </span>
                             )}
                           </div>
-                          <p className="text-xs sm:text-sm font-semibold text-foreground leading-snug mb-1.5 line-clamp-2">
+                          <p className="text-xs sm:text-sm font-bold text-foreground leading-snug mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                             {j.name}
                           </p>
-                          {j.salary && (
-                            <p className="text-[10px] sm:text-xs text-muted-foreground">
-                              💰 {j.salary}
-                            </p>
-                          )}
-                          {j.hiringRate != null && (
-                            <p className="text-[10px] sm:text-xs text-muted-foreground">
-                              📊 {j.hiringRate}% embauche
-                            </p>
+                          {(j.salary || j.hiringRate != null) && (
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                              {j.salary && (
+                                <span className="inline-flex items-center text-[10px] font-medium bg-muted/60 text-foreground/80 rounded-full px-2 py-0.5">
+                                  💰 {j.salary}
+                                </span>
+                              )}
+                              {j.hiringRate != null && (
+                                <span className="inline-flex items-center text-[10px] font-medium bg-[#008c54]/10 text-[#008c54] rounded-full px-2 py-0.5">
+                                  📊 {j.hiringRate}%
+                                </span>
+                              )}
+                            </div>
                           )}
                           {j.description && (
-                            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground line-clamp-2 leading-relaxed flex-1">
                               {j.description}
                             </p>
                           )}
-                          {isActive && (
-                            <p className="text-[10px] font-semibold text-primary mt-2">
-                              → Fiche détaillée ci-dessous
-                            </p>
-                          )}
-                          <button
-                            type="button"
-                            className="mt-2 text-[10px] sm:text-xs font-semibold text-primary hover:underline text-left w-full"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setFicheModalJob(j);
-                            }}
-                          >
-                            Voir le détail de la fiche
-                          </button>
+                          <div className="mt-3 pt-2.5 border-t border-border/50 flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-semibold text-primary group-hover:underline">
+                              Voir la fiche →
+                            </span>
+                            <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                          </div>
                         </div>
                       );
                     })}

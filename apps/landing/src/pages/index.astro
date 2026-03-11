@@ -52,9 +52,9 @@ try {
 	<div class="page">
 		<header class="site-header">
 			<div class="logo-wrap">
-				<img src="/supdesrh-logo.png" alt="Rh et moi by SUP des RH" class="logo-img logo-theme-safe" width="56" height="56" />
+				<img src="/supdesrh-logo.png" alt="RH et moi by SUP des RH" class="logo-img logo-theme-safe" width="56" height="56" />
 				<div class="brand-text">
-					<p class="brand">Rh et moi <span class="brand-by">by</span> SUP des RH</p>
+					<p class="brand">RH et moi <span class="brand-by">by</span> SUP des RH</p>
 					<p class="brand-sub">Orientation métiers RH</p>
 				</div>
 			</div>
@@ -344,7 +344,7 @@ try {
 				<div class="footer-top">
 					<div class="footer-brand-wrap">
 						<img src="/lamascott-hero.png" alt="" class="footer-logo logo-theme-safe" width="32" height="32" />
-						<p class="footer-brand">Rh et moi by SUP des RH</p>
+						<p class="footer-brand">RH et moi by SUP des RH</p>
 					</div>
 					<p class="footer-tagline">Orientation métiers RH, en toute confiance.</p>
 				</div>
@@ -355,7 +355,7 @@ try {
 					<a href={WEB_APP_URL + "/legal/confidentialite"}>Politique de confidentialité</a>
 					<a href={WEB_APP_URL + "/login"}>Accéder au quiz</a>
 				</nav>
-				<p class="footer-copy">© {new Date().getFullYear()} Rh et moi by SUP des RH — Tous droits réservés</p>
+				<p class="footer-copy">© {new Date().getFullYear()} RH et moi by SUP des RH — Tous droits réservés</p>
 			</div>
 		</footer>
 	</div>
@@ -650,27 +650,25 @@ try {
 		align-items: center;
 		justify-content: space-between;
 		gap: 2rem;
+		flex-wrap: wrap;
 	}
 
 	.ent-stats-row {
 		display: flex;
 		align-items: center;
 		gap: 0;
-		flex: 1;
-		min-width: 0;
+		flex-wrap: nowrap;
 	}
 
 	.ent-stat-item {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		padding: 0 1.5rem;
-		flex: 1;
-		min-width: 0;
+		padding: 0 1.75rem;
 	}
 
 	.ent-stat-val {
-		font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+		font-size: 1.5rem;
 		font-weight: 900;
 		color: #fff;
 		font-family: "Figtree","Montserrat",system-ui,sans-serif;
@@ -679,11 +677,11 @@ try {
 	}
 
 	.ent-stat-lbl {
-		font-size: clamp(0.6rem, 1vw, 0.68rem);
+		font-size: 0.68rem;
 		color: rgba(255,255,255,0.65);
 		margin-top: 0.2rem;
+		white-space: nowrap;
 		text-align: center;
-		line-height: 1.3;
 	}
 
 	.ent-stat-sep {
