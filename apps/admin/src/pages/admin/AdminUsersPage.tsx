@@ -168,41 +168,37 @@ export function AdminUsersPage() {
           )}
 
           {users.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mt-1">
-              <span className="uppercase tracking-wider">Filtrer par rôle :</span>
-              <button
-                type="button"
-                onClick={() => setRoleFilter("ALL")}
-                className={`px-2 py-0.5 rounded-full border text-[11px] ${
-                  roleFilter === "ALL"
-                    ? "border-primary/60 text-primary bg-primary/5"
-                    : "border-border hover:border-primary/40 hover:text-foreground"
-                }`}
+            <div className="flex flex-wrap items-center gap-3 mt-2">
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Rôle
+              </span>
+              <div
+                className="inline-flex rounded-lg border border-border bg-muted/30 p-0.5"
+                role="tablist"
+                aria-label="Filtrer par rôle"
               >
-                Tous
-              </button>
-              <button
-                type="button"
-                onClick={() => setRoleFilter("ADMIN")}
-                className={`px-2 py-0.5 rounded-full border text-[11px] ${
-                  roleFilter === "ADMIN"
-                    ? "border-primary/60 text-primary bg-primary/5"
-                    : "border-border hover:border-primary/40 hover:text-foreground"
-                }`}
-              >
-                Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => setRoleFilter("USER")}
-                className={`px-2 py-0.5 rounded-full border text-[11px] ${
-                  roleFilter === "USER"
-                    ? "border-primary/60 text-primary bg-primary/5"
-                    : "border-border hover:border-primary/40 hover:text-foreground"
-                }`}
-              >
-                Utilisateur
-              </button>
+                {[
+                  { value: "ALL" as const, label: "Tous", icon: Users },
+                  { value: "ADMIN" as const, label: "Admin", icon: ShieldCheck },
+                  { value: "USER" as const, label: "Utilisateur", icon: Mail },
+                ].map(({ value, label, icon: Icon }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    role="tab"
+                    aria-selected={roleFilter === value}
+                    onClick={() => setRoleFilter(value)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      roleFilter === value
+                        ? "bg-background text-foreground shadow-sm border border-border"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
