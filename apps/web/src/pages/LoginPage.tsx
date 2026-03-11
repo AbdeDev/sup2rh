@@ -30,7 +30,7 @@ export function LoginPage() {
             <AppLogo className="h-20 w-20 object-contain" />
           </div>
           <h1 className="text-2xl font-heading font-bold text-foreground mb-2">
-            Rh et moi by SUP des RH
+            RH et moi by SUP des RH
           </h1>
           <p className="text-sm text-muted-foreground max-w-xs mx-auto">
             Découvre ton métier RH idéal grâce à notre quiz personnalisé

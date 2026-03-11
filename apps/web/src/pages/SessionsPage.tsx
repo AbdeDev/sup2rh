@@ -169,11 +169,13 @@ export function SessionsPage() {
             aria-label="Accueil"
           >
             <AppLogo className="h-9 w-9 object-contain" />
-            <div className="hidden sm:block">
+            <div className="hidden sm:flex items-center gap-2">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Rh et moi by SUP des RH
+                RH et moi <span className="font-normal text-muted-foreground">by</span> SUP des RH
               </p>
-              <p className="text-[10px] text-muted-foreground leading-tight">Mes sessions</p>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0">
+                Mes sessions
+              </span>
             </div>
           </button>
           <div className="ml-auto flex items-center gap-1.5">
