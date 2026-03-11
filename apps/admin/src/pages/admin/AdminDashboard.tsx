@@ -73,11 +73,13 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
             className="flex items-center gap-2.5 min-w-0 hover:opacity-80 transition-opacity"
           >
             <AppLogo className="h-9 w-9 shrink-0 object-contain" />
-            <div className="hidden sm:block">
+            <div className="hidden sm:flex items-center gap-2">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Admin RH et moi
+                Admin Rh et moi
               </p>
-              <p className="text-[10px] text-muted-foreground leading-tight">Administration</p>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0">
+                Administration
+              </span>
             </div>
           </button>
 

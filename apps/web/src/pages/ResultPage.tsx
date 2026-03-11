@@ -286,8 +286,9 @@ export function ResultPage() {
   }, [activeJobId, allJobs, analysis]);
 
   const chartDataForDisplay = hasDomains ? domainChartData : scoresChartDataFallback;
-  const visibleChartData = showAllScores ? chartDataForDisplay : chartDataForDisplay.slice(0, 10);
-  const hasMoreScores = chartDataForDisplay.length > 10;
+  // Top 5 domaines/emplois par défaut, possibilité d'afficher tous les résultats
+  const visibleChartData = showAllScores ? chartDataForDisplay : chartDataForDisplay.slice(0, 5);
+  const hasMoreScores = chartDataForDisplay.length > 5;
   const chartCount = chartDataForDisplay.length;
   const showCarouselSection = chartCount > 0;
   type ChartItem =
@@ -695,7 +696,7 @@ export function ResultPage() {
                       >
                         {showAllScores
                           ? "Voir moins"
-                          : `Voir les ${chartDataForDisplay.length - 10} autres`}
+                          : `Voir les ${chartDataForDisplay.length - 5} autres`}
                       </button>
                     </div>
                   )}
