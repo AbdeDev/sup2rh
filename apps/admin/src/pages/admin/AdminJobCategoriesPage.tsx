@@ -200,7 +200,7 @@ export function AdminJobCategoriesPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid gap-3">
             {categories.map((cat) => (
               <Card
                 key={cat.id}
@@ -292,27 +292,33 @@ export function AdminJobCategoriesPage() {
                         Ordre : {cat.position}
                       </p>
                     </div>
+                    {cat.description && (
+                      <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">
+                        {cat.description}
+                      </p>
+                    )}
+                    <p className="text-[11px] text-muted-foreground/60 mt-1">
+                      Ordre : {cat.position} · ID : <code className="font-mono">{cat.id}</code>
+                    </p>
                   </div>
-                  {/* Actions — visibles au hover sur desktop, toujours sur tactile */}
-                  <div className="flex items-center justify-end gap-1 px-4 pb-4 sm:pb-0 sm:pr-4 sm:py-4 border-t sm:border-t-0 sm:border-l border-border bg-muted/20 sm:bg-transparent">
-                    <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0 hidden sm:block" />
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                     <Button
                       variant="ghost"
-                      size="sm"
-                      className="h-8 gap-1.5 text-muted-foreground hover:text-foreground sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
                       onClick={() => openEdit(cat)}
                     >
                       <Edit2 className="h-4 w-4" />
-                      <span className="text-xs">Modifier</span>
                     </Button>
                     <Button
                       variant="ghost"
-                      size="sm"
-                      className="h-8 gap-1.5 text-destructive hover:bg-destructive/10 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={() => handleDelete(cat)}
                     >
                       <Trash2 className="h-4 w-4" />
-                      <span className="text-xs">Supprimer</span>
                     </Button>
                   </div>
                 </CardContent>

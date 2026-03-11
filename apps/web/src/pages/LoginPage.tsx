@@ -46,12 +46,7 @@ export function LoginPage() {
 
         <div className="mt-6 text-center space-y-2">
           <p className="text-xs text-muted-foreground">
-            Pas besoin de mot de passe, juste ton e‑mail pour recevoir un lien de connexion.
-            <span className="block mt-1 text-[11px] text-muted-foreground/80">
-              Ton e‑mail n&apos;est jamais utilisé à des fins commerciales : nous te contacterons
-              uniquement si tu en fais la demande dans l&apos;outil (par exemple en cliquant sur «
-              Être contacté·e »).
-            </span>
+            Pas besoin de mot de passe, juste ton email.
           </p>
           <button
             type="button"

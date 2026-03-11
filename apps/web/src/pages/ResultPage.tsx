@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Loader2, User, Sparkles, CheckCircle2, X, ExternalLink, Briefcase } from "lucide-react";
+import { Loader2, User, Sparkles, CheckCircle2 } from "lucide-react";
 
 import { toast } from "sonner";
 import {
@@ -71,7 +71,6 @@ export function ResultPage() {
   /** Domaine RH sélectionné (pour le graphique et le carrousel) */
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
-  const [ficheModalJob, setFicheModalJob] = useState<JobFiche | null>(null);
 
   const buildResultFromScores = useCallback(
     async (finalJobId: string, scores: Record<string, number>, answerCount?: number) => {
@@ -369,25 +368,6 @@ export function ResultPage() {
 
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-6 md:space-y-8">
-          {/* Bloc explicite : domaine RH auquel tu es lié (toujours celui du résultat, pas la sélection graphique) */}
-          <Card className="border-[#008c54]/30 bg-[#008c54]/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <CardContent className="p-4 sm:p-5">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">
-                Domaine RH auquel tu es lié
-              </p>
-              <p className="text-lg sm:text-xl font-heading font-bold text-foreground">
-                {analysis?.job?.category ??
-                  (analysis?.jobId && allJobs.find((j) => j.id === analysis.jobId)?.category) ??
-                  topJobLabel ??
-                  "Métier RH"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Métier le plus proche :{" "}
-                <span className="font-semibold text-foreground">{topJobLabel}</span>
-              </p>
-            </CardContent>
-          </Card>
-
           {/* Résultat principal — Grand domaine RH */}
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center">
@@ -409,14 +389,9 @@ export function ResultPage() {
                   </p>
                 </>
               ) : (
-                <>
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-2">
-                    {topJobLabel}
-                  </h1>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Domaine : {selectedJob?.category ?? "Métier RH"}
-                  </p>
-                </>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-3">
+                  {topJobLabel}
+                </h1>
               )}
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-sm font-semibold text-primary">
@@ -443,7 +418,7 @@ export function ResultPage() {
           {/* Profil + Statistiques rapides */}
           {user && (
             <div
-              className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: "50ms" }}
             >
               <Card className="border border-border bg-card">
@@ -698,18 +673,11 @@ export function ResultPage() {
                     const isActive = j.id === activeJobId;
                     const isTop = j.id === analysis?.jobId;
                     return (
-                      <div
+                      <button
                         key={j.id}
-                        role="button"
-                        tabIndex={0}
+                        type="button"
                         onClick={() => setSelectedJobId(j.id === analysis?.jobId ? null : j.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            setSelectedJobId(j.id === analysis?.jobId ? null : j.id);
-                          }
-                        }}
-                        className="shrink-0 text-left rounded-xl border transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary active:scale-[0.98] cursor-pointer"
+                        className="shrink-0 text-left rounded-xl border transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary active:scale-[0.98]"
                         style={{
                           width: categoryJobs.length === 1 ? "100%" : "clamp(200px, 60vw, 240px)",
                           scrollSnapAlign: "start",
@@ -755,17 +723,7 @@ export function ResultPage() {
                             → Fiche détaillée ci-dessous
                           </p>
                         )}
-                        <button
-                          type="button"
-                          className="mt-1 text-[9px] font-semibold text-primary hover:underline text-left w-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFicheModalJob(j);
-                          }}
-                        >
-                          Voir le détail de la fiche
-                        </button>
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -804,7 +762,7 @@ export function ResultPage() {
                 {(fiche?.salary ?? fiche?.hiringRate ?? fiche?.turnoverRate) && (
                   <>
                     <Separator className="bg-border" />
-                    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       {fiche?.salary && (
                         <div className="rounded-lg border border-border bg-muted/30 p-3">
                           <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
@@ -928,7 +886,7 @@ export function ResultPage() {
                       variant="outline"
                       size="sm"
                       className="rounded-xl gap-2"
-                      onClick={() => setFicheModalJob(fiche)}
+                      onClick={() => navigate(`/fiches/${fiche.id}`)}
                     >
                       Voir la fiche complète
                     </Button>
@@ -970,7 +928,7 @@ export function ResultPage() {
 
           {/* Actions secondaires */}
           <div
-            className="flex flex-wrap gap-3 justify-center pb-6 animate-in fade-in duration-500"
+            className="flex gap-3 justify-center pb-6 animate-in fade-in duration-500"
             style={{ animationDelay: "300ms" }}
           >
             <Button
