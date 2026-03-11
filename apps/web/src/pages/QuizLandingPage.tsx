@@ -82,12 +82,17 @@ const DOMAINS = [
   { emoji: "🚀", label: "Gestion des Talents" },
 ];
 
+const MARQUEE_PAUSE_MS = 2500;
+const MARQUEE_SPEED = 0.8;
+
 export function QuizLandingPage() {
   const navigate = useNavigate();
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const domainsScrollRef = useRef<HTMLDivElement>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [metrics, setMetrics] = useState<{ domaines: number; fiches: number } | null>(null);
   const [domainLabels, setDomainLabels] = useState<string[]>([]);
+  const pauseAutoScrollUntil = useRef(0);
 
   useEffect(() => {
     getJobs()
@@ -110,6 +115,34 @@ export function QuizLandingPage() {
       return () => document.removeEventListener("click", handleClickOutside);
     }
   }, [userMenuOpen]);
+
+  // Auto-défilement du bandeau « Grands domaines RH » (pause au scroll manuel)
+  useEffect(() => {
+    const el = domainsScrollRef.current;
+    if (!el) return;
+    let rafId: number;
+    function tick() {
+      const target = domainsScrollRef.current;
+      if (!target) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+      if (Date.now() < pauseAutoScrollUntil.current) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+      const half = target.scrollWidth / 2;
+      target.scrollLeft += MARQUEE_SPEED;
+      if (target.scrollLeft >= half - 1) target.scrollLeft = 0;
+      rafId = requestAnimationFrame(tick);
+    }
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [domainLabels]);
+
+  function pauseDomainsMarquee() {
+    pauseAutoScrollUntil.current = Date.now() + MARQUEE_PAUSE_MS;
+  }
 
   async function logout() {
     await supabase.auth.signOut();
@@ -287,8 +320,8 @@ export function QuizLandingPage() {
               </Button>
             </div>
 
-            {/* Stats — métriques réelles + fixes */}
-            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 mt-10 pt-8 border-t border-border/60">
+            {/* Stats — métriques réelles + fixes (responsive mobile → tablette → desktop) */}
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-3 sm:gap-x-6 sm:gap-y-4 md:gap-x-8 mt-10 pt-6 sm:pt-8 border-t border-border/60">
               <div className="text-center">
                 <p className="text-lg font-heading font-bold text-foreground">
                   {metrics != null ? String(metrics.domaines) : "—"}
@@ -317,8 +350,8 @@ export function QuizLandingPage() {
           </div>
         </div>
 
-        {/* Grands domaines RH — titre + bandeau (auto-défilement + scroll horizontal possible) */}
-        <div className="border-y border-border/60 bg-muted/20 py-6 sm:py-8">
+        {/* Grands domaines RH — bandeau contenu dans la page, défilement auto + manuel */}
+        <div className="border-y border-border/60 bg-muted/20 py-6 sm:py-8 overflow-hidden">
           <div className="max-w-4xl mx-auto px-4 text-center mb-4">
             <h2 className="text-base sm:text-lg font-heading font-bold text-foreground">
               Grands domaines RH
@@ -329,44 +362,50 @@ export function QuizLandingPage() {
             </p>
           </div>
           <div
-            className="flex gap-3 animate-scroll px-4 overflow-x-auto hide-scrollbar"
-            style={{ width: "max-content", scrollSnapType: "x mandatory" }}
+            ref={domainsScrollRef}
+            className="overflow-x-auto hide-scrollbar w-full px-3 sm:px-4 scroll-smooth"
+            style={{ scrollSnapType: "x mandatory" }}
+            onWheel={pauseDomainsMarquee}
+            onTouchStart={pauseDomainsMarquee}
+            onMouseDown={pauseDomainsMarquee}
           >
-            {domainLabels.length > 0
-              ? [...domainLabels, ...domainLabels].map((label, i) => {
-                  const staticDom = DOMAINS.find((d) => d.label === label);
-                  const color = DOMAIN_COLORS[i % DOMAIN_COLORS.length];
-                  return (
-                    <span
-                      key={`${label}-${i}`}
-                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0"
-                      style={{
-                        background: color.bg,
-                        border: `1px solid ${color.border}`,
-                        color: color.text,
-                      }}
-                    >
-                      {staticDom ? `${staticDom.emoji} ` : ""}
-                      {label}
-                    </span>
-                  );
-                })
-              : [...DOMAINS, ...DOMAINS].map((d, i) => {
-                  const color = DOMAIN_COLORS[i % DOMAIN_COLORS.length];
-                  return (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0"
-                      style={{
-                        background: color.bg,
-                        border: `1px solid ${color.border}`,
-                        color: color.text,
-                      }}
-                    >
-                      {d.emoji} {d.label}
-                    </span>
-                  );
-                })}
+            <div className="flex gap-3 w-max min-w-full">
+              {domainLabels.length > 0
+                ? [...domainLabels, ...domainLabels].map((label, i) => {
+                    const staticDom = DOMAINS.find((d) => d.label === label);
+                    const color = DOMAIN_COLORS[i % DOMAIN_COLORS.length];
+                    return (
+                      <span
+                        key={`${label}-${i}`}
+                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 snap-start"
+                        style={{
+                          background: color.bg,
+                          border: `1px solid ${color.border}`,
+                          color: color.text,
+                        }}
+                      >
+                        {staticDom ? `${staticDom.emoji} ` : ""}
+                        {label}
+                      </span>
+                    );
+                  })
+                : [...DOMAINS, ...DOMAINS].map((d, i) => {
+                    const color = DOMAIN_COLORS[i % DOMAIN_COLORS.length];
+                    return (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 snap-start"
+                        style={{
+                          background: color.bg,
+                          border: `1px solid ${color.border}`,
+                          color: color.text,
+                        }}
+                      >
+                        {d.emoji} {d.label}
+                      </span>
+                    );
+                  })}
+            </div>
           </div>
         </div>
 
@@ -415,7 +454,7 @@ export function QuizLandingPage() {
 
           {/* CTA final */}
           <div
-            className="rounded-2xl border border-primary/20 bg-gradient-to-br from-[#004080]/8 via-card to-[#008c54]/5 p-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-500"
+            className="rounded-2xl border border-primary/20 bg-gradient-to-br from-[#004080]/8 via-card to-[#008c54]/5 p-6 sm:p-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-500"
             style={{ animationDelay: "400ms" }}
           >
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 mb-5">
