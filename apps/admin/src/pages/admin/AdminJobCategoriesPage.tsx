@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Edit2, Loader2, LayoutGrid, GripVertical, X, Check } from "lucide-react";
+import { Plus, Trash2, Edit2, Loader2, LayoutGrid, X, Check } from "lucide-react";
 
 import {
   getJobCategories,
@@ -20,8 +20,17 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  established: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-  emerging: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+  established:
+    "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/40",
+  emerging:
+    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/40",
+};
+
+const STATUS_HEADER_COLORS: Record<string, string> = {
+  established:
+    "bg-gradient-to-r from-emerald-500/10 to-emerald-600/5 border-b border-emerald-200/50 dark:from-emerald-500/10 dark:to-emerald-600/5 dark:border-emerald-800/30",
+  emerging:
+    "bg-gradient-to-r from-amber-500/10 to-amber-600/5 border-b border-amber-200/50 dark:from-amber-500/10 dark:to-amber-600/5 dark:border-amber-800/30",
 };
 
 interface FormState {
@@ -122,7 +131,7 @@ export function AdminJobCategoriesPage() {
   async function handleDelete(cat: JobCategory) {
     if (
       !confirm(
-        `Supprimer le domaine "${cat.name}" ? Les fiches associées perdront cette catégorie.`,
+        `Supprimer le domaine "${cat.name}" ?\n\nLes fiches associées perdront cette catégorie. Cette action est irréversible.`,
       )
     )
       return;
@@ -200,90 +209,128 @@ export function AdminJobCategoriesPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5 items-start">
             {categories.map((cat) => (
-              <Card key={cat.id} className="group transition-all hover:shadow-md">
-                <CardContent className="flex items-start gap-3 p-4">
-                  {/* Drag handle (visuel) */}
-                  <GripVertical className="h-5 w-5 text-muted-foreground/30 mt-0.5 shrink-0" />
-
-                  {/* Emoji */}
+              <Card
+                key={cat.id}
+                className="flex flex-col border border-border bg-card rounded-2xl shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+              >
+                <CardContent className="flex flex-col flex-1 p-0">
+                  {/* En-tête coloré selon le statut */}
                   <div
-                    className="text-2xl w-10 text-center shrink-0 cursor-pointer"
-                    title="Cliquer pour modifier l'emoji"
-                    onClick={() =>
-                      setInlineEdit({ id: cat.id, field: "emoji", value: cat.emoji ?? "" })
-                    }
+                    className={`flex items-center gap-3 px-4 sm:px-5 py-3.5 ${
+                      cat.status
+                        ? (STATUS_HEADER_COLORS[cat.status] ?? "bg-muted/30 border-b border-border")
+                        : "bg-muted/30 border-b border-border"
+                    }`}
                   >
-                    {inlineEdit?.id === cat.id && inlineEdit.field === "emoji" ? (
-                      <div className="flex items-center gap-1">
-                        <Input
-                          autoFocus
-                          value={inlineEdit.value}
-                          onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
-                          className="w-14 h-7 text-center px-1 text-base"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") saveInline();
-                            if (e.key === "Escape") setInlineEdit(null);
-                          }}
-                        />
-                        <button
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setInlineEdit({ id: cat.id, field: "emoji", value: cat.emoji ?? "" })
+                      }
+                      className="h-10 w-10 rounded-xl bg-card/80 border border-border/60 flex items-center justify-center text-xl shrink-0 hover:bg-card hover:scale-105 transition-all duration-200 shadow-sm"
+                      title="Cliquer pour modifier l'emoji"
+                    >
+                      {cat.emoji ?? "📁"}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground text-sm sm:text-base leading-tight truncate">
+                        {cat.name}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        {cat.status ? (
+                          <span
+                            className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full border ${STATUS_COLORS[cat.status] ?? ""}`}
+                          >
+                            {STATUS_LABELS[cat.status] ?? cat.status}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border border-border bg-muted/40 text-muted-foreground">
+                            Non défini
+                          </span>
+                        )}
+                        <span className="inline-flex items-center text-[10px] font-medium px-2 py-0.5 rounded-full border border-border/60 bg-card/60 text-muted-foreground">
+                          #{cat.position}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bloc modification emoji */}
+                  {inlineEdit?.id === cat.id && inlineEdit.field === "emoji" && (
+                    <div className="mx-4 my-3 p-3.5 rounded-xl border border-border bg-muted/30 space-y-2.5">
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        Modifier l&apos;emoji
+                      </p>
+                      <Input
+                        autoFocus
+                        value={inlineEdit.value}
+                        onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                        className="h-10 text-center text-xl"
+                        placeholder="ex: 📁"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveInline();
+                          if (e.key === "Escape") setInlineEdit(null);
+                        }}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 gap-1.5 h-8 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/50"
                           onClick={saveInline}
-                          className="text-green-600 hover:text-green-700"
                         >
-                          <Check className="h-4 w-4" />
-                        </button>
-                        <button
+                          <Check className="h-3.5 w-3.5" />
+                          Valider
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 gap-1.5 h-8 text-xs"
                           onClick={() => setInlineEdit(null)}
-                          className="text-muted-foreground hover:text-foreground"
                         >
-                          <X className="h-4 w-4" />
-                        </button>
+                          <X className="h-3.5 w-3.5" />
+                          Annuler
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Description */}
+                  <div className="flex-1 px-4 sm:px-5 py-3">
+                    {cat.description ? (
+                      <div className="max-h-20 sm:max-h-24 overflow-y-auto rounded-lg border border-border/50 bg-muted/20 px-3 py-2.5 text-xs text-foreground/80 leading-relaxed break-words">
+                        {cat.description}
                       </div>
                     ) : (
-                      (cat.emoji ?? "📁")
+                      <div className="rounded-lg border border-dashed border-border/50 bg-muted/10 px-3 py-2.5 text-xs text-muted-foreground/50 italic text-center">
+                        Aucune description
+                      </div>
                     )}
                   </div>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-foreground">{cat.name}</span>
-                      {cat.status && (
-                        <span
-                          className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[cat.status] ?? ""}`}
-                        >
-                          {STATUS_LABELS[cat.status] ?? cat.status}
-                        </span>
-                      )}
-                    </div>
-                    {cat.description && (
-                      <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">
-                        {cat.description}
-                      </p>
-                    )}
-                    <p className="text-[11px] text-muted-foreground/60 mt-1">
-                      Ordre : {cat.position} · ID : <code className="font-mono">{cat.id}</code>
-                    </p>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  {/* Pied : actions */}
+                  <div className="flex items-center justify-end gap-1 px-3 sm:px-4 py-2.5 border-t border-border/50 bg-muted/5">
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      size="sm"
+                      className="h-7 gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent/80 rounded-lg"
                       onClick={() => openEdit(cat)}
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-3 w-3" />
+                      Modifier
                     </Button>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      size="sm"
+                      className="h-7 gap-1.5 text-xs text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg"
                       onClick={() => handleDelete(cat)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 w-3" />
+                      Supprimer
                     </Button>
                   </div>
                 </CardContent>

@@ -106,9 +106,9 @@ const pedagogie = [
   <div class="page">
     <header class="site-header">
       <div class="logo-wrap">
-        <img src="/lamascott-hero.png" alt="Sup des RH" class="logo-img logo-theme-safe" width="56" height="56" />
+        <img src="/supdesrh-logo.png" alt="RH et moi by SUP des RH" class="logo-img logo-theme-safe" width="56" height="56" />
         <div class="brand-text">
-          <p class="brand">Quiz Sup des RH</p>
+          <p class="brand">RH et moi <span class="brand-by">by</span> SUP des RH</p>
           <p class="brand-sub">Orientation métiers RH</p>
         </div>
       </div>
@@ -123,7 +123,16 @@ const pedagogie = [
           <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
         <a href={WEB_APP_URL + "/login"} class="btn-connect">Se connecter</a>
+        <button type="button" class="btn-menu" id="mobile-menu-toggle" aria-label="Ouvrir le menu">
+          <span class="menu-line"></span>
+          <span class="menu-line"></span>
+        </button>
       </div>
+      <nav class="mobile-nav" id="mobile-nav">
+        <a href="/" class="mobile-nav-link">Accueil</a>
+        <a href="/ecole" class="mobile-nav-link">L'école</a>
+        <a href="/entreprises" class="mobile-nav-link">Entreprises</a>
+      </nav>
     </header>
 
     <main class="main">
@@ -318,7 +327,7 @@ const pedagogie = [
         <div class="footer-top">
           <div class="footer-brand-wrap">
             <img src="/lamascott-hero.png" alt="" class="footer-logo logo-theme-safe" width="32" height="32" />
-            <p class="footer-brand">Sup des RH</p>
+            <p class="footer-brand">RH et moi by SUP des RH</p>
           </div>
           <p class="footer-tagline">Orientation métiers RH, en toute confiance.</p>
         </div>
@@ -329,7 +338,7 @@ const pedagogie = [
           <a href={WEB_APP_URL + "/legal/confidentialite"}>Politique de confidentialité</a>
           <a href={WEB_APP_URL + "/login"}>Accéder au quiz</a>
         </nav>
-        <p class="footer-copy">© {new Date().getFullYear()} Quiz Sup des RH — Tous droits réservés</p>
+        <p class="footer-copy">© {new Date().getFullYear()} RH et moi by SUP des RH — Tous droits réservés</p>
       </div>
     </footer>
   </div>
@@ -370,6 +379,7 @@ const pedagogie = [
   html.dark .logo-theme-safe { filter: none !important; }
   .brand-text { display: flex; flex-direction: column; }
   .brand { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--landing-accent); line-height: 1.2; font-family: "Figtree","Montserrat",system-ui,sans-serif; }
+  .brand-by { font-weight: 500; color: var(--landing-muted); }
   .brand-sub { margin: 0; font-size: 0.7rem; color: var(--landing-muted); }
   .header-actions { display: flex; align-items: center; gap: 0.75rem; }
   .header-nav { display: flex; align-items: center; gap: 0.25rem; margin: 0 auto; }

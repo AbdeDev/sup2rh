@@ -37,6 +37,7 @@ export function AdminUsersPage() {
   const [popupUser, setPopupUser] = useState<AdminUser | null>(null);
   const [resultSessionId, setResultSessionId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"ALL" | "ADMIN" | "USER">("ALL");
 
   useEffect(() => {
     loadData();
@@ -98,9 +99,22 @@ export function AdminUsersPage() {
     }).format(new Date(dateString));
   }
 
-  const filteredUsers = search.trim()
-    ? users.filter((u) => u.email.toLowerCase().includes(search.toLowerCase()))
-    : users;
+  function getLastActivity(user: AdminUser): string | null {
+    const sessions = sessionsByUser[user.id];
+    if (!sessions || !sessions.sessions || sessions.sessions.length === 0) return null;
+    return sessions.sessions.reduce<string | null>((latest, s) => {
+      if (!latest) return s.createdAt;
+      return new Date(s.createdAt) > new Date(latest) ? s.createdAt : latest;
+    }, null);
+  }
+
+  const filteredUsers = users
+    .filter((u) => {
+      if (roleFilter === "ALL") return true;
+      return u.role === roleFilter;
+    })
+    .filter((u) => (search.trim() ? u.email.toLowerCase().includes(search.toLowerCase()) : true))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const userSessions = popupUser ? sessionsByUser[popupUser.id] : null;
   const totalSessions = Object.values(sessionsByUser).reduce((acc, s) => acc + s.sessionCount, 0);
@@ -152,6 +166,41 @@ export function AdminUsersPage() {
               />
             </div>
           )}
+
+          {users.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3 mt-3">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Filtrer par rôle
+              </span>
+              <div
+                className="inline-flex rounded-xl bg-muted/40 p-1 gap-0.5 border border-border/80"
+                role="tablist"
+                aria-label="Filtrer par rôle"
+              >
+                {[
+                  { value: "ALL" as const, label: "Tous", icon: Users },
+                  { value: "ADMIN" as const, label: "Admin", icon: ShieldCheck },
+                  { value: "USER" as const, label: "Utilisateur", icon: Mail },
+                ].map(({ value, label, icon: Icon }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    role="tab"
+                    aria-selected={roleFilter === value}
+                    onClick={() => setRoleFilter(value)}
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      roleFilter === value
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {error && (
@@ -187,6 +236,7 @@ export function AdminUsersPage() {
             {filteredUsers.map((user, index) => {
               const sessions = sessionsByUser[user.id];
               const quizCount = sessions?.sessionCount ?? 0;
+              const lastActivity = getLastActivity(user);
               return (
                 <Card
                   key={user.id}
@@ -223,11 +273,17 @@ export function AdminUsersPage() {
                           {user.email}
                         </span>
                       </div>
-                      <div className="flex items-center gap-4 text-[11px] text-muted-foreground mb-3">
+                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground mb-3">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           {formatDate(user.createdAt)}
                         </span>
+                        {lastActivity && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            Dernière activité&nbsp;: {formatFullDate(lastActivity)}
+                          </span>
+                        )}
                         {quizCount > 0 && (
                           <span className="flex items-center gap-1 text-primary font-medium">
                             <ClipboardList className="h-3 w-3" />

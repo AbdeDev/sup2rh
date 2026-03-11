@@ -16,6 +16,28 @@ import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { AppLogo } from "../components/AppLogo";
 
+function FormatDescription({ text }: { text: string }) {
+  const parts = text.split(/\s*•\s*/).filter(Boolean);
+  if (parts.length <= 1) {
+    return <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{text}</p>;
+  }
+  const intro = parts[0].trim();
+  const bullets = parts.slice(1);
+  return (
+    <div className="space-y-2">
+      {intro && <p className="text-sm text-foreground/90 leading-relaxed">{intro}</p>}
+      <ul className="space-y-1.5">
+        {bullets.map((b, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span className="mt-[5px] h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+            <span className="text-sm text-foreground/90 leading-relaxed">{b.trim()}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function FicheDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -60,8 +82,25 @@ export function FicheDetailPage() {
     );
   }
 
-  const isYoutube = job.videoUrl?.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-  const isVimeo = job.videoUrl?.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  const rawUrl = (job.videoUrl?.trim() ?? "").replace(/^\/+/, "");
+  const isAbsoluteVideo = rawUrl.startsWith("http://") || rawUrl.startsWith("https://");
+  const isYoutube =
+    rawUrl &&
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/.exec(rawUrl);
+  const isVimeo = rawUrl && /vimeo\.com\/(?:video\/)?(\d+)/.exec(rawUrl);
+  const embedUrl = isYoutube
+    ? `https://www.youtube.com/embed/${isYoutube[1]}?rel=0`
+    : isVimeo
+      ? `https://player.vimeo.com/video/${isVimeo[1]}`
+      : null;
+  const videoHref = isAbsoluteVideo
+    ? rawUrl
+    : rawUrl
+      ? `${typeof window !== "undefined" ? window.location.origin : ""}/${rawUrl}`.replace(
+          /([^:]\/)\/+/g,
+          "$1",
+        )
+      : "";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -145,33 +184,33 @@ export function FicheDetailPage() {
 
           {job.description && (
             <Card className="border border-border bg-card">
-              <CardContent className="p-4">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              <CardContent className="p-4 sm:p-5">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Description
                 </p>
-                <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                  {job.description}
-                </p>
+                <FormatDescription text={job.description} />
               </CardContent>
             </Card>
           )}
 
           {job.indicators && job.indicators.length > 0 && (
             <Card className="border border-border bg-card">
-              <CardContent className="p-4">
+              <CardContent className="p-4 sm:p-5">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Autres indicateurs
                 </p>
-                <div className="space-y-2">
+                <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-2">
                   {job.indicators.map((ind, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2"
+                      className="rounded-lg border border-border bg-muted/20 px-3 py-2.5"
                     >
-                      <span className="text-xs text-muted-foreground">{ind.label}</span>
-                      <span className="text-xs font-medium text-foreground">
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5 break-words">
+                        {ind.label}
+                      </p>
+                      <p className="text-xs font-semibold text-foreground break-words">
                         {String(ind.value)}
-                      </span>
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -179,42 +218,47 @@ export function FicheDetailPage() {
             </Card>
           )}
 
-          {job.videoUrl && (
+          {rawUrl && (
             <Card className="border border-border bg-card">
               <CardContent className="p-4">
                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                   Vidéo explicative
                 </p>
-                <div className="rounded-xl overflow-hidden border border-border bg-muted/20 aspect-video">
-                  {isYoutube ? (
+                <div className="rounded-xl overflow-hidden border border-border bg-muted/20 aspect-video w-full">
+                  {embedUrl ? (
                     <iframe
-                      src={`https://www.youtube.com/embed/${isYoutube[1]}?rel=0`}
+                      src={embedUrl}
                       title="Vidéo du métier"
-                      className="w-full h-full"
+                      className="w-full h-full min-h-[200px]"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />
-                  ) : isVimeo ? (
-                    <iframe
-                      src={`https://player.vimeo.com/video/${isVimeo[1]}`}
-                      title="Vidéo du métier"
-                      className="w-full h-full"
-                      allow="autoplay; fullscreen; picture-in-picture"
-                      allowFullScreen
-                    />
+                  ) : isAbsoluteVideo ? (
+                    <video
+                      src={rawUrl}
+                      controls
+                      className="w-full h-full min-h-[200px]"
+                      playsInline
+                    >
+                      <track kind="captions" />
+                    </video>
                   ) : (
-                    <video src={job.videoUrl} controls className="w-full h-full" />
+                    <div className="w-full h-full min-h-[200px] flex items-center justify-center bg-muted/30 text-muted-foreground text-sm p-4 text-center">
+                      Lecture non disponible ici. Utilise le bouton ci-dessous pour ouvrir la vidéo.
+                    </div>
                   )}
                 </div>
-                <a
-                  href={job.videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 mt-2 text-sm text-primary hover:underline font-medium"
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = videoHref || rawUrl;
+                    if (url) window.open(url, "_blank", "noopener,noreferrer");
+                  }}
+                  className="inline-flex items-center gap-1.5 mt-3 text-sm text-primary hover:underline font-medium cursor-pointer bg-transparent border-0 p-0"
                 >
-                  <ExternalLink className="h-4 w-4" />
-                  Ouvrir la vidéo
-                </a>
+                  <ExternalLink className="h-4 w-4 shrink-0" />
+                  Ouvrir la vidéo dans un nouvel onglet
+                </button>
               </CardContent>
             </Card>
           )}
@@ -230,6 +274,17 @@ export function FicheDetailPage() {
             </Button>
             <Button variant="outline" className="rounded-xl" onClick={() => navigate("/fiches")}>
               Voir toutes les fiches
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-xl"
+              onClick={() => {
+                const url =
+                  import.meta.env.VITE_LANDING_URL || "https://quizsupdesrh-web.pages.dev";
+                window.location.href = url;
+              }}
+            >
+              Revenir à la page de présentation
             </Button>
           </div>
         </div>

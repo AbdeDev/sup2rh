@@ -15,6 +15,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 
 import { supabase } from "../lib/supabase";
+import { getJobs } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
@@ -59,6 +60,17 @@ const STEPS = [
   },
 ];
 
+const DOMAIN_COLORS = [
+  { bg: "rgba(0,64,128,0.08)", border: "rgba(0,64,128,0.25)", text: "#004080" },
+  { bg: "rgba(0,140,84,0.08)", border: "rgba(0,140,84,0.25)", text: "#008c54" },
+  { bg: "rgba(243,112,33,0.08)", border: "rgba(243,112,33,0.25)", text: "#c05000" },
+  { bg: "rgba(107,33,168,0.08)", border: "rgba(107,33,168,0.25)", text: "#6b21a8" },
+  { bg: "rgba(8,145,178,0.08)", border: "rgba(8,145,178,0.25)", text: "#0891b2" },
+  { bg: "rgba(190,24,93,0.08)", border: "rgba(190,24,93,0.25)", text: "#be185d" },
+  { bg: "rgba(15,118,110,0.08)", border: "rgba(15,118,110,0.25)", text: "#0f766e" },
+  { bg: "rgba(180,83,9,0.08)", border: "rgba(180,83,9,0.25)", text: "#b45309" },
+];
+
 const DOMAINS = [
   { emoji: "🎯", label: "Recrutement & Talents" },
   { emoji: "📚", label: "Formation & Compétences" },
@@ -70,10 +82,27 @@ const DOMAINS = [
   { emoji: "🚀", label: "Gestion des Talents" },
 ];
 
+const MARQUEE_PAUSE_MS = 2500;
+const MARQUEE_SPEED = 0.8;
+
 export function QuizLandingPage() {
   const navigate = useNavigate();
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const domainsScrollRef = useRef<HTMLDivElement>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [metrics, setMetrics] = useState<{ domaines: number; fiches: number } | null>(null);
+  const [domainLabels, setDomainLabels] = useState<string[]>([]);
+  const pauseAutoScrollUntil = useRef(0);
+
+  useEffect(() => {
+    getJobs()
+      .then(({ items }) => {
+        const categories = new Set(items.map((j) => j.category).filter(Boolean));
+        setMetrics({ domaines: categories.size, fiches: items.length });
+        setDomainLabels(Array.from(categories) as string[]);
+      })
+      .catch(() => setMetrics(null));
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -86,6 +115,34 @@ export function QuizLandingPage() {
       return () => document.removeEventListener("click", handleClickOutside);
     }
   }, [userMenuOpen]);
+
+  // Auto-défilement du bandeau « Grands domaines RH » (pause au scroll manuel)
+  useEffect(() => {
+    const el = domainsScrollRef.current;
+    if (!el) return;
+    let rafId: number;
+    function tick() {
+      const target = domainsScrollRef.current;
+      if (!target) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+      if (Date.now() < pauseAutoScrollUntil.current) {
+        rafId = requestAnimationFrame(tick);
+        return;
+      }
+      const half = target.scrollWidth / 2;
+      target.scrollLeft += MARQUEE_SPEED;
+      if (target.scrollLeft >= half - 1) target.scrollLeft = 0;
+      rafId = requestAnimationFrame(tick);
+    }
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [domainLabels]);
+
+  function pauseDomainsMarquee() {
+    pauseAutoScrollUntil.current = Date.now() + MARQUEE_PAUSE_MS;
+  }
 
   async function logout() {
     await supabase.auth.signOut();
@@ -104,11 +161,13 @@ export function QuizLandingPage() {
             aria-label="Accueil"
           >
             <AppLogo className="h-9 w-9 shrink-0 object-contain" />
-            <div className="hidden sm:block">
+            <div className="hidden sm:flex items-center gap-2">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Quiz SUP des RH
+                RH et moi <span className="font-normal text-muted-foreground">by</span> SUP des RH
               </p>
-              <p className="text-[10px] text-muted-foreground leading-tight">Quiz d'orientation</p>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#f37021]/10 text-[#c05000] border border-[#f37021]/25 shrink-0">
+                Quiz RH
+              </span>
             </div>
           </button>
           <div className="ml-auto flex items-center gap-1.5">
@@ -207,26 +266,39 @@ export function QuizLandingPage() {
             }}
           />
 
-          <div className="relative max-w-4xl mx-auto px-4 py-12 md:py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="inline-flex h-24 w-24 items-center justify-center mb-6 transition-transform duration-300 hover:scale-110 drop-shadow-lg">
-              <AppLogo className="h-24 w-24 object-contain" />
+          <div className="relative max-w-4xl mx-auto px-4 py-12 md:py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-center">
+            {/* Logo tout en haut, au-dessus du badge */}
+            <div className="flex flex-col items-center w-full">
+              <div className="inline-flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center mb-5 transition-transform duration-300 hover:scale-110 drop-shadow-lg shrink-0">
+                <AppLogo className="h-24 w-24 sm:h-28 sm:w-28 object-contain" />
+              </div>
+              <div className="inline-flex flex-wrap items-center justify-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3.5 py-1.5 text-[11px] font-semibold text-primary mb-5">
+                <Sparkles className="h-3 w-3 shrink-0" />
+                <span>
+                  Quiz gratuit · Résultat immédiat
+                  {metrics != null && (
+                    <>
+                      {" "}
+                      · {metrics.domaines} domaine{metrics.domaines !== 1 ? "s" : ""} RH ·{" "}
+                      {metrics.fiches} fiche{metrics.fiches !== 1 ? "s" : ""}
+                    </>
+                  )}
+                </span>
+              </div>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3.5 py-1.5 text-[11px] font-semibold text-primary mb-5">
-              <Sparkles className="h-3 w-3" />
-              Quiz gratuit · Résultat immédiat · Basé sur 18 domaines RH
-            </div>
-
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-foreground mb-5 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-foreground mb-5 leading-tight px-1">
               Quel métier RH est{" "}
               <span className="bg-gradient-to-r from-[#004080] via-[#008c54] to-[#f37021] bg-clip-text text-transparent">
                 fait pour toi ?
               </span>
             </h1>
 
-            <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed">
-              Réponds à quelques questions et découvre ton grand domaine RH parmi les 18 métiers
-              référencés par <strong className="text-foreground">SUP des RH</strong>.
+            <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed px-1">
+              Réponds à quelques questions et découvre ton{" "}
+              <strong className="text-foreground">grand domaine RH</strong> et les fiches métiers
+              qui te correspondent, référencés par{" "}
+              <strong className="text-foreground">SUP des RH</strong>.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -248,34 +320,92 @@ export function QuizLandingPage() {
               </Button>
             </div>
 
-            {/* Stats */}
-            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 mt-10 pt-8 border-t border-border/60">
-              {[
-                { value: "18", label: "Domaines RH" },
-                { value: "~2 min", label: "Durée du quiz" },
-                { value: "100%", label: "Gratuit" },
-                { value: "IA", label: "Analyse instantanée" },
-              ].map((s) => (
-                <div key={s.label} className="text-center">
-                  <p className="text-lg font-heading font-bold text-foreground">{s.value}</p>
-                  <p className="text-[11px] text-muted-foreground">{s.label}</p>
-                </div>
-              ))}
+            {/* Stats — métriques réelles + fixes (responsive mobile → tablette → desktop) */}
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-3 sm:gap-x-6 sm:gap-y-4 md:gap-x-8 mt-10 pt-6 sm:pt-8 border-t border-border/60">
+              <div className="text-center">
+                <p className="text-lg font-heading font-bold text-foreground">
+                  {metrics != null ? String(metrics.domaines) : "—"}
+                </p>
+                <p className="text-[11px] text-muted-foreground">Domaines RH</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-heading font-bold text-foreground">
+                  {metrics != null ? String(metrics.fiches) : "—"}
+                </p>
+                <p className="text-[11px] text-muted-foreground">Fiches métier</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-heading font-bold text-foreground">~2 min</p>
+                <p className="text-[11px] text-muted-foreground">Durée du quiz</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-heading font-bold text-foreground">100%</p>
+                <p className="text-[11px] text-muted-foreground">Gratuit</p>
+              </div>
+              <div className="text-center">
+                <p className="text-lg font-heading font-bold text-foreground">IA</p>
+                <p className="text-[11px] text-muted-foreground">Analyse instantanée</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Domaines aperçu */}
-        <div className="border-y border-border/60 bg-muted/20 py-4 overflow-hidden">
-          <div className="flex gap-3 animate-scroll px-4" style={{ width: "max-content" }}>
-            {[...DOMAINS, ...DOMAINS].map((d, i) => (
-              <span
-                key={i}
-                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap shrink-0"
-              >
-                {d.emoji} {d.label}
-              </span>
-            ))}
+        {/* Grands domaines RH — bandeau contenu dans la page, défilement auto + manuel */}
+        <div className="border-y border-border/60 bg-muted/20 py-6 sm:py-8 overflow-hidden">
+          <div className="max-w-4xl mx-auto px-4 text-center mb-4">
+            <h2 className="text-base sm:text-lg font-heading font-bold text-foreground">
+              Grands domaines RH
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              Ces domaines sont explorés dans le quiz : selon tes réponses, tu seras orienté vers
+              l’un d’entre eux et les fiches métiers associées.
+            </p>
+          </div>
+          <div
+            ref={domainsScrollRef}
+            className="overflow-x-auto hide-scrollbar w-full px-3 sm:px-4 scroll-smooth"
+            style={{ scrollSnapType: "x mandatory" }}
+            onWheel={pauseDomainsMarquee}
+            onTouchStart={pauseDomainsMarquee}
+            onMouseDown={pauseDomainsMarquee}
+          >
+            <div className="flex gap-3 w-max min-w-full">
+              {domainLabels.length > 0
+                ? [...domainLabels, ...domainLabels].map((label, i) => {
+                    const staticDom = DOMAINS.find((d) => d.label === label);
+                    const color = DOMAIN_COLORS[i % DOMAIN_COLORS.length];
+                    return (
+                      <span
+                        key={`${label}-${i}`}
+                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 snap-start"
+                        style={{
+                          background: color.bg,
+                          border: `1px solid ${color.border}`,
+                          color: color.text,
+                        }}
+                      >
+                        {staticDom ? `${staticDom.emoji} ` : ""}
+                        {label}
+                      </span>
+                    );
+                  })
+                : [...DOMAINS, ...DOMAINS].map((d, i) => {
+                    const color = DOMAIN_COLORS[i % DOMAIN_COLORS.length];
+                    return (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap shrink-0 snap-start"
+                        style={{
+                          background: color.bg,
+                          border: `1px solid ${color.border}`,
+                          color: color.text,
+                        }}
+                      >
+                        {d.emoji} {d.label}
+                      </span>
+                    );
+                  })}
+            </div>
           </div>
         </div>
 
@@ -324,7 +454,7 @@ export function QuizLandingPage() {
 
           {/* CTA final */}
           <div
-            className="rounded-2xl border border-primary/20 bg-gradient-to-br from-[#004080]/8 via-card to-[#008c54]/5 p-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-500"
+            className="rounded-2xl border border-primary/20 bg-gradient-to-br from-[#004080]/8 via-card to-[#008c54]/5 p-6 sm:p-8 text-center animate-in fade-in slide-in-from-bottom-4 duration-500"
             style={{ animationDelay: "400ms" }}
           >
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 mb-5">

@@ -3,10 +3,9 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" type="image/png" href="/supdesrh-logo.png" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Sup des RH · Découvre ton métier RH</title>
+		<title>RH et moi by SUP des RH · Découvre ton métier RH</title>
 		<meta
 			name="description"
 			content="Découvre le métier RH qui te correspond : Recrutement, Paie, QVCT, Assistant RH, Formation."
@@ -43,6 +42,22 @@
 					theme = theme === "dark" ? "light" : "dark";
 					applyTheme(theme);
 				};
+
+				// Mobile nav (présent sur Accueil / École / Entreprises)
+				window.addEventListener("DOMContentLoaded", () => {
+					const mobileToggle = document.getElementById("mobile-menu-toggle");
+					const mobileNav = document.getElementById("mobile-nav");
+					if (mobileToggle && mobileNav) {
+						mobileToggle.addEventListener("click", () => {
+							mobileNav.classList.toggle("open");
+						});
+						mobileNav.querySelectorAll("a").forEach((link) => {
+							link.addEventListener("click", () => {
+								mobileNav.classList.remove("open");
+							});
+						});
+					}
+				});
 			})();
 		</script>
 	</body>
@@ -105,5 +120,214 @@
 
 	html.dark body {
 		background: linear-gradient(180deg, #020617 0%, #0f172a 50%, #1e293b 100%);
+	}
+
+	/* Header global (Accueil / École / Entreprises) */
+	.site-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.9rem 1.5rem;
+		background: var(--landing-card);
+		border-bottom: 1px solid var(--landing-border);
+		backdrop-filter: blur(16px);
+		position: sticky;
+		top: 0;
+		z-index: 50;
+		transition: background 0.3s, border-color 0.3s;
+	}
+
+	.logo-wrap {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.logo-img {
+		width: 48px;
+		height: 48px;
+		object-fit: contain;
+	}
+
+	.logo-theme-safe {
+		filter: none !important;
+		-webkit-filter: none !important;
+		color-scheme: only light;
+		forced-color-adjust: none;
+		opacity: 1 !important;
+	}
+	html.dark .logo-theme-safe {
+		filter: none !important;
+		-webkit-filter: none !important;
+	}
+
+	.brand-text {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.brand {
+		margin: 0;
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: var(--landing-accent);
+		line-height: 1.2;
+		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
+	}
+	.brand-by {
+		font-weight: 500;
+		color: var(--landing-muted);
+	}
+
+	.brand-sub {
+		margin: 0;
+		font-size: 0.7rem;
+		color: var(--landing-muted);
+		letter-spacing: 0.02em;
+	}
+
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.btn-theme {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		border: 1px solid var(--landing-border);
+		background: var(--landing-bg-soft);
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: transform 0.2s, background 0.2s;
+	}
+
+	.btn-theme:hover {
+		background: var(--landing-border);
+		transform: scale(1.05);
+	}
+
+	.icon-moon { display: none; }
+	.icon-sun, .icon-moon { color: var(--landing-text); }
+	html.dark .icon-sun { display: none; }
+	html.dark .icon-moon { display: block; }
+
+	.btn-connect {
+		padding: 0.55rem 1.25rem;
+		border-radius: 999px;
+		background: #004080;
+		color: #fff;
+		font-weight: 600;
+		font-size: 0.85rem;
+		text-decoration: none;
+		box-shadow: 0 4px 14px rgba(0, 64, 128, 0.3);
+		transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+		white-space: nowrap;
+	}
+
+	.btn-connect:hover {
+		transform: translateY(-1px);
+		background: #003366;
+		box-shadow: 0 6px 20px rgba(0, 64, 128, 0.4);
+	}
+
+	/* Nav header */
+	.header-nav {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		margin: 0 auto;
+	}
+
+	.nav-link {
+		padding: 0.4rem 0.85rem;
+		border-radius: 999px;
+		font-size: 0.82rem;
+		font-weight: 500;
+		color: var(--landing-muted);
+		text-decoration: none;
+		transition: color 0.15s, background 0.15s;
+	}
+
+	.nav-link:hover,
+	.nav-link-active {
+		color: var(--landing-accent);
+		background: rgba(0, 64, 128, 0.08);
+	}
+	html.dark .nav-link:hover,
+	html.dark .nav-link-active {
+		background: rgba(56, 189, 248, 0.1);
+	}
+
+	@media (max-width: 640px) {
+		.header-nav { display: none; }
+	}
+
+	/* Mobile menu */
+	.btn-menu {
+		display: none;
+	}
+
+	.mobile-nav {
+		display: none;
+	}
+
+	@media (max-width: 640px) {
+		.btn-menu {
+			display: inline-flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			width: 40px;
+			height: 40px;
+			border-radius: 999px;
+			border: 1px solid var(--landing-border);
+			background: var(--landing-bg-soft);
+			margin-left: 0.25rem;
+			cursor: pointer;
+			gap: 4px;
+		}
+
+		.menu-line {
+			width: 16px;
+			height: 2px;
+			border-radius: 999px;
+			background: var(--landing-text);
+			transition: transform 0.2s, opacity 0.2s;
+		}
+
+		.mobile-nav {
+			position: fixed;
+			top: 60px;
+			right: 12px;
+			left: 12px;
+			background: var(--landing-card);
+			border: 1px solid var(--landing-border);
+			border-radius: 16px;
+			box-shadow: 0 20px 40px rgba(15, 23, 42, 0.35);
+			padding: 0.5rem 0.75rem;
+			z-index: 49;
+		}
+
+		.mobile-nav.open {
+			display: block;
+		}
+
+		.mobile-nav-link {
+			display: block;
+			padding: 0.6rem 0.75rem;
+			border-radius: 0.75rem;
+			font-size: 0.9rem;
+			color: var(--landing-muted);
+			text-decoration: none;
+		}
+
+		.mobile-nav-link:hover {
+			background: var(--landing-bg-soft);
+			color: var(--landing-accent);
+		}
 	}
 </style>

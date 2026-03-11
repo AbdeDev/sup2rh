@@ -52,9 +52,9 @@ try {
 	<div class="page">
 		<header class="site-header">
 			<div class="logo-wrap">
-				<img src="/lamascott-hero.png" alt="Sup des RH" class="logo-img logo-theme-safe" width="56" height="56" />
+				<img src="/supdesrh-logo.png" alt="RH et moi by SUP des RH" class="logo-img logo-theme-safe" width="56" height="56" />
 				<div class="brand-text">
-					<p class="brand">Quiz Sup des RH</p>
+					<p class="brand">RH et moi <span class="brand-by">by</span> SUP des RH</p>
 					<p class="brand-sub">Orientation métiers RH</p>
 				</div>
 			</div>
@@ -69,7 +69,16 @@ try {
 					<svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
 				</button>
 				<a href={WEB_APP_URL + "/login"} class="btn-connect">Se connecter</a>
+				<button type="button" class="btn-menu" id="mobile-menu-toggle" aria-label="Ouvrir le menu">
+					<span class="menu-line"></span>
+					<span class="menu-line"></span>
+				</button>
 			</div>
+			<nav class="mobile-nav" id="mobile-nav">
+				<a href="/" class="mobile-nav-link">Accueil</a>
+				<a href="/ecole" class="mobile-nav-link">L'école</a>
+				<a href="/entreprises" class="mobile-nav-link">Entreprises</a>
+			</nav>
 		</header>
 
 		<main class="main">
@@ -147,33 +156,29 @@ try {
 					{!fetchError && jobs.length === 0 && (
 						<p class="jobs-empty">Aucune fiche métier pour le moment. Démarre l'API backend si besoin.</p>
 					)}
-					{!fetchError && jobs.map((job, idx) => (
-						<article class={`job-card${idx >= 6 ? " job-card-extra" : ""}`} id={`job-${job.id}`} style={`animation-delay: ${(idx % 6) * 60}ms`}>
-							<div class="job-head">
-								<span class="job-badge">RH</span>
-								<h3 class="job-name">{job.name}</h3>
-							</div>
-							<p class="job-desc">
-								{job.description
-									? job.description.length > 180
-										? job.description.slice(0, 180) + "…"
-										: job.description
-									: "Fiche détaillée disponible après connexion au quiz."}
-							</p>
-							<div class="job-tags">
-								{job.salary && <span class="tag tag-salary">{job.salary}</span>}
-								{job.hiringRate != null && (
-									<span class="tag tag-green">{Number(job.hiringRate).toFixed(0)}% embauche</span>
-								)}
-								{job.turnoverRate != null && (
-									<span class="tag tag-muted">{Number(job.turnoverRate).toFixed(0)}% turnover</span>
-								)}
-							</div>
-							<a href={WEB_APP_URL + "/fiches/" + job.id} class="job-card-link">
-								Voir le détail de la fiche →
-							</a>
-						</article>
-					))}
+				{!fetchError && jobs.map((job, idx) => (
+					<a href={WEB_APP_URL + "/fiches/" + job.id} class={`job-card job-card-link-wrap${idx >= 6 ? " job-card-extra" : ""}`} id={`job-${job.id}`} style={`animation-delay: ${(idx % 6) * 60}ms`}>
+						<div class="job-head">
+							<span class="job-badge">RH</span>
+							<h3 class="job-name">{job.name}</h3>
+						</div>
+						<p class="job-desc">
+							{job.description
+								? job.description.replace(/\s*•\s*/g, ' • ').slice(0, 200) + (job.description.length > 200 ? "…" : "")
+								: "Clique pour découvrir ce métier RH en détail."}
+						</p>
+						<div class="job-tags">
+							{job.salary && <span class="tag tag-salary">{job.salary}</span>}
+							{job.hiringRate != null && (
+								<span class="tag tag-green">{Number(job.hiringRate).toFixed(0)}% embauche</span>
+							)}
+							{job.turnoverRate != null && (
+								<span class="tag tag-muted">{Number(job.turnoverRate).toFixed(0)}% turnover</span>
+							)}
+						</div>
+						<span class="job-card-cta">Voir le détail de la fiche →</span>
+					</a>
+				))}
 				</div>
 
 				{jobs.length > 6 && (
@@ -348,7 +353,7 @@ try {
 				<div class="footer-top">
 					<div class="footer-brand-wrap">
 						<img src="/lamascott-hero.png" alt="" class="footer-logo logo-theme-safe" width="32" height="32" />
-						<p class="footer-brand">Sup des RH</p>
+						<p class="footer-brand">RH et moi by SUP des RH</p>
 					</div>
 					<p class="footer-tagline">Orientation métiers RH, en toute confiance.</p>
 				</div>
@@ -359,7 +364,7 @@ try {
 					<a href={WEB_APP_URL + "/legal/confidentialite"}>Politique de confidentialité</a>
 					<a href={WEB_APP_URL + "/login"}>Accéder au quiz</a>
 				</nav>
-				<p class="footer-copy">© {new Date().getFullYear()} Quiz Sup des RH — Tous droits réservés</p>
+				<p class="footer-copy">© {new Date().getFullYear()} RH et moi by SUP des RH — Tous droits réservés</p>
 			</div>
 		</footer>
 	</div>
@@ -383,7 +388,6 @@ try {
 			showMoreBtn.parentElement?.remove();
 		});
 	}
-
 </script>
 
 <style>
@@ -445,6 +449,10 @@ try {
 		line-height: 1.2;
 		font-family: "Figtree", "Montserrat", system-ui, sans-serif;
 	}
+	.brand-by {
+		font-weight: 500;
+		color: var(--landing-muted);
+	}
 
 	.brand-sub {
 		margin: 0;
@@ -492,12 +500,20 @@ try {
 		text-decoration: none;
 		box-shadow: 0 4px 14px rgba(0, 64, 128, 0.3);
 		transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+		white-space: nowrap;
 	}
 
 	.btn-connect:hover {
 		transform: translateY(-1px);
 		background: #003366;
 		box-shadow: 0 6px 20px rgba(0, 64, 128, 0.4);
+	}
+
+	@media (max-width: 480px) {
+		.btn-connect {
+			font-size: 0.8rem;
+			padding-inline: 0.9rem;
+		}
 	}
 
 	/* Nav header */
@@ -530,6 +546,71 @@ try {
 		.header-nav { display: none; }
 	}
 
+	/* Mobile menu */
+	.btn-menu {
+		display: none;
+	}
+
+	.mobile-nav {
+		display: none;
+	}
+
+	@media (max-width: 640px) {
+		.btn-menu {
+			display: inline-flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			width: 40px;
+			height: 40px;
+			border-radius: 999px;
+			border: 1px solid var(--landing-border);
+			background: var(--landing-bg-soft);
+			margin-left: 0.25rem;
+			cursor: pointer;
+			gap: 4px;
+		}
+
+		.menu-line {
+			width: 16px;
+			height: 2px;
+			border-radius: 999px;
+			background: var(--landing-text);
+			transition: transform 0.2s, opacity 0.2s;
+		}
+
+		.mobile-nav {
+			position: fixed;
+			top: 60px;
+			right: 12px;
+			left: 12px;
+			background: var(--landing-card);
+			border: 1px solid var(--landing-border);
+			border-radius: 16px;
+			box-shadow: 0 20px 40px rgba(15, 23, 42, 0.35);
+			padding: 0.5rem 0.75rem;
+			z-index: 49;
+		}
+
+		.mobile-nav.open {
+			display: block;
+		}
+
+		.mobile-nav-link {
+			display: block;
+			padding: 0.6rem 0.75rem;
+			border-radius: 0.75rem;
+			font-size: 0.9rem;
+			color: var(--landing-muted);
+			text-decoration: none;
+		}
+
+		.mobile-nav-link:hover {
+			background: var(--landing-bg-soft);
+			color: var(--landing-accent);
+		}
+	}
+
 	/* ── Section Espace Entreprises ── */
 	.section-ent {
 		padding: 0 0 3.5rem;
@@ -544,6 +625,9 @@ try {
 		display: flex;
 		flex-direction: column;
 		gap: 2.5rem;
+		max-width: 1360px;
+		margin: 0 auto;
+		width: 100%;
 	}
 
 	/* En-tête */
@@ -644,18 +728,18 @@ try {
 		border-radius: 20px;
 		padding: 2rem 2.5rem;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		justify-content: space-between;
-		gap: 2rem;
-		flex-wrap: wrap;
+		justify-content: center;
+		gap: 1.5rem;
+		text-align: center;
 	}
 
 	.ent-stats-row {
 		display: flex;
 		align-items: center;
 		gap: 0;
-		flex-wrap: wrap;
-		flex: 1;
+		flex-wrap: nowrap;
 	}
 
 	.ent-stat-item {
@@ -671,6 +755,7 @@ try {
 		color: #fff;
 		font-family: "Figtree","Montserrat",system-ui,sans-serif;
 		line-height: 1;
+		white-space: nowrap;
 	}
 
 	.ent-stat-lbl {
@@ -685,6 +770,7 @@ try {
 		width: 1px;
 		height: 32px;
 		background: rgba(255,255,255,0.2);
+		flex-shrink: 0;
 	}
 
 	.ent-cta-group {
@@ -733,12 +819,17 @@ try {
 		.ent-services-grid { grid-template-columns: repeat(2, 1fr); }
 	}
 
-	@media (max-width: 768px) {
-		.ent-inner { padding: 2.25rem 1.75rem 2rem; gap: 2rem; }
-		.ent-cta-band { flex-direction: column; padding: 1.75rem 1.5rem; text-align: center; }
-		.ent-stats-row { justify-content: center; gap: 0.25rem; }
-		.ent-stat-item { padding: 0 1rem; }
+	@media (max-width: 900px) {
+		.ent-cta-band { flex-direction: column; padding: 1.75rem 2rem; text-align: center; gap: 1.5rem; }
+		.ent-stats-row { justify-content: center; width: 100%; }
 		.ent-cta-group { width: 100%; justify-content: center; }
+	}
+
+	@media (max-width: 768px) {
+		.section-ent { padding: 0 1.25rem 3rem; }
+		.ent-inner { padding: 2.25rem 1.75rem 2rem; gap: 2rem; border-radius: 22px; }
+		.ent-cta-band { padding: 1.75rem 1.5rem; border-radius: 16px; }
+		.ent-stat-item { padding: 0 1rem; }
 		.ent-stat-sep { height: 24px; }
 	}
 
@@ -748,16 +839,24 @@ try {
 		.ent-stats-row {
 			display: grid;
 			grid-template-columns: 1fr 1fr;
-			gap: 1rem;
+			gap: 0.75rem;
 			width: 100%;
 		}
-		.ent-stat-item { padding: 0.75rem; background: rgba(255,255,255,0.07); border-radius: 12px; }
+		.ent-stat-item {
+			padding: 0.85rem 0.75rem;
+			background: rgba(255,255,255,0.08);
+			border-radius: 12px;
+			border: 1px solid rgba(255,255,255,0.1);
+		}
 		.btn-ent-cta-primary, .btn-ent-cta-ghost { width: 100%; justify-content: center; text-align: center; }
 	}
 
 	@media (max-width: 480px) {
-		.ent-inner { padding: 1.75rem 1.25rem; border-radius: 20px; }
-		.ent-cta-band { padding: 1.5rem 1.25rem; border-radius: 16px; }
+		.section-ent { padding: 0 1rem 2.5rem; }
+		.ent-inner { padding: 1.75rem 1.25rem; border-radius: 18px; }
+		.ent-cta-band { padding: 1.5rem 1.25rem; border-radius: 14px; }
+		.ent-stat-val { font-size: 1.1rem; }
+		.ent-stat-lbl { font-size: 0.62rem; }
 	}
 
 	/* Main */
@@ -1130,7 +1229,18 @@ try {
 		margin-top: 0.25rem;
 	}
 
-	.job-card-link {
+	/* Card entière cliquable */
+	.job-card-link-wrap {
+		display: flex;
+		flex-direction: column;
+		text-decoration: none;
+		color: inherit;
+		cursor: pointer;
+	}
+	.job-card-link-wrap:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.10); transform: translateY(-2px); border-color: rgba(0,64,128,0.4); }
+	html.dark .job-card-link-wrap:hover { border-color: rgba(56,189,248,0.4); }
+
+	.job-card-cta {
 		display: inline-block;
 		margin-top: 0.75rem;
 		font-size: 0.8rem;
@@ -1139,13 +1249,7 @@ try {
 		text-decoration: none;
 		transition: opacity 0.2s;
 	}
-	.job-card-link:hover {
-		opacity: 0.85;
-		text-decoration: underline;
-	}
-	html.dark .job-card-link {
-		color: #38bdf8;
-	}
+	html.dark .job-card-cta { color: #38bdf8; }
 
 	.tag {
 		font-size: 0.7rem;
@@ -1559,30 +1663,6 @@ try {
 		.jobs-grid {
 			grid-template-columns: 1fr;
 		}
-
-		/* Section entreprises mobile */
-		.ent-services-grid { grid-template-columns: 1fr; gap: 0.65rem; }
-		.ent-stat-sep { display: none; }
-		.ent-stats-row {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 0.75rem;
-		}
-		.ent-stat-item {
-			padding: 0.65rem 0.5rem;
-			background: rgba(255,255,255,0.07);
-			border-radius: 10px;
-		}
-		.btn-ent-cta-primary, .btn-ent-cta-ghost { width: 100%; justify-content: center; text-align: center; }
-
-		/* Ancien espace entreprises (compat) */
-		.ent-stats {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 0.75rem;
-		}
-		.ent-form-card { padding: 1.5rem; }
-		.section-entreprises-wrapper { padding: 3rem 1rem; margin-top: 1.5rem; }
 	}
 
 	/* ── Section SUP des RH ── */
@@ -1670,22 +1750,19 @@ try {
 			font-size: 1.2rem;
 		}
 
-		.ent-stats {
+		.school-inner {
 			grid-template-columns: 1fr;
+			padding: 2rem 1.5rem;
+			gap: 1.75rem;
 		}
-
-		.ent-form-card {
-			padding: 1.25rem;
-		}
-
 		.school-actions { flex-direction: column; }
 		.btn-school, .btn-school-ghost { width: 100%; justify-content: center; text-align: center; }
+		.school-stats {
+			grid-template-columns: 1fr;
+			gap: 0.9rem;
+		}
+		.ss-val { font-size: 1.3rem; }
 
 		.step-card { padding: 1.35rem 1.1rem; }
-
-		/* Espace entreprises tiny */
-		.ent-inner { padding: 1.5rem 1.1rem; border-radius: 18px; }
-		.ent-cta-band { padding: 1.5rem 1.1rem; border-radius: 14px; }
-		.ent-stat-val { font-size: 1.1rem; }
 	}
 </style>

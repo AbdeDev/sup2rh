@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Loader2, User, Sparkles, CheckCircle2 } from "lucide-react";
+import { Loader2, User, Sparkles, CheckCircle2, X, ExternalLink, Briefcase } from "lucide-react";
 
 import { toast } from "sonner";
 import {
@@ -11,6 +11,7 @@ import {
   type AnalysisResult,
   type QuizSessionWithAnswers,
   type JobFiche,
+  type JobFicheIndicator,
   getMe,
 } from "../lib/api";
 import { Button } from "../components/ui/button";
@@ -19,6 +20,29 @@ import { Separator } from "../components/ui/separator";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { AppLogo } from "../components/AppLogo";
 import { ChartContainer, type ChartConfig } from "../components/ui/chart";
+
+/** Formate une description qui peut contenir des puces "•" en liste visuelle */
+function FormatDescription({ text }: { text: string }) {
+  const parts = text.split(/\s*•\s*/).filter(Boolean);
+  if (parts.length <= 1) {
+    return <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">{text}</p>;
+  }
+  const intro = parts[0].trim();
+  const bullets = parts.slice(1);
+  return (
+    <div className="space-y-2">
+      {intro && <p className="text-sm text-foreground/90 leading-relaxed">{intro}</p>}
+      <ul className="space-y-1.5">
+        {bullets.map((b, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span className="mt-[5px] h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
+            <span className="text-sm text-foreground/90 leading-relaxed">{b.trim()}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export function ResultPage() {
   const { id } = useParams<{ id: string }>();
@@ -45,7 +69,9 @@ export function ResultPage() {
   const [contactLoading, setContactLoading] = useState(false);
   const [showAllScores, setShowAllScores] = useState(false);
   const [allJobs, setAllJobs] = useState<JobFiche[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [ficheModalJob, setFicheModalJob] = useState<JobFiche | null>(null);
 
   const buildResultFromScores = useCallback(
     async (finalJobId: string, scores: Record<string, number>, answerCount?: number) => {
@@ -144,6 +170,15 @@ export function ResultPage() {
     }
   }, [id]);
 
+  // Charge les jobs si on arrive avec stateAnalysis (depuis QuizStartPage) — allJobs serait vide sinon
+  useEffect(() => {
+    if (allJobs.length > 0) return;
+    if (!analysis) return;
+    getJobs()
+      .then(({ items }) => setAllJobs(items))
+      .catch(console.error);
+  }, [analysis, allJobs.length]);
+
   const didLoadRef = useRef(false);
 
   useEffect(() => {
@@ -178,7 +213,29 @@ export function ResultPage() {
 
   const jobLabel = (jid: string) => jid.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
-  const scoresChartData = useMemo(() => {
+  const domainChartData = useMemo(() => {
+    const scores = analysis?.scores;
+    if (!scores || typeof scores !== "object" || allJobs.length === 0) return [];
+    const byCategory: Record<string, number> = {};
+    for (const [jobId, score] of Object.entries(scores)) {
+      const job = allJobs.find((j) => j.id === jobId);
+      const cat = job?.category?.trim();
+      if (!cat) continue;
+      const current = byCategory[cat] ?? 0;
+      byCategory[cat] = Math.max(current, Number(score) || 0);
+    }
+    const mainCategory = analysis?.job?.category ?? null;
+    return Object.entries(byCategory)
+      .map(([category, value]) => ({
+        category,
+        value: Math.round(value * 100),
+        isMain: category === mainCategory,
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [analysis, allJobs]);
+
+  /** Fallback : graphique par métier quand aucun domaine n'est disponible */
+  const scoresChartDataFallback = useMemo(() => {
     const scores = analysis?.scores;
     if (!scores || typeof scores !== "object") return [];
     const entries = Object.entries(scores);
@@ -192,26 +249,58 @@ export function ResultPage() {
     }));
   }, [analysis]);
 
-  // Job sélectionné (via clic sur le graphique) ou job principal
+  const hasDomains = domainChartData.length > 0;
+  const activeCategory =
+    selectedCategory ?? analysis?.job?.category ?? domainChartData[0]?.category ?? null;
+
+  const categoryJobs = useMemo(() => {
+    if (!activeCategory || allJobs.length === 0) return [];
+    return allJobs.filter((j) => j.category === activeCategory);
+  }, [activeCategory, allJobs]);
+
+  /** Fallback carrousel : top métiers par score quand pas de domaine sélectionnable */
+  const fallbackJobs = useMemo(() => {
+    const scores = analysis?.scores;
+    if (!scores || allJobs.length === 0) return [];
+    const sorted = Object.entries(scores)
+      .sort(([, a], [, b]) => (b ?? 0) - (a ?? 0))
+      .slice(0, 12)
+      .map(([jobId]) => allJobs.find((j) => j.id === jobId))
+      .filter(Boolean) as JobFiche[];
+    return sorted;
+  }, [analysis?.scores, allJobs]);
+
+  /** En mode domaines : fiches du domaine sélectionné (recommandée en tête). Sinon : top métiers. */
+  const carouselJobs = useMemo(() => {
+    const base = hasDomains ? categoryJobs : fallbackJobs;
+    if (!analysis?.jobId) return base;
+    const recommended = base.find((j) => j.id === analysis.jobId);
+    if (!recommended) return base;
+    return [recommended, ...base.filter((j) => j.id !== analysis.jobId)];
+  }, [hasDomains, categoryJobs, fallbackJobs, analysis?.jobId]);
+
   const activeJobId = selectedJobId ?? analysis?.jobId ?? null;
   const selectedJob = useMemo(() => {
     if (!activeJobId) return analysis?.job ?? null;
     return (allJobs.find((j) => j.id === activeJobId) ?? analysis?.job) as JobFiche | null;
   }, [activeJobId, allJobs, analysis]);
 
-  // Tous les jobs du même sous-thème
-  const categoryJobs = useMemo(() => {
-    const cat = selectedJob?.category;
-    if (!cat || allJobs.length === 0) return selectedJob ? [selectedJob] : [];
-    const inCat = allJobs.filter((j) => j.category === cat);
-    return inCat.length > 0 ? inCat : selectedJob ? [selectedJob] : [];
-  }, [selectedJob, allJobs]);
-
-  const INITIAL_VISIBLE = 5;
-  const visibleChartData = showAllScores
-    ? scoresChartData
-    : scoresChartData.slice(0, INITIAL_VISIBLE);
-  const hasMoreScores = scoresChartData.length > INITIAL_VISIBLE;
+  const chartDataForDisplay = hasDomains ? domainChartData : scoresChartDataFallback;
+  // Top 5 domaines/emplois par défaut, possibilité d'afficher tous les résultats
+  const visibleChartData = showAllScores ? chartDataForDisplay : chartDataForDisplay.slice(0, 5);
+  const hasMoreScores = chartDataForDisplay.length > 5;
+  const chartCount = chartDataForDisplay.length;
+  const showCarouselSection = chartCount > 0;
+  type ChartItem =
+    | { category: string; value: number; isMain: boolean }
+    | { jobId: string; label: string; value: number; isMain: boolean };
+  const getChartLabel = (item: ChartItem): string =>
+    "category" in item ? item.category : item.label;
+  const getChartId = (item: ChartItem): string => ("category" in item ? item.category : item.jobId);
+  const isChartItemSelected = (item: ChartItem): boolean =>
+    hasDomains
+      ? "category" in item && item.category === activeCategory
+      : "jobId" in item && item.jobId === activeJobId;
   const answerCount = session?.answers?.length ?? 0;
   const confidencePercent = Math.round((analysis?.confidence ?? 0) * 100);
   const remainingPercent = Math.max(0, 100 - confidencePercent);
@@ -309,29 +398,49 @@ export function ResultPage() {
             aria-label="Accueil"
           >
             <AppLogo className="h-9 w-9 object-contain" />
-            <div className="hidden sm:block">
+            <div className="hidden sm:flex items-center gap-2">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Quiz SUP des RH
+                RH et moi <span className="font-normal text-muted-foreground">by</span> SUP des RH
               </p>
-              <p className="text-[10px] text-muted-foreground leading-tight">Résultat</p>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#008c54]/10 text-[#008c54] border border-[#008c54]/20 shrink-0">
+                Résultats
+              </span>
             </div>
           </button>
           <div className="ml-auto flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 text-xs border-border rounded-xl"
+            <button
+              type="button"
               onClick={() => navigate("/sessions")}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-border text-muted-foreground hover:text-foreground hover:border-primary/40 transition-all duration-200 bg-card"
             >
               Mes sessions
-            </Button>
+            </button>
             <ThemeToggle />
           </div>
         </div>
       </header>
 
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-6 md:space-y-8">
+        <div className="max-w-4xl mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-4 sm:py-6 md:py-10 space-y-4 sm:space-y-6 md:space-y-8">
+          {/* Bloc explicite : domaine RH auquel tu es lié (toujours celui du résultat, pas la sélection graphique) */}
+          <Card className="border-[#008c54]/30 bg-[#008c54]/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <CardContent className="p-4 sm:p-5">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">
+                Domaine RH auquel tu es lié
+              </p>
+              <p className="text-lg sm:text-xl font-heading font-bold text-foreground">
+                {analysis?.job?.category ??
+                  (analysis?.jobId && allJobs.find((j) => j.id === analysis.jobId)?.category) ??
+                  topJobLabel ??
+                  "Métier RH"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Métier le plus proche :{" "}
+                <span className="font-semibold text-foreground">{topJobLabel}</span>
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Résultat principal — Grand domaine RH */}
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center">
@@ -353,9 +462,14 @@ export function ResultPage() {
                   </p>
                 </>
               ) : (
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-3">
-                  {topJobLabel}
-                </h1>
+                <>
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-2">
+                    {topJobLabel}
+                  </h1>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Domaine : {selectedJob?.category ?? "Métier RH"}
+                  </p>
+                </>
               )}
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-sm font-semibold text-primary">
@@ -382,7 +496,7 @@ export function ResultPage() {
           {/* Profil + Statistiques rapides */}
           {user && (
             <div
-              className="grid grid-cols-1 sm:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: "50ms" }}
             >
               <Card className="border border-border bg-card">
@@ -421,7 +535,10 @@ export function ResultPage() {
                       Métiers analysés
                     </p>
                     <p className="text-xs text-foreground">
-                      {scoresChartData.length} fiche{scoresChartData.length > 1 ? "s" : ""}
+                      {chartCount}{" "}
+                      {hasDomains
+                        ? `domaine${chartCount > 1 ? "s" : ""} RH`
+                        : `métier${chartCount > 1 ? "s" : ""}`}
                     </p>
                   </div>
                 </CardContent>
@@ -429,52 +546,46 @@ export function ResultPage() {
             </div>
           )}
 
-          {/* Comparaison des métiers — barres verticales avec couleurs du projet */}
-          {scoresChartData.length > 0 && (
+          {/* Graphique : domaines RH ou métiers (fallback) */}
+          {chartDataForDisplay.length > 0 && (
             <Card
               className="border border-border bg-card animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: "100ms" }}
             >
-              <CardContent className="p-5 md:p-6">
+              <CardContent className="p-4 sm:p-5 md:p-6">
                 <div className="mb-5">
-                  <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
-                    Comparaison des métiers
-                  </p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
+                      {hasDomains ? "Domaines RH — affinités" : "Comparaison des métiers"}
+                    </p>
+                    {hasDomains && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/15">
+                        👆 Clique pour explorer
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    {scoresChartData.length} métier{scoresChartData.length > 1 ? "s" : ""} analysé
-                    {scoresChartData.length > 1 ? "s" : ""} — Clique sur une barre pour explorer le
-                    domaine associé.
+                    {hasDomains
+                      ? `${chartCount} domaine${chartCount > 1 ? "s" : ""} RH identifiés · Clique sur une barre pour afficher les fiches métiers du domaine`
+                      : `${chartCount} métier${chartCount > 1 ? "s" : ""} analysés · Clique sur une barre pour voir la fiche`}
                   </p>
-                  {selectedJob?.category && (
+                  {hasDomains && activeCategory && (
                     <div className="mt-3 flex items-center gap-2 flex-wrap">
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-[#008c54]/10 border border-[#008c54]/20 px-3 py-1 text-xs font-semibold text-[#008c54]">
-                        <svg
-                          className="h-3 w-3"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                          />
-                        </svg>
-                        {selectedJob.category}
+                        <Briefcase className="h-3 w-3" />
+                        {activeCategory}
                       </span>
-                      {categoryJobs.length > 1 && (
-                        <span className="text-[10px] text-muted-foreground">
-                          {categoryJobs.length} fiches dans ce sous-thème
-                        </span>
-                      )}
-                      {selectedJobId && (
+                      <span className="text-[10px] text-muted-foreground">
+                        {categoryJobs.length} fiche{categoryJobs.length > 1 ? "s" : ""} dans ce
+                        domaine
+                      </span>
+                      {selectedCategory && (
                         <button
                           type="button"
-                          onClick={() => setSelectedJobId(null)}
+                          onClick={() => setSelectedCategory(null)}
                           className="text-[10px] text-primary hover:underline ml-1"
                         >
-                          ← Retour au résultat principal
+                          ← Retour au domaine principal
                         </button>
                       )}
                     </div>
@@ -482,14 +593,13 @@ export function ResultPage() {
                 </div>
                 <ChartContainer
                   config={chartConfig}
-                  className="w-full rounded-xl border border-border bg-muted/30 p-4 md:p-6"
+                  className="w-full rounded-xl border border-border bg-muted/30 p-3 sm:p-4 md:p-6"
                 >
                   <div
-                    className={`flex items-end gap-2 sm:gap-3 md:gap-4 ${visibleChartData.length > 8 ? "overflow-x-auto pb-2" : "justify-center"}`}
-                    style={{ minHeight: "200px" }}
+                    className={`flex items-end gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 ${visibleChartData.length > 6 ? "overflow-x-auto pb-2" : "justify-center"} min-h-[180px] sm:min-h-[200px]`}
                   >
-                    {visibleChartData.map((item, idx) => {
-                      const maxVal = scoresChartData[0]?.value || 100;
+                    {(visibleChartData as ChartItem[]).map((item, idx) => {
+                      const maxVal = chartDataForDisplay[0]?.value || 100;
                       const barHeight = Math.max((item.value / Math.max(maxVal, 1)) * 160, 16);
                       const barColors = [
                         "#004080",
@@ -511,22 +621,30 @@ export function ResultPage() {
                       const barColor = item.isMain
                         ? "#004080"
                         : (barColors[idx % barColors.length] ?? "#6b7280");
-
-                      const isSelected = item.jobId === activeJobId;
+                      const isSelected = isChartItemSelected(item);
+                      const label = getChartLabel(item);
+                      const id = getChartId(item);
+                      const labelShort = label.length > 18 ? label.slice(0, 16) + "…" : label;
                       return (
                         <button
                           type="button"
-                          key={item.jobId}
-                          onClick={() =>
-                            setSelectedJobId(item.jobId === analysis?.jobId ? null : item.jobId)
-                          }
-                          title={`Voir les fiches : ${item.label}`}
+                          key={id}
+                          onClick={() => {
+                            if (hasDomains) {
+                              setSelectedCategory(
+                                id === activeCategory && !selectedCategory ? null : id,
+                              );
+                            } else {
+                              setSelectedJobId(id === activeJobId ? null : id);
+                            }
+                          }}
+                          title={`Voir : ${label}`}
                           className="flex flex-col items-center gap-1.5 animate-in fade-in cursor-pointer group transition-transform duration-150 hover:scale-105 focus:outline-none"
                           style={{
                             animationDelay: `${idx * 50}ms`,
-                            minWidth: visibleChartData.length > 8 ? "56px" : undefined,
-                            flex: visibleChartData.length <= 8 ? "1 1 0" : undefined,
-                            maxWidth: "100px",
+                            minWidth: visibleChartData.length > 6 ? "48px" : undefined,
+                            flex: visibleChartData.length <= 6 ? "1 1 0" : undefined,
+                            maxWidth: "min(120px, 22vw)",
                             background: "none",
                             border: "none",
                             padding: 0,
@@ -537,10 +655,7 @@ export function ResultPage() {
                           >
                             {item.value}%
                           </span>
-                          <div
-                            className="w-full flex flex-col justify-end"
-                            style={{ height: "160px" }}
-                          >
+                          <div className="w-full flex flex-col justify-end h-36 sm:h-40">
                             <div
                               className="w-full rounded-t-lg transition-all duration-700 ease-out"
                               style={{
@@ -562,10 +677,10 @@ export function ResultPage() {
                                 ? "font-semibold text-foreground"
                                 : "text-muted-foreground group-hover:text-foreground"
                             }`}
-                            title={item.label}
+                            title={label}
                             style={{ minHeight: "24px" }}
                           >
-                            {item.label.length > 14 ? item.label.slice(0, 12) + "…" : item.label}
+                            {labelShort}
                           </span>
                         </button>
                       );
@@ -581,7 +696,7 @@ export function ResultPage() {
                       >
                         {showAllScores
                           ? "Voir moins"
-                          : `Voir les ${scoresChartData.length - INITIAL_VISIBLE} autres métiers`}
+                          : `Voir les ${chartDataForDisplay.length - 5} autres`}
                       </button>
                     </div>
                   )}
@@ -590,113 +705,148 @@ export function ResultPage() {
             </Card>
           )}
 
-          {/* ── Carrousel fiches du domaine ── toujours visible si catégorie connue */}
-          {categoryJobs.length > 0 && (
+          {/* Carrousel fiches métier liées au domaine sélectionné (ou top métiers si pas de domaines) */}
+          {showCarouselSection && (
             <Card
               className="border border-[#008c54]/25 bg-card animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: "140ms" }}
             >
-              <CardContent className="p-5 md:p-6">
-                <div className="flex items-center justify-between gap-2 mb-4">
+              <CardContent className="p-4 sm:p-5 md:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="h-9 w-9 rounded-lg bg-[#008c54]/15 border border-[#008c54]/25 flex items-center justify-center shrink-0">
-                      <svg
-                        className="h-4 w-4 text-[#008c54]"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                        />
-                      </svg>
+                      <Briefcase className="h-4 w-4 text-[#008c54]" />
                     </div>
                     <div className="min-w-0">
-                      <h2 className="text-sm font-heading font-semibold text-foreground truncate">
-                        {selectedJob?.category ?? "Fiches de ce domaine"}
-                      </h2>
-                      <p className="text-[10px] text-muted-foreground">
-                        {categoryJobs.length === 1
-                          ? "1 fiche dans ce domaine"
-                          : `${categoryJobs.length} fiches · Glisse pour explorer →`}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-sm sm:text-base font-heading font-semibold text-foreground">
+                          {hasDomains
+                            ? (activeCategory ?? "Fiches de ce domaine")
+                            : "Fiches métier correspondantes"}
+                        </h2>
+                        {hasDomains && carouselJobs.length > 0 && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#008c54]/10 text-[#008c54] border border-[#008c54]/20 shrink-0">
+                            {carouselJobs.length} fiche{carouselJobs.length > 1 ? "s" : ""}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                        {hasDomains && categoryJobs.length === 0
+                          ? "Aucune fiche métier dans ce domaine pour le moment."
+                          : carouselJobs.length === 1
+                            ? "Clique pour voir le détail"
+                            : "Glisse pour explorer · Clique sur une fiche pour le détail"}
                       </p>
                     </div>
                   </div>
-                  {selectedJobId && (
+                  {hasDomains && selectedCategory && (
                     <button
                       type="button"
-                      onClick={() => setSelectedJobId(null)}
-                      className="text-[10px] text-primary hover:underline shrink-0"
+                      onClick={() => setSelectedCategory(null)}
+                      className="text-xs text-primary hover:underline shrink-0 self-start sm:self-center"
                     >
-                      ← Retour
+                      ← Retour au domaine principal
                     </button>
                   )}
                 </div>
-                <div
-                  className="flex gap-3 overflow-x-auto pb-3 hide-scrollbar"
-                  style={{ scrollSnapType: "x mandatory" }}
-                >
-                  {categoryJobs.map((j) => {
-                    const isActive = j.id === activeJobId;
-                    const isTop = j.id === analysis?.jobId;
-                    return (
-                      <button
-                        key={j.id}
-                        type="button"
-                        onClick={() => setSelectedJobId(j.id === analysis?.jobId ? null : j.id)}
-                        className="shrink-0 text-left rounded-xl border transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary active:scale-[0.98]"
-                        style={{
-                          width: categoryJobs.length === 1 ? "100%" : "clamp(200px, 60vw, 240px)",
-                          scrollSnapAlign: "start",
-                          borderColor: isActive ? "#004080" : "var(--border)",
-                          background: isActive ? "rgba(0,64,128,0.07)" : "var(--card)",
-                          padding: "16px",
-                        }}
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <div
-                            className="h-7 w-7 rounded-md flex items-center justify-center"
-                            style={{ background: isActive ? "#004080" : "rgba(0,64,128,0.1)" }}
-                          >
-                            <Sparkles
-                              className="h-3.5 w-3.5"
-                              style={{ color: isActive ? "#fff" : "#004080" }}
-                            />
+                {carouselJobs.length > 0 ? (
+                  <div
+                    className="flex gap-3 md:gap-4 overflow-x-auto pb-3 px-4 sm:px-5 md:px-6 hide-scrollbar"
+                    style={{ scrollSnapType: "x mandatory" }}
+                  >
+                    {carouselJobs.map((j) => {
+                      const isActive = j.id === activeJobId;
+                      const isTop = j.id === analysis?.jobId;
+                      return (
+                        <div
+                          key={j.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => {
+                            setFicheModalJob(j);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setFicheModalJob(j);
+                            }
+                          }}
+                          className="shrink-0 text-left rounded-2xl border-2 transition-all duration-200 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary/60 focus:ring-offset-2 active:scale-[0.98] flex flex-col"
+                          style={{
+                            width: carouselJobs.length === 1 ? "100%" : "clamp(230px, 32vw, 280px)",
+                            scrollSnapAlign: "start",
+                            borderColor: isTop ? "#004080" : isActive ? "#004080" : "var(--border)",
+                            background: isTop
+                              ? "rgba(0,64,128,0.06)"
+                              : isActive
+                                ? "rgba(0,64,128,0.04)"
+                                : "var(--card)",
+                            boxShadow: isTop ? "0 4px 20px rgba(0,64,128,0.12)" : undefined,
+                            padding: "1rem",
+                          }}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-3">
+                            <div
+                              className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105"
+                              style={{
+                                background: isTop
+                                  ? "#004080"
+                                  : isActive
+                                    ? "rgba(0,64,128,0.15)"
+                                    : "rgba(0,64,128,0.08)",
+                              }}
+                            >
+                              <Sparkles
+                                className="h-4 w-4"
+                                style={{ color: isTop ? "#fff" : "#004080" }}
+                              />
+                            </div>
+                            {isTop && (
+                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-[#008c54] rounded-full px-2.5 py-1 shrink-0 shadow-sm">
+                                ★ Recommandé
+                              </span>
+                            )}
                           </div>
-                          {isTop && (
-                            <span className="text-[9px] font-bold text-[#008c54] bg-[#008c54]/10 rounded-full px-2 py-0.5">
-                              ✓ Recommandé
-                            </span>
+                          <p className="text-xs sm:text-sm font-bold text-foreground leading-snug mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                            {j.name}
+                          </p>
+                          {(j.salary || j.hiringRate != null) && (
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                              {j.salary && (
+                                <span className="inline-flex items-center text-[10px] font-medium bg-muted/60 text-foreground/80 rounded-full px-2 py-0.5">
+                                  💰 {j.salary}
+                                </span>
+                              )}
+                              {j.hiringRate != null && (
+                                <span className="inline-flex items-center text-[10px] font-medium bg-[#008c54]/10 text-[#008c54] rounded-full px-2 py-0.5">
+                                  📊 {j.hiringRate}%
+                                </span>
+                              )}
+                            </div>
                           )}
+                          {j.description && (
+                            <p className="text-[10px] sm:text-xs text-muted-foreground line-clamp-2 leading-relaxed flex-1">
+                              {j.description}
+                            </p>
+                          )}
+                          <div className="mt-3 pt-2.5 border-t border-border/50 flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-semibold text-primary group-hover:underline">
+                              Voir la fiche →
+                            </span>
+                            <ExternalLink className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+                          </div>
                         </div>
-                        <p className="text-xs font-semibold text-foreground leading-snug mb-2 line-clamp-2">
-                          {j.name}
-                        </p>
-                        {j.salary && (
-                          <p className="text-[10px] text-muted-foreground">💰 {j.salary}</p>
-                        )}
-                        {j.hiringRate != null && (
-                          <p className="text-[10px] text-muted-foreground">
-                            📊 {j.hiringRate}% embauche
-                          </p>
-                        )}
-                        {j.description && (
-                          <p className="text-[10px] text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
-                            {j.description}
-                          </p>
-                        )}
-                        {isActive && (
-                          <p className="text-[9px] font-semibold text-primary mt-2">
-                            → Fiche détaillée ci-dessous
-                          </p>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-border bg-muted/20 py-8 px-4 text-center">
+                    <Briefcase className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      Aucune fiche métier dans ce domaine pour le moment.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -722,17 +872,19 @@ export function ResultPage() {
               </div>
               <div className="space-y-5">
                 {fiche?.description && (
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
                       Description du métier
                     </p>
-                    <p className="text-sm text-foreground leading-relaxed">{fiche.description}</p>
+                    <div className="max-h-64 overflow-y-auto pr-2 rounded-lg border border-border/50 bg-muted/20 p-3">
+                      <FormatDescription text={fiche.description} />
+                    </div>
                   </div>
                 )}
                 {(fiche?.salary ?? fiche?.hiringRate ?? fiche?.turnoverRate) && (
                   <>
                     <Separator className="bg-border" />
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 gap-4">
                       {fiche?.salary && (
                         <div className="rounded-lg border border-border bg-muted/30 p-3">
                           <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
@@ -778,16 +930,18 @@ export function ResultPage() {
                       <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
                         Autres indicateurs
                       </p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 gap-2">
                         {fiche.indicators.map((ind, i) => (
                           <div
                             key={i}
-                            className="flex items-center justify-between rounded-lg border border-border bg-muted/20 px-3 py-2"
+                            className="rounded-lg border border-border bg-muted/20 px-3 py-2.5"
                           >
-                            <span className="text-xs text-muted-foreground">{ind.label}</span>
-                            <span className="text-xs font-medium text-foreground">
+                            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5 break-words">
+                              {ind.label}
+                            </p>
+                            <p className="text-xs font-semibold text-foreground break-words">
                               {String(ind.value)}
-                            </span>
+                            </p>
                           </div>
                         ))}
                       </div>
@@ -854,7 +1008,7 @@ export function ResultPage() {
                       variant="outline"
                       size="sm"
                       className="rounded-xl gap-2"
-                      onClick={() => navigate(`/fiches/${fiche.id}`)}
+                      onClick={() => setFicheModalJob(fiche)}
                     >
                       Voir la fiche complète
                     </Button>
@@ -896,7 +1050,7 @@ export function ResultPage() {
 
           {/* Actions secondaires */}
           <div
-            className="flex gap-3 justify-center pb-6 animate-in fade-in duration-500"
+            className="flex flex-wrap gap-3 justify-center pb-6 animate-in fade-in duration-500"
             style={{ animationDelay: "300ms" }}
           >
             <Button
@@ -916,6 +1070,167 @@ export function ResultPage() {
           </div>
         </div>
       </main>
+
+      {/* Modal détail fiche — sans quitter la page */}
+      {ficheModalJob && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm"
+          onClick={() => setFicheModalJob(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="fiche-modal-title"
+        >
+          <div
+            className="bg-card border border-border rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 border-b border-border/60 shrink-0 bg-muted/40">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                  <Briefcase className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h2
+                    id="fiche-modal-title"
+                    className="text-base sm:text-lg font-heading font-bold text-foreground truncate"
+                  >
+                    {ficheModalJob.name}
+                  </h2>
+                  {ficheModalJob.category && (
+                    <p className="text-xs text-muted-foreground truncate">
+                      {ficheModalJob.category}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 shrink-0 rounded-xl"
+                onClick={() => setFicheModalJob(null)}
+                aria-label="Fermer"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
+              {ficheModalJob.description && (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    Description
+                  </p>
+                  <div className="rounded-2xl border border-border/60 bg-muted/20 px-3.5 py-3 max-h-64 overflow-y-auto">
+                    <FormatDescription text={ficheModalJob.description} />
+                  </div>
+                </div>
+              )}
+              {(ficheModalJob.salary ||
+                ficheModalJob.hiringRate != null ||
+                ficheModalJob.turnoverRate != null) && (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    Indicateurs
+                  </p>
+                  <div className="flex flex-wrap gap-2.5">
+                    {ficheModalJob.salary && (
+                      <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-3 py-1 text-[11px] text-foreground">
+                        💰 {ficheModalJob.salary}
+                      </div>
+                    )}
+                    {ficheModalJob.hiringRate != null && (
+                      <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-[11px]">
+                        📊 Taux d&apos;embauche&nbsp;: {ficheModalJob.hiringRate}%
+                      </div>
+                    )}
+                    {ficheModalJob.turnoverRate != null && (
+                      <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 text-muted-foreground px-3 py-1 text-[11px]">
+                        🔁 Turnover&nbsp;: {ficheModalJob.turnoverRate}%
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              {Array.isArray(ficheModalJob.indicators) && ficheModalJob.indicators.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    Autres indicateurs
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {ficheModalJob.indicators.map((ind: JobFicheIndicator, i: number) => (
+                      <div
+                        key={i}
+                        className="rounded-xl border border-border bg-muted/20 px-3 py-2.5"
+                      >
+                        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5 break-words">
+                          {ind.label}
+                        </p>
+                        <p className="text-xs font-semibold text-foreground break-words">
+                          {String(ind.value)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {ficheModalJob.videoUrl &&
+                (() => {
+                  const rawUrl = (ficheModalJob.videoUrl as string).trim();
+                  const yt =
+                    rawUrl &&
+                    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/.exec(
+                      rawUrl,
+                    );
+                  const vimeo = rawUrl && /vimeo\.com\/(?:video\/)?(\d+)/.exec(rawUrl);
+                  const embedUrl = yt
+                    ? `https://www.youtube.com/embed/${yt[1]}?rel=0`
+                    : vimeo
+                      ? `https://player.vimeo.com/video/${vimeo[1]}`
+                      : null;
+                  const isAbsolute = rawUrl.startsWith("http://") || rawUrl.startsWith("https://");
+                  return (
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                        Vidéo explicative
+                      </p>
+                      <div className="rounded-xl overflow-hidden border border-border bg-muted/20 aspect-video w-full">
+                        {embedUrl ? (
+                          <iframe
+                            src={embedUrl}
+                            title="Vidéo du métier"
+                            className="w-full h-full min-h-[180px]"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : isAbsolute ? (
+                          <video
+                            src={rawUrl}
+                            controls
+                            className="w-full h-full min-h-[180px]"
+                            playsInline
+                          />
+                        ) : (
+                          <div className="w-full h-full min-h-[180px] flex items-center justify-center bg-muted/30 text-muted-foreground text-xs p-3 text-center">
+                            Utilise le bouton ci-dessous pour ouvrir la vidéo.
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          rawUrl && window.open(rawUrl, "_blank", "noopener,noreferrer")
+                        }
+                        className="inline-flex items-center gap-1.5 mt-2 text-sm text-primary hover:underline font-medium cursor-pointer bg-transparent border-0 p-0"
+                      >
+                        <ExternalLink className="h-4 w-4 shrink-0" />
+                        Ouvrir la vidéo dans un nouvel onglet
+                      </button>
+                    </div>
+                  );
+                })()}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

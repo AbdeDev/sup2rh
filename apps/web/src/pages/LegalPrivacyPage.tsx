@@ -22,7 +22,7 @@ export function LegalPrivacyPage() {
             <AppLogo className="h-9 w-9 object-contain" />
             <div className="hidden sm:block">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Quiz SUP des RH
+                RH et moi by SUP des RH
               </p>
               <p className="text-[10px] text-muted-foreground leading-tight">Confidentialité</p>
             </div>
@@ -58,15 +58,15 @@ export function LegalPrivacyPage() {
                     Politique de confidentialité
                   </h1>
                   <p className="text-[11px] text-muted-foreground">
-                    Quiz SUP des RH &middot; Lamascott
+                    RH et moi by SUP des RH &middot; Lamascott
                   </p>
                 </div>
               </div>
 
               <p>
                 Cette politique de confidentialité explique quelles données personnelles sont
-                collectées lorsque tu utilises l&apos;outil d&apos;orientation Quiz SUP des RH
-                (Lamascott), comment elles sont utilisées et quels sont tes droits.
+                collectées lorsque tu utilises l&apos;outil d&apos;orientation RH et moi by SUP des
+                RH (Lamascott), comment elles sont utilisées et quels sont tes droits.
               </p>
 
               <div>
@@ -126,7 +126,7 @@ export function LegalPrivacyPage() {
                 {
                   title: "5. Partage des données",
                   content:
-                    "Les données collectées via l'outil Quiz SUP des RH sont utilisées uniquement par Sup des RH et ses prestataires techniques pour le fonctionnement du service. Elles ne sont ni revendues, ni utilisées à des fins publicitaires pour des tiers.",
+                    "Les données collectées via l'outil RH et moi by SUP des RH sont utilisées uniquement par Sup des RH et ses prestataires techniques pour le fonctionnement du service. Elles ne sont ni revendues, ni utilisées à des fins publicitaires pour des tiers.",
                 },
                 {
                   title: "6. Tes droits",
