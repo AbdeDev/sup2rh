@@ -261,7 +261,8 @@ export function ResultPage() {
     return sorted;
   }, [analysis?.scores, allJobs]);
 
-  const carouselJobs = categoryJobs.length > 0 ? categoryJobs : fallbackJobs;
+  /** En mode domaines : uniquement les fiches du domaine sélectionné. Sinon : top métiers. */
+  const carouselJobs = hasDomains ? categoryJobs : fallbackJobs;
 
   const activeJobId = selectedJobId ?? analysis?.jobId ?? null;
   const selectedJob = useMemo(() => {
@@ -276,6 +277,7 @@ export function ResultPage() {
     : chartDataForDisplay.slice(0, INITIAL_VISIBLE);
   const hasMoreScores = chartDataForDisplay.length > INITIAL_VISIBLE;
   const chartCount = chartDataForDisplay.length;
+  const showCarouselSection = chartCount > 0;
   type ChartItem =
     | { category: string; value: number; isMain: boolean }
     | { jobId: string; label: string; value: number; isMain: boolean };
@@ -405,7 +407,7 @@ export function ResultPage() {
       </header>
 
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 space-y-6 md:space-y-8">
+        <div className="max-w-4xl mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-4 sm:py-6 md:py-10 space-y-4 sm:space-y-6 md:space-y-8">
           {/* Bloc explicite : domaine RH auquel tu es lié (toujours celui du résultat, pas la sélection graphique) */}
           <Card className="border-[#008c54]/30 bg-[#008c54]/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <CardContent className="p-4 sm:p-5">
@@ -480,7 +482,7 @@ export function ResultPage() {
           {/* Profil + Statistiques rapides */}
           {user && (
             <div
-              className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500"
+              className="grid grid-cols-1 min-[400px]:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: "50ms" }}
             >
               <Card className="border border-border bg-card">
@@ -536,7 +538,7 @@ export function ResultPage() {
               className="border border-border bg-card animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: "100ms" }}
             >
-              <CardContent className="p-5 md:p-6">
+              <CardContent className="p-4 sm:p-5 md:p-6">
                 <div className="mb-5">
                   <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
                     {hasDomains ? "Comparaison des domaines RH" : "Comparaison des métiers"}
@@ -571,11 +573,10 @@ export function ResultPage() {
                 </div>
                 <ChartContainer
                   config={chartConfig}
-                  className="w-full rounded-xl border border-border bg-muted/30 p-4 md:p-6"
+                  className="w-full rounded-xl border border-border bg-muted/30 p-3 sm:p-4 md:p-6"
                 >
                   <div
-                    className={`flex items-end gap-2 sm:gap-3 md:gap-4 ${visibleChartData.length > 8 ? "overflow-x-auto pb-2" : "justify-center"}`}
-                    style={{ minHeight: "200px" }}
+                    className={`flex items-end gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 ${visibleChartData.length > 6 ? "overflow-x-auto pb-2" : "justify-center"} min-h-[180px] sm:min-h-[200px]`}
                   >
                     {(visibleChartData as ChartItem[]).map((item, idx) => {
                       const maxVal = chartDataForDisplay[0]?.value || 100;
@@ -621,9 +622,9 @@ export function ResultPage() {
                           className="flex flex-col items-center gap-1.5 animate-in fade-in cursor-pointer group transition-transform duration-150 hover:scale-105 focus:outline-none"
                           style={{
                             animationDelay: `${idx * 50}ms`,
-                            minWidth: visibleChartData.length > 8 ? "56px" : undefined,
-                            flex: visibleChartData.length <= 8 ? "1 1 0" : undefined,
-                            maxWidth: "120px",
+                            minWidth: visibleChartData.length > 6 ? "48px" : undefined,
+                            flex: visibleChartData.length <= 6 ? "1 1 0" : undefined,
+                            maxWidth: "min(120px, 22vw)",
                             background: "none",
                             border: "none",
                             padding: 0,
@@ -634,10 +635,7 @@ export function ResultPage() {
                           >
                             {item.value}%
                           </span>
-                          <div
-                            className="w-full flex flex-col justify-end"
-                            style={{ height: "160px" }}
-                          >
+                          <div className="w-full flex flex-col justify-end h-36 sm:h-40">
                             <div
                               className="w-full rounded-t-lg transition-all duration-700 ease-out"
                               style={{
@@ -687,28 +685,30 @@ export function ResultPage() {
             </Card>
           )}
 
-          {/* Carrousel fiches métier (domaine ou top métiers) */}
-          {carouselJobs.length > 0 && (
+          {/* Carrousel fiches métier liées au domaine sélectionné (ou top métiers si pas de domaines) */}
+          {showCarouselSection && (
             <Card
               className="border border-[#008c54]/25 bg-card animate-in fade-in slide-in-from-bottom-4 duration-500"
               style={{ animationDelay: "140ms" }}
             >
-              <CardContent className="p-5 md:p-6">
-                <div className="flex items-center justify-between gap-2 mb-4">
+              <CardContent className="p-4 sm:p-5 md:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="h-9 w-9 rounded-lg bg-[#008c54]/15 border border-[#008c54]/25 flex items-center justify-center shrink-0">
                       <Briefcase className="h-4 w-4 text-[#008c54]" />
                     </div>
                     <div className="min-w-0">
-                      <h2 className="text-sm font-heading font-semibold text-foreground truncate">
+                      <h2 className="text-sm sm:text-base font-heading font-semibold text-foreground truncate">
                         {hasDomains
                           ? (activeCategory ?? "Fiches de ce domaine")
                           : "Fiches métier correspondantes"}
                       </h2>
-                      <p className="text-[10px] text-muted-foreground">
-                        {carouselJobs.length === 1
-                          ? "1 fiche"
-                          : `${carouselJobs.length} fiches · Glisse pour explorer →`}
+                      <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                        {hasDomains && categoryJobs.length === 0
+                          ? "Aucune fiche métier dans ce domaine pour le moment."
+                          : carouselJobs.length === 1
+                            ? "1 fiche"
+                            : `${carouselJobs.length} fiches · Glisse pour explorer`}
                       </p>
                     </div>
                   </div>
@@ -716,91 +716,102 @@ export function ResultPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedCategory(null)}
-                      className="text-[10px] text-primary hover:underline shrink-0"
+                      className="text-xs text-primary hover:underline shrink-0 self-start sm:self-center"
                     >
                       ← Retour au domaine principal
                     </button>
                   )}
                 </div>
-                <div
-                  className="flex gap-3 overflow-x-auto pb-3 hide-scrollbar"
-                  style={{ scrollSnapType: "x mandatory" }}
-                >
-                  {carouselJobs.map((j) => {
-                    const isActive = j.id === activeJobId;
-                    const isTop = j.id === analysis?.jobId;
-                    return (
-                      <div
-                        key={j.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => setSelectedJobId(j.id === analysis?.jobId ? null : j.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            setSelectedJobId(j.id === analysis?.jobId ? null : j.id);
-                          }
-                        }}
-                        className="shrink-0 text-left rounded-xl border transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary active:scale-[0.98] cursor-pointer"
-                        style={{
-                          width: carouselJobs.length === 1 ? "100%" : "clamp(200px, 60vw, 240px)",
-                          scrollSnapAlign: "start",
-                          borderColor: isActive ? "#004080" : "var(--border)",
-                          background: isActive ? "rgba(0,64,128,0.07)" : "var(--card)",
-                          padding: "16px",
-                        }}
-                      >
-                        <div className="flex items-center justify-between mb-3">
-                          <div
-                            className="h-7 w-7 rounded-md flex items-center justify-center"
-                            style={{ background: isActive ? "#004080" : "rgba(0,64,128,0.1)" }}
-                          >
-                            <Sparkles
-                              className="h-3.5 w-3.5"
-                              style={{ color: isActive ? "#fff" : "#004080" }}
-                            />
-                          </div>
-                          {isTop && (
-                            <span className="text-[9px] font-bold text-[#008c54] bg-[#008c54]/10 rounded-full px-2 py-0.5">
-                              ✓ Recommandé
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs font-semibold text-foreground leading-snug mb-2 line-clamp-2">
-                          {j.name}
-                        </p>
-                        {j.salary && (
-                          <p className="text-[10px] text-muted-foreground">💰 {j.salary}</p>
-                        )}
-                        {j.hiringRate != null && (
-                          <p className="text-[10px] text-muted-foreground">
-                            📊 {j.hiringRate}% embauche
-                          </p>
-                        )}
-                        {j.description && (
-                          <p className="text-[10px] text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
-                            {j.description}
-                          </p>
-                        )}
-                        {isActive && (
-                          <p className="text-[9px] font-semibold text-primary mt-2">
-                            → Fiche détaillée ci-dessous
-                          </p>
-                        )}
-                        <button
-                          type="button"
-                          className="mt-1 text-[9px] font-semibold text-primary hover:underline text-left w-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFicheModalJob(j);
+                {carouselJobs.length > 0 ? (
+                  <div
+                    className="flex gap-3 overflow-x-auto pb-3 -mx-1 px-1 sm:mx-0 sm:px-0 hide-scrollbar"
+                    style={{ scrollSnapType: "x mandatory" }}
+                  >
+                    {carouselJobs.map((j) => {
+                      const isActive = j.id === activeJobId;
+                      const isTop = j.id === analysis?.jobId;
+                      return (
+                        <div
+                          key={j.id}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setSelectedJobId(j.id === analysis?.jobId ? null : j.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setSelectedJobId(j.id === analysis?.jobId ? null : j.id);
+                            }
+                          }}
+                          className="shrink-0 text-left rounded-xl border transition-all duration-200 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-[0.98] cursor-pointer scroll-snap-align-start"
+                          style={{
+                            width: carouselJobs.length === 1 ? "100%" : "clamp(260px, 75vw, 280px)",
+                            scrollSnapAlign: "start",
+                            borderColor: isActive ? "#004080" : "var(--border)",
+                            background: isActive ? "rgba(0,64,128,0.07)" : "var(--card)",
+                            padding: "1rem",
                           }}
                         >
-                          Voir le détail de la fiche
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
+                          <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+                            <div
+                              className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg flex items-center justify-center shrink-0"
+                              style={{ background: isActive ? "#004080" : "rgba(0,64,128,0.1)" }}
+                            >
+                              <Sparkles
+                                className="h-4 w-4 sm:h-4 sm:w-4"
+                                style={{ color: isActive ? "#fff" : "#004080" }}
+                              />
+                            </div>
+                            {isTop && (
+                              <span className="text-[10px] sm:text-xs font-bold text-[#008c54] bg-[#008c54]/10 rounded-full px-2 py-1 shrink-0">
+                                ✓ Recommandé
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs sm:text-sm font-semibold text-foreground leading-snug mb-1.5 line-clamp-2">
+                            {j.name}
+                          </p>
+                          {j.salary && (
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">
+                              💰 {j.salary}
+                            </p>
+                          )}
+                          {j.hiringRate != null && (
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">
+                              📊 {j.hiringRate}% embauche
+                            </p>
+                          )}
+                          {j.description && (
+                            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+                              {j.description}
+                            </p>
+                          )}
+                          {isActive && (
+                            <p className="text-[10px] font-semibold text-primary mt-2">
+                              → Fiche détaillée ci-dessous
+                            </p>
+                          )}
+                          <button
+                            type="button"
+                            className="mt-2 text-[10px] sm:text-xs font-semibold text-primary hover:underline text-left w-full"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFicheModalJob(j);
+                            }}
+                          >
+                            Voir le détail de la fiche
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-border bg-muted/20 py-8 px-4 text-center">
+                    <Briefcase className="h-10 w-10 mx-auto text-muted-foreground/50 mb-2" />
+                    <p className="text-sm text-muted-foreground">
+                      Aucune fiche métier dans ce domaine pour le moment.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Edit2, Loader2, LayoutGrid, GripVertical, X, Check } from "lucide-react";
+import { Plus, Trash2, Edit2, Loader2, LayoutGrid, X, Check } from "lucide-react";
 
 import {
   getJobCategories,
@@ -200,120 +200,123 @@ export function AdminJobCategoriesPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-5">
             {categories.map((cat) => (
               <Card
                 key={cat.id}
-                className="group transition-all hover:shadow-md border-border overflow-hidden rounded-xl bg-card"
+                className="flex flex-col border border-border bg-card rounded-2xl shadow-sm overflow-hidden transition-shadow hover:shadow-md"
               >
-                <CardContent className="p-0 flex flex-col sm:flex-row">
-                  {/* Bloc principal */}
-                  <div className="flex flex-1 min-w-0 p-4 sm:p-5 gap-4">
-                    <div className="flex flex-col gap-2 shrink-0">
-                      <div
-                        className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl cursor-pointer hover:bg-primary/15 transition-colors overflow-hidden"
-                        title="Cliquer pour modifier l'emoji"
-                        onClick={() =>
-                          setInlineEdit({ id: cat.id, field: "emoji", value: cat.emoji ?? "" })
-                        }
-                      >
-                        <span className="block" title={cat.emoji ?? "📁"}>
-                          {cat.emoji ?? "📁"}
-                        </span>
-                      </div>
-                      {inlineEdit?.id === cat.id && inlineEdit.field === "emoji" && (
-                        <div className="flex flex-col gap-2 p-3 rounded-xl border border-border bg-muted/40 shadow-sm min-w-[180px]">
-                          <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                            Modifier l&apos;emoji
-                          </label>
-                          <Input
-                            autoFocus
-                            value={inlineEdit.value}
-                            onChange={(e) =>
-                              setInlineEdit({ ...inlineEdit, value: e.target.value })
-                            }
-                            className="h-9 text-center text-lg"
-                            placeholder="ex: 📁"
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") saveInline();
-                              if (e.key === "Escape") setInlineEdit(null);
-                            }}
-                          />
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="flex-1 h-8 text-xs gap-1.5 border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950/50"
-                              onClick={saveInline}
-                            >
-                              <Check className="h-3.5 w-3.5" />
-                              Valider
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              className="flex-1 h-8 text-xs gap-1.5"
-                              onClick={() => setInlineEdit(null)}
-                            >
-                              <X className="h-3.5 w-3.5" />
-                              Annuler
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span
-                          className="font-semibold text-foreground text-base break-words"
-                          title={cat.name}
-                        >
-                          {cat.name}
-                        </span>
+                <CardContent className="flex flex-col flex-1 p-0">
+                  {/* En-tête : emoji + nom + statut */}
+                  <div className="flex items-start gap-3 p-4 sm:p-5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setInlineEdit({ id: cat.id, field: "emoji", value: cat.emoji ?? "" })
+                      }
+                      className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl sm:text-3xl shrink-0 hover:bg-primary/15 transition-colors"
+                      title="Cliquer pour modifier l'emoji"
+                    >
+                      {cat.emoji ?? "📁"}
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground text-base sm:text-lg leading-tight break-words">
+                        {cat.name}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-2 mt-1.5">
                         {cat.status && (
                           <span
-                            className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${STATUS_COLORS[cat.status] ?? ""}`}
+                            className={`text-xs font-medium px-2.5 py-1 rounded-full ${STATUS_COLORS[cat.status] ?? ""}`}
                           >
                             {STATUS_LABELS[cat.status] ?? cat.status}
                           </span>
                         )}
+                        <span className="text-xs text-muted-foreground">
+                          Ordre · {cat.position}
+                        </span>
                       </div>
-                      {cat.description && (
-                        <div
-                          className="mt-1.5 max-h-20 overflow-y-auto rounded-md border border-border/50 bg-muted/20 px-2.5 py-2 text-sm text-muted-foreground break-words"
-                          title={cat.description}
-                        >
-                          {cat.description}
-                        </div>
-                      )}
-                      <p className="text-[11px] text-muted-foreground/70 mt-2 shrink-0">
-                        Ordre : {cat.position}
-                      </p>
                     </div>
                   </div>
-                  {/* Actions — visibles au hover sur desktop, toujours sur tactile */}
-                  <div className="flex items-center justify-end gap-1 px-4 pb-4 sm:pb-0 sm:pr-4 sm:py-4 border-t sm:border-t-0 sm:border-l border-border bg-muted/20 sm:bg-transparent">
-                    <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0 hidden sm:block" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 gap-1.5 text-muted-foreground hover:text-foreground sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                      onClick={() => openEdit(cat)}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                      <span className="text-xs">Modifier</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 gap-1.5 text-destructive hover:bg-destructive/10 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
-                      onClick={() => handleDelete(cat)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="text-xs">Supprimer</span>
-                    </Button>
+
+                  {/* Bloc modification emoji (s’affiche sous l’en-tête) */}
+                  {inlineEdit?.id === cat.id && inlineEdit.field === "emoji" && (
+                    <div className="mx-4 mb-4 p-4 rounded-xl border border-border bg-muted/30 space-y-3">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        Modifier l&apos;emoji
+                      </p>
+                      <Input
+                        autoFocus
+                        value={inlineEdit.value}
+                        onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                        className="h-10 text-center text-xl"
+                        placeholder="ex: 📁"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveInline();
+                          if (e.key === "Escape") setInlineEdit(null);
+                        }}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 gap-2 border-green-200 text-green-700 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-950/50"
+                          onClick={saveInline}
+                        >
+                          <Check className="h-4 w-4" />
+                          Valider
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 gap-2"
+                          onClick={() => setInlineEdit(null)}
+                        >
+                          <X className="h-4 w-4" />
+                          Annuler
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Description : zone lisible avec scroll */}
+                  {cat.description && (
+                    <div className="px-4 sm:px-5 pb-3">
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
+                        Description
+                      </p>
+                      <div className="max-h-24 sm:max-h-28 overflow-y-auto rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5 text-sm text-foreground/90 leading-relaxed break-words">
+                        {cat.description}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pied : actions toujours visibles */}
+                  <div className="mt-auto flex items-center justify-between gap-2 px-4 sm:px-5 py-3 border-t border-border bg-muted/10">
+                    <span className="text-xs text-muted-foreground">
+                      Ordre d&apos;affichage : {cat.position}
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 gap-1.5 text-xs"
+                        onClick={() => openEdit(cat)}
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                        Modifier
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 gap-1.5 text-xs text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDelete(cat)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Supprimer
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
