@@ -317,8 +317,8 @@ export function QuizLandingPage() {
           </div>
         </div>
 
-        {/* Grands domaines RH — titre + bandeau */}
-        <div className="border-y border-border/60 bg-muted/20 py-6 sm:py-8 overflow-hidden">
+        {/* Grands domaines RH — titre + bandeau (auto-défilement + scroll horizontal possible) */}
+        <div className="border-y border-border/60 bg-muted/20 py-6 sm:py-8">
           <div className="max-w-4xl mx-auto px-4 text-center mb-4">
             <h2 className="text-base sm:text-lg font-heading font-bold text-foreground">
               Grands domaines RH
@@ -328,7 +328,10 @@ export function QuizLandingPage() {
               l’un d’entre eux et les fiches métiers associées.
             </p>
           </div>
-          <div className="flex gap-3 animate-scroll px-4" style={{ width: "max-content" }}>
+          <div
+            className="flex gap-3 animate-scroll px-4 overflow-x-auto hide-scrollbar"
+            style={{ width: "max-content", scrollSnapType: "x mandatory" }}
+          >
             {domainLabels.length > 0
               ? [...domainLabels, ...domainLabels].map((label, i) => {
                   const staticDom = DOMAINS.find((d) => d.label === label);

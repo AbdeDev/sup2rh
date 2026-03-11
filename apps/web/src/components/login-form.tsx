@@ -75,16 +75,16 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
   }
 
   return (
-    <div className={cn("flex flex-col gap-5", className)} {...props}>
-      <Card className="border border-border bg-card rounded-2xl shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-2.5 mb-5 pb-4 border-b border-border">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-primary" />
+    <div className={cn("flex flex-col gap-4", className)} {...props}>
+      <Card className="border border-border bg-muted/30 dark:bg-muted/20 rounded-2xl shadow-sm overflow-hidden">
+        <CardContent className="p-5 md:p-6">
+          <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border/80">
+            <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <Sparkles className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-foreground">Connexion rapide</p>
-              <p className="text-[10px] text-muted-foreground">Un lien magique envoyé par email</p>
+              <p className="text-sm font-bold text-foreground">Connexion rapide</p>
+              <p className="text-xs text-muted-foreground">Un lien magique envoyé par email</p>
             </div>
           </div>
 
