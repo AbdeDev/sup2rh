@@ -751,7 +751,7 @@ export function ResultPage() {
                 </div>
                 {carouselJobs.length > 0 ? (
                   <div
-                    className="flex gap-3 overflow-x-auto pb-3 -mx-4 sm:-mx-5 md:-mx-6 px-4 sm:px-5 md:px-6 hide-scrollbar"
+                    className="flex gap-3 md:gap-4 overflow-x-auto pb-3 px-4 sm:px-5 md:px-6 hide-scrollbar"
                     style={{ scrollSnapType: "x mandatory" }}
                   >
                     {carouselJobs.map((j) => {
@@ -771,9 +771,9 @@ export function ResultPage() {
                               setFicheModalJob(j);
                             }
                           }}
-                          className="shrink-0 text-left rounded-2xl border-2 transition-all duration-200 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 active:scale-[0.98] flex flex-col"
+                          className="shrink-0 text-left rounded-2xl border-2 transition-all duration-200 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-primary/60 focus:ring-offset-2 active:scale-[0.98] flex flex-col"
                           style={{
-                            width: carouselJobs.length === 1 ? "100%" : "clamp(220px, 65vw, 260px)",
+                            width: carouselJobs.length === 1 ? "100%" : "clamp(230px, 32vw, 280px)",
                             scrollSnapAlign: "start",
                             borderColor: isTop ? "#004080" : isActive ? "#004080" : "var(--border)",
                             background: isTop
@@ -1081,10 +1081,10 @@ export function ResultPage() {
           aria-labelledby="fiche-modal-title"
         >
           <div
-            className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+            className="bg-card border border-border rounded-3xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between gap-3 p-4 border-b border-border shrink-0">
+            <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 border-b border-border/60 shrink-0 bg-muted/40">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
                   <Briefcase className="h-5 w-5 text-primary" />
@@ -1113,51 +1113,53 @@ export function ResultPage() {
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5">
               {ficheModalJob.description && (
-                <div>
+                <div className="space-y-2">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                     Description
                   </p>
-                  <FormatDescription text={ficheModalJob.description} />
+                  <div className="rounded-2xl border border-border/60 bg-muted/20 px-3.5 py-3 max-h-64 overflow-y-auto">
+                    <FormatDescription text={ficheModalJob.description} />
+                  </div>
                 </div>
               )}
               {(ficheModalJob.salary ||
                 ficheModalJob.hiringRate != null ||
                 ficheModalJob.turnoverRate != null) && (
-                <div>
+                <div className="space-y-2">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                     Indicateurs
                   </p>
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2.5">
                     {ficheModalJob.salary && (
-                      <span className="inline-flex items-center gap-1.5 text-sm text-foreground">
-                        {ficheModalJob.salary}
-                      </span>
+                      <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-3 py-1 text-[11px] text-foreground">
+                        💰 {ficheModalJob.salary}
+                      </div>
                     )}
                     {ficheModalJob.hiringRate != null && (
-                      <span className="text-sm text-foreground">
-                        Taux d&apos;embauche : {ficheModalJob.hiringRate}%
-                      </span>
+                      <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 px-3 py-1 text-[11px]">
+                        📊 Taux d&apos;embauche&nbsp;: {ficheModalJob.hiringRate}%
+                      </div>
                     )}
                     {ficheModalJob.turnoverRate != null && (
-                      <span className="text-sm text-muted-foreground">
-                        Turnover : {ficheModalJob.turnoverRate}%
-                      </span>
+                      <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 text-muted-foreground px-3 py-1 text-[11px]">
+                        🔁 Turnover&nbsp;: {ficheModalJob.turnoverRate}%
+                      </div>
                     )}
                   </div>
                 </div>
               )}
               {Array.isArray(ficheModalJob.indicators) && ficheModalJob.indicators.length > 0 && (
-                <div>
+                <div className="space-y-2">
                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                     Autres indicateurs
                   </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {ficheModalJob.indicators.map((ind: JobFicheIndicator, i: number) => (
                       <div
                         key={i}
-                        className="rounded-lg border border-border bg-muted/20 px-3 py-2.5"
+                        className="rounded-xl border border-border bg-muted/20 px-3 py-2.5"
                       >
                         <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-0.5 break-words">
                           {ind.label}
