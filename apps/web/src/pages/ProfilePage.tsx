@@ -75,7 +75,7 @@ export function ProfilePage() {
             <AppLogo className="h-9 w-9 object-contain" />
             <div className="hidden sm:flex items-center gap-2">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Rh et moi <span className="font-normal text-muted-foreground">by</span> SUP des RH
+                RH&MOI <span className="font-normal text-muted-foreground">by</span> SUP des RH
               </p>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0">
                 Profil

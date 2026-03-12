@@ -49,7 +49,7 @@ export function LoginPage() {
               <AppLogo className="h-8 w-8 object-contain" />
             </div>
             <span className="text-xl font-heading font-bold text-foreground">
-              RH et moi <span className="font-normal text-muted-foreground">by</span> SUP des RH
+              RH&MOI <span className="font-normal text-muted-foreground">by</span> SUP des RH
             </span>
           </div>
 
