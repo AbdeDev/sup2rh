@@ -22,7 +22,7 @@ export function LegalConditionsPage() {
             <AppLogo className="h-9 w-9 object-contain" />
             <div className="hidden sm:block">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                RH et moi by SUP des RH
+                RH&MOI by SUP des RH
               </p>
               <p className="text-[10px] text-muted-foreground leading-tight">Mentions légales</p>
             </div>
@@ -58,7 +58,7 @@ export function LegalConditionsPage() {
                     Conditions d&apos;utilisation
                   </h1>
                   <p className="text-[11px] text-muted-foreground">
-                    RH et moi by SUP des RH &middot; Lamascott
+                    RH&MOI by SUP des RH &middot; Lamascott
                   </p>
                 </div>
               </div>
@@ -73,7 +73,7 @@ export function LegalConditionsPage() {
                 {
                   title: "1. Objet du service",
                   content:
-                    "Le service RH et moi by SUP des RH a pour objectif de t'aider à découvrir les métiers des Ressources Humaines qui te correspondent le mieux, à travers un quiz court et personnalisé et des fiches métiers pédagogiques. Il s'agit d'un outil d'orientation et de réflexion, sans valeur contractuelle ni engagement d'admission.",
+                    "Le service RH&MOI by SUP des RH a pour objectif de t'aider à découvrir les métiers des Ressources Humaines qui te correspondent le mieux, à travers un quiz court et personnalisé et des fiches métiers pédagogiques. Il s'agit d'un outil d'orientation et de réflexion, sans valeur contractuelle ni engagement d'admission.",
                 },
                 {
                   title: "2. Création de compte",
