@@ -163,7 +163,7 @@ export function QuizLandingPage() {
             <AppLogo className="h-9 w-9 shrink-0 object-contain" />
             <div className="hidden sm:flex items-center gap-2">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                RH et moi <span className="font-normal text-muted-foreground">by</span> SUP des RH
+                RH&MOI <span className="font-normal text-muted-foreground">by</span> SUP des RH
               </p>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#f37021]/10 text-[#c05000] border border-[#f37021]/25 shrink-0">
                 Quiz RH

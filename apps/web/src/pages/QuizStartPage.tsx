@@ -191,8 +191,7 @@ export function QuizStartPage() {
           >
             <AppLogo className="h-8 w-8 shrink-0 object-contain" />
             <span className="hidden sm:block text-sm font-heading font-bold text-foreground">
-              Quiz RH et moi <span className="font-normal text-muted-foreground">by</span> SUP des
-              RH
+              Quiz RH&MOI <span className="font-normal text-muted-foreground">by</span> SUP des RH
             </span>
           </button>
 
