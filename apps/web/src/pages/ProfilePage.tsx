@@ -100,7 +100,11 @@ export function ProfilePage() {
       </header>
 
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 md:py-12">
+        {/* Decorative header */}
+        <div className="h-32 bg-gradient-to-br from-primary/10 via-background to-[#008c54]/8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-[#f37021]/5 blur-3xl pointer-events-none translate-x-1/3 -translate-y-1/3" />
+        </div>
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 -mt-16 relative z-10 pb-8 md:pb-12">
           {error && (
             <div className="mb-6 p-4 rounded-xl border border-destructive/30 bg-destructive/5 text-destructive text-sm animate-in fade-in duration-200">
               {error}

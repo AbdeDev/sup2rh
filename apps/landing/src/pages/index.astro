@@ -159,7 +159,7 @@ try {
 						</p>
 					)}
 					{!fetchError && jobs.length === 0 && (
-						<p class="jobs-empty">Aucune fiche métier pour le moment. Démarre l'API backend si besoin.</p>
+						<p class="jobs-empty">Aucune fiche métier pour le moment.</p>
 					)}
 				{!fetchError && jobs.map((job, idx) => (
 					<a href={WEB_APP_URL + "/fiches/" + job.id} class={`job-card job-card-link-wrap${idx >= 6 ? " job-card-extra" : ""}`} id={`job-${job.id}`} style={`animation-delay: ${(idx % 6) * 60}ms`}>
@@ -409,8 +409,17 @@ try {
 	// i18n : appliquer les traductions si langue != fr
 	if (currentLang === "en") {
 		import("../i18n/en.json").then((mod) => {
-			// @ts-expect-error
-			if (typeof window.supdesrhApplyI18n === "function") window.supdesrhApplyI18n(mod.default || mod);
+			const dict = mod.default || mod;
+			function apply() {
+				// @ts-expect-error
+				if (typeof window.supdesrhApplyI18n === "function") {
+					// @ts-expect-error
+					window.supdesrhApplyI18n(dict);
+				} else {
+					setTimeout(apply, 50);
+				}
+			}
+			apply();
 		});
 	}
 </script>

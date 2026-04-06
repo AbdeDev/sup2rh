@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   HelpCircle,
   Lightbulb,
@@ -9,6 +10,7 @@ import {
   Clock,
   CheckCircle2,
   AlertCircle,
+  LifeBuoy,
 } from "lucide-react";
 
 import { Button } from "../../components/ui/button";
@@ -39,25 +41,23 @@ async function updateTicketStatus(id: string, status: string): Promise<void> {
   });
 }
 
-const STATUS_CONFIG = {
+const STATUS_META = {
   open: {
-    label: "Ouvert",
     icon: AlertCircle,
     color: "text-amber-500 bg-amber-500/10 border-amber-500/20",
   },
   in_progress: {
-    label: "En cours",
     icon: Clock,
     color: "text-blue-500 bg-blue-500/10 border-blue-500/20",
   },
   closed: {
-    label: "Fermé",
     icon: CheckCircle2,
     color: "text-green-500 bg-green-500/10 border-green-500/20",
   },
 } as const;
 
 export function AdminSupportPage() {
+  const { t } = useTranslation();
   const [items, setItems] = useState<SupportTicketItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -86,19 +86,25 @@ export function AdminSupportPage() {
 
   const filtered = useMemo(() => {
     let result = items;
-    if (filterType !== "all") result = result.filter((t) => t.type === filterType);
-    if (filterStatus !== "all") result = result.filter((t) => t.status === filterStatus);
+    if (filterType !== "all") result = result.filter((ticket) => ticket.type === filterType);
+    if (filterStatus !== "all") result = result.filter((ticket) => ticket.status === filterStatus);
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
-        (t) =>
-          t.email.toLowerCase().includes(q) ||
-          t.subject.toLowerCase().includes(q) ||
-          t.message.toLowerCase().includes(q),
+        (ticket) =>
+          ticket.email.toLowerCase().includes(q) ||
+          ticket.subject.toLowerCase().includes(q) ||
+          ticket.message.toLowerCase().includes(q),
       );
     }
     return result;
   }, [items, filterType, filterStatus, search]);
+
+  function statusLabel(s: keyof typeof STATUS_META) {
+    if (s === "open") return t("support.open");
+    if (s === "in_progress") return t("support.inProgress");
+    return t("support.closed");
+  }
 
   function formatDate(s: string) {
     return new Intl.DateTimeFormat("fr-FR", {
@@ -114,8 +120,8 @@ export function AdminSupportPage() {
     try {
       await updateTicketStatus(id, status);
       setItems((prev) =>
-        prev.map((t) =>
-          t.id === id ? { ...t, status: status as SupportTicketItem["status"] } : t,
+        prev.map((ticket) =>
+          ticket.id === id ? { ...ticket, status: status as SupportTicketItem["status"] } : ticket,
         ),
       );
     } catch {
@@ -127,25 +133,33 @@ export function AdminSupportPage() {
     <AdminDashboard>
       <div className="p-4 md:p-6 lg:p-8 max-w-5xl mx-auto">
         <div className="mb-6">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-semibold mb-2">
+            <LifeBuoy className="h-3 w-3" />
+            {t("nav.support")}
+          </div>
           <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground mb-1">
-            Support & Suggestions
+            {t("support.title")}
           </h1>
           <p className="text-xs text-muted-foreground">
             {items.length} ticket{items.length !== 1 ? "s" : ""} au total
-            {items.filter((t) => t.status === "open").length > 0 &&
-              ` · ${items.filter((t) => t.status === "open").length} ouvert(s)`}
+            {items.filter((ticket) => ticket.status === "open").length > 0 &&
+              ` · ${items.filter((ticket) => ticket.status === "open").length} ouvert(s)`}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">
           <div className="flex rounded-lg border border-border overflow-hidden text-xs">
-            {(["all", "support", "feature_request"] as const).map((t) => (
+            {(["all", "support", "feature_request"] as const).map((typeKey) => (
               <button
-                key={t}
-                onClick={() => setFilterType(t)}
-                className={`px-3 py-1.5 transition-colors ${filterType === t ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                key={typeKey}
+                onClick={() => setFilterType(typeKey)}
+                className={`px-3 py-1.5 transition-colors ${filterType === typeKey ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
-                {t === "all" ? "Tous" : t === "support" ? "Aide" : "Suggestions"}
+                {typeKey === "all"
+                  ? t("support.all")
+                  : typeKey === "support"
+                    ? t("support.help")
+                    : t("support.suggestions")}
               </button>
             ))}
           </div>
@@ -156,7 +170,7 @@ export function AdminSupportPage() {
                 onClick={() => setFilterStatus(s)}
                 className={`px-3 py-1.5 transition-colors ${filterStatus === s ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
               >
-                {s === "all" ? "Tous" : STATUS_CONFIG[s].label}
+                {s === "all" ? t("support.all") : statusLabel(s)}
               </button>
             ))}
           </div>
@@ -198,7 +212,7 @@ export function AdminSupportPage() {
         ) : (
           <div className="space-y-3">
             {filtered.map((ticket, idx) => {
-              const cfg = STATUS_CONFIG[ticket.status];
+              const cfg = STATUS_META[ticket.status];
               const StatusIcon = cfg.icon;
               return (
                 <Card
@@ -234,7 +248,7 @@ export function AdminSupportPage() {
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border shrink-0 ml-10 sm:ml-0 w-fit ${cfg.color}`}
                       >
                         <StatusIcon className="h-3 w-3" />
-                        {cfg.label}
+                        {statusLabel(ticket.status)}
                       </span>
                     </div>
 
@@ -250,7 +264,7 @@ export function AdminSupportPage() {
                           className="h-7 text-[11px] rounded-lg"
                           onClick={() => handleStatusChange(ticket.id, "in_progress")}
                         >
-                          En cours
+                          {t("support.inProgress")}
                         </Button>
                       )}
                       {ticket.status !== "closed" && (
@@ -260,7 +274,7 @@ export function AdminSupportPage() {
                           className="h-7 text-[11px] rounded-lg"
                           onClick={() => handleStatusChange(ticket.id, "closed")}
                         >
-                          Fermer
+                          {t("common.close")}
                         </Button>
                       )}
                       {ticket.status === "closed" && (
@@ -270,7 +284,7 @@ export function AdminSupportPage() {
                           className="h-7 text-[11px] rounded-lg"
                           onClick={() => handleStatusChange(ticket.id, "open")}
                         >
-                          Rouvrir
+                          {t("support.reopen")}
                         </Button>
                       )}
                       <a
@@ -278,7 +292,7 @@ export function AdminSupportPage() {
                         className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline sm:ml-auto"
                       >
                         <Mail className="h-3 w-3" />
-                        Répondre
+                        {t("support.reply")}
                       </a>
                     </div>
                   </CardContent>

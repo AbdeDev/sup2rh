@@ -23,9 +23,11 @@ import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { AppLogo } from "../components/AppLogo";
+import { useTranslation } from "react-i18next";
 
 export function SessionsPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const [sessions, setSessions] = useState<QuizSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,11 +63,7 @@ export function SessionsPage() {
       setSessions(items);
       setSelectedIds([]);
     } catch (e) {
-      setLoadError(
-        e instanceof Error
-          ? e.message
-          : "Impossible de charger les sessions. Vérifie ta connexion.",
-      );
+      setLoadError(e instanceof Error ? e.message : t("sessions.loadErrorFallback"));
     } finally {
       setLoading(false);
     }
@@ -86,12 +84,7 @@ export function SessionsPage() {
 
   async function handleDeleteSelected() {
     if (selectedIds.length === 0 || deleting) return;
-    if (
-      !confirm(
-        `Supprimer ${selectedIds.length} session${selectedIds.length > 1 ? "s" : ""} ? Cette action est définitive.`,
-      )
-    )
-      return;
+    if (!confirm(t("sessions.deleteConfirm", { count: selectedIds.length }))) return;
     setDeleting(true);
     try {
       for (const id of selectedIds) {
@@ -142,7 +135,7 @@ export function SessionsPage() {
   }
 
   const jobLabel = (id: string | null) => {
-    if (!id) return "En cours";
+    if (!id) return t("sessions.inProgress");
     return id.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
@@ -151,8 +144,8 @@ export function SessionsPage() {
     const fromTime = dateFrom ? new Date(dateFrom + "T00:00:00").getTime() : 0;
     const toTime = dateTo ? new Date(dateTo + "T23:59:59").getTime() : Number.MAX_SAFE_INTEGER;
     return sessions.filter((s) => {
-      const t = new Date(s.createdAt).getTime();
-      return t >= fromTime && t <= toTime;
+      const sessionTime = new Date(s.createdAt).getTime();
+      return sessionTime >= fromTime && sessionTime <= toTime;
     });
   }, [sessions, dateFrom, dateTo]);
 
@@ -167,7 +160,7 @@ export function SessionsPage() {
             type="button"
             onClick={() => navigate("/quiz")}
             className="flex items-center gap-2.5 min-w-0 hover:opacity-80 transition-opacity"
-            aria-label="Accueil"
+            aria-label={t("nav.home")}
           >
             <AppLogo className="h-9 w-9 object-contain" />
             <div className="hidden sm:flex items-center gap-2">
@@ -175,7 +168,7 @@ export function SessionsPage() {
                 RH&MOI <span className="font-normal text-muted-foreground">by</span> SUP des RH
               </p>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0">
-                Mes sessions
+                {t("nav.sessions")}
               </span>
             </div>
           </button>
@@ -202,7 +195,7 @@ export function SessionsPage() {
                     }}
                   >
                     <User className="h-3.5 w-3.5 text-muted-foreground" />
-                    Mon profil
+                    {t("nav.profile")}
                   </button>
                   <div className="my-1 border-t border-border" />
                   <button
@@ -211,7 +204,7 @@ export function SessionsPage() {
                     onClick={logout}
                   >
                     <LogOut className="h-3.5 w-3.5" />
-                    Déconnexion
+                    {t("nav.logout")}
                   </button>
                 </div>
               )}
@@ -221,20 +214,29 @@ export function SessionsPage() {
       </header>
 
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto p-4 md:p-6 lg:p-8">
-          {/* Header */}
-          <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
+        {/* Hero banner */}
+        <div className="relative overflow-hidden border-b border-border bg-gradient-to-br from-primary/5 via-card to-[#008c54]/5">
+          <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-[#f37021]/5 blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2" />
+          <div className="max-w-6xl mx-auto p-4 md:p-6 lg:p-8 relative">
+            <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-heading font-bold text-foreground mb-1.5">
-                  Mes sessions de quiz
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-semibold mb-3">
+                  <BarChart3 className="h-3 w-3" />
+                  {t("sessions.history")}
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-heading font-bold text-foreground mb-1.5">
+                  {t("sessions.title")}
                 </h1>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground max-w-md">
                   {filteredSessions.length === sessions.length
                     ? sessions.length === 0
-                      ? "Aucune session pour le moment"
-                      : `${sessions.length} session${sessions.length > 1 ? "s" : ""} au total`
-                    : `${filteredSessions.length} sur ${sessions.length} session${sessions.length > 1 ? "s" : ""}`}
+                      ? t("sessions.heroSubtitleEmpty")
+                      : `${t("sessions.sessionCount", { count: sessions.length })} — ${t("sessions.exploreResults")}`
+                    : t("sessions.filteredOfTotal", {
+                        filtered: filteredSessions.length,
+                        total: sessions.length,
+                        count: sessions.length,
+                      })}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -245,39 +247,58 @@ export function SessionsPage() {
                   onClick={() => setFilterOpen((o) => !o)}
                 >
                   <CalendarRangeIcon className="h-3.5 w-3.5 mr-1.5" />
-                  Filtrer par date
+                  {t("sessions.filterByDate")}
                 </Button>
                 <Button
                   onClick={() => navigate("/quiz/start")}
                   className="h-9 px-4 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-semibold transition-all duration-200 hover:scale-[1.02] shadow-sm"
                 >
                   <Plus className="h-4 w-4 mr-1.5" />
-                  Nouveau quiz
+                  {t("sessions.newQuiz")}
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
 
+        <div className="max-w-6xl mx-auto p-4 md:p-6 lg:p-8">
+          <div className="mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* Stats */}
             {sessions.length > 0 && (
               <div className="grid grid-cols-3 gap-3 mb-5">
-                <div className="rounded-xl border border-border bg-card p-3.5 text-center">
+                <div className="rounded-2xl border border-border bg-card/80 backdrop-blur-sm p-4 text-center hover:shadow-md transition-shadow">
+                  <div className="h-9 w-9 mx-auto rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-2">
+                    <BarChart3 className="h-4 w-4 text-primary" />
+                  </div>
                   <p className="text-2xl font-bold text-foreground">{sessions.length}</p>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                    Total
+                    {t("sessions.total")}
                   </p>
                 </div>
-                <div className="rounded-xl border border-border bg-card p-3.5 text-center">
+                <div className="rounded-2xl border border-border bg-card/80 backdrop-blur-sm p-4 text-center hover:shadow-md transition-shadow">
+                  <div className="h-9 w-9 mx-auto rounded-xl bg-success/10 border border-success/20 flex items-center justify-center mb-2">
+                    <Trophy className="h-4 w-4 text-success" />
+                  </div>
                   <p className="text-2xl font-bold text-success">{completedSessions.length}</p>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                    Complétées
+                    {t("sessions.completed")}
                   </p>
                 </div>
-                <div className="rounded-xl border border-border bg-card p-3.5 text-center">
+                <div className="rounded-2xl border border-border bg-card/80 backdrop-blur-sm p-4 text-center hover:shadow-md transition-shadow">
+                  <div
+                    className="h-9 w-9 mx-auto rounded-xl flex items-center justify-center mb-2"
+                    style={{
+                      background: "rgba(243,112,33,0.1)",
+                      border: "1px solid rgba(243,112,33,0.2)",
+                    }}
+                  >
+                    <Clock className="h-4 w-4" style={{ color: "#f37021" }} />
+                  </div>
                   <p className="text-2xl font-bold" style={{ color: "#f37021" }}>
                     {inProgressSessions.length}
                   </p>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                    En cours
+                    {t("sessions.inProgress")}
                   </p>
                 </div>
               </div>
@@ -292,7 +313,7 @@ export function SessionsPage() {
                   className="h-8 text-[11px] text-muted-foreground"
                   onClick={selectAll}
                 >
-                  Tout sélectionner
+                  {t("sessions.selectAll")}
                 </Button>
                 <Button
                   variant="ghost"
@@ -300,7 +321,7 @@ export function SessionsPage() {
                   className="h-8 text-[11px] text-muted-foreground"
                   onClick={deselectAll}
                 >
-                  Tout désélectionner
+                  {t("sessions.deselectAll")}
                 </Button>
                 {selectedIds.length > 0 && (
                   <Button
@@ -315,7 +336,7 @@ export function SessionsPage() {
                     ) : (
                       <Trash2 className="h-3 w-3 mr-1.5" />
                     )}
-                    Supprimer ({selectedIds.length})
+                    {t("common.delete")} ({selectedIds.length})
                   </Button>
                 )}
               </div>
@@ -340,32 +361,48 @@ export function SessionsPage() {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Loader2 className="h-7 w-7 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Chargement…</p>
+              <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
             </div>
           ) : loadError ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center space-y-3">
-              <p className="text-sm text-destructive">{loadError}</p>
+            <div className="flex flex-col items-center justify-center py-16 text-center space-y-4 animate-in fade-in duration-300">
+              <div className="h-16 w-16 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+                <BarChart3 className="h-8 w-8 text-destructive" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-foreground mb-1">
+                  {t("sessions.loadError")}
+                </p>
+                <p className="text-xs text-muted-foreground max-w-xs">{loadError}</p>
+              </div>
               <Button variant="outline" size="sm" className="rounded-xl" onClick={loadSessions}>
-                Réessayer
+                {t("sessions.retry")}
               </Button>
             </div>
           ) : sessions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="h-20 w-20 rounded-2xl bg-muted border border-border flex items-center justify-center mb-5">
-                <BarChart3 className="h-10 w-10 text-muted-foreground" />
+            <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="relative mb-6">
+                <div className="h-24 w-24 rounded-3xl bg-gradient-to-br from-primary/10 to-[#008c54]/10 border border-primary/20 flex items-center justify-center">
+                  <BarChart3 className="h-12 w-12 text-primary" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-[#f37021]/10 border border-[#f37021]/20 flex items-center justify-center">
+                  <Plus className="h-4 w-4 text-[#f37021]" />
+                </div>
               </div>
-              <h2 className="text-lg font-heading font-bold text-foreground mb-2">
-                Aucune session
+              <h2 className="text-xl font-heading font-bold text-foreground mb-2">
+                {t("sessions.welcome")}
               </h2>
-              <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-                Commence par créer ton premier quiz pour découvrir ton métier RH idéal.
+              <p className="text-sm text-muted-foreground mb-2 max-w-sm">
+                {t("sessions.welcomeDesc")}
+              </p>
+              <p className="text-xs text-muted-foreground/70 mb-6 max-w-xs">
+                2 minutes, 100% gratuit, analyse IA personnalisée
               </p>
               <Button
                 onClick={() => navigate("/quiz/start")}
-                className="h-11 px-6 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-semibold transition-all duration-200 hover:scale-105 shadow-sm"
+                className="h-12 px-8 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-semibold transition-all duration-200 hover:scale-105 shadow-lg gap-2"
               >
-                <Plus className="h-4 w-4 mr-2" />
-                Créer mon premier quiz
+                <Plus className="h-4 w-4" />
+                {t("sessions.startFirst")}
               </Button>
             </div>
           ) : (
@@ -376,7 +413,9 @@ export function SessionsPage() {
                     <div className="h-7 w-7 rounded-lg bg-success/10 border border-success/20 flex items-center justify-center">
                       <Trophy className="h-3.5 w-3.5 text-success" />
                     </div>
-                    <h2 className="text-sm font-heading font-bold text-foreground">Complétées</h2>
+                    <h2 className="text-sm font-heading font-bold text-foreground">
+                      {t("sessions.completed")}
+                    </h2>
                     <span className="text-xs text-muted-foreground rounded-full bg-muted px-2 py-0.5">
                       {completedSessions.length}
                     </span>
@@ -406,7 +445,7 @@ export function SessionsPage() {
                                   {jobLabel(session.finalJobId)}
                                 </h3>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                  {session.answerCount ?? 0} réponses ·{" "}
+                                  {session.answerCount ?? 0} {t("sessions.answers")} ·{" "}
                                   {formatDate(session.createdAt)}
                                 </p>
                               </div>
@@ -415,7 +454,7 @@ export function SessionsPage() {
                           </div>
                           <div className="flex items-center justify-between pt-3 mt-auto border-t border-border">
                             <span className="text-[11px] font-medium text-primary group-hover:underline">
-                              Voir le résultat
+                              {t("sessions.seeResult")}
                             </span>
                             <button
                               type="button"
@@ -451,7 +490,9 @@ export function SessionsPage() {
                     >
                       <Clock className="h-3.5 w-3.5" style={{ color: "#f37021" }} />
                     </div>
-                    <h2 className="text-sm font-heading font-bold text-foreground">En cours</h2>
+                    <h2 className="text-sm font-heading font-bold text-foreground">
+                      {t("sessions.inProgress")}
+                    </h2>
                     <span className="text-xs text-muted-foreground rounded-full bg-muted px-2 py-0.5">
                       {inProgressSessions.length}
                     </span>
@@ -488,10 +529,10 @@ export function SessionsPage() {
                               </div>
                               <div className="min-w-0">
                                 <h3 className="text-sm font-heading font-bold text-foreground truncate">
-                                  Quiz en cours
+                                  {t("sessions.quizInProgress")}
                                 </h3>
                                 <p className="text-xs text-muted-foreground mt-0.5">
-                                  {session.answerCount ?? 0} réponses
+                                  {session.answerCount ?? 0} {t("sessions.answers")}
                                 </p>
                               </div>
                             </div>

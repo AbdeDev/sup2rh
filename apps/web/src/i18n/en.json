@@ -15,10 +15,11 @@
     "confirm": "Confirm"
   },
   "nav": {
+    "home": "Home",
     "quiz": "Quiz",
     "sessions": "My sessions",
     "fiches": "Job profiles",
-    "profile": "Profile",
+    "profile": "My profile",
     "logout": "Log out",
     "backToSite": "Back to site"
   },
@@ -76,12 +77,34 @@
     "allJobs": "All job profiles"
   },
   "sessions": {
-    "title": "My sessions",
+    "title": "My quiz sessions",
+    "history": "History",
     "noSessions": "No sessions yet",
     "noSessionsDesc": "Start a quiz to see your results here",
+    "heroSubtitleEmpty": "Start your first quiz to discover your ideal HR career",
+    "exploreResults": "explore your results",
+    "filteredOfTotal": "{{filtered}} of {{total}} session",
+    "filteredOfTotal_plural": "{{filtered}} of {{total}} sessions",
     "answers": "answers",
     "seeResult": "See result",
-    "inProgress": "In progress"
+    "inProgress": "In progress",
+    "filterByDate": "Filter by date",
+    "newQuiz": "New quiz",
+    "completed": "Completed",
+    "total": "Total",
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "retry": "Retry",
+    "welcome": "Welcome!",
+    "welcomeDesc": "Start by creating your first quiz to find out which HR career is right for you.",
+    "startFirst": "Start my first quiz",
+    "quizInProgress": "Quiz in progress",
+    "sessionCount": "{{count}} session in total",
+    "sessionCount_plural": "{{count}} sessions in total",
+    "loadError": "Could not load sessions",
+    "loadErrorFallback": "Could not load sessions. Check your connection.",
+    "deleteConfirm": "Delete {{count}} session? This cannot be undone.",
+    "deleteConfirm_plural": "Delete {{count}} sessions? This cannot be undone."
   },
   "fiches": {
     "title": "HR Job Profiles",
@@ -96,6 +119,12 @@
     "sessions": "Quiz sessions",
     "memberSince": "Member since",
     "logout": "Log out"
+  },
+  "feedback": {
+    "title": "Leave a review",
+    "thankYou": "Thanks for your feedback!",
+    "ratingLabel": "Rating (optional)",
+    "placeholder": "Your feedback on SUP des RH…"
   },
   "support": {
     "buttonTitle": "Need help?",

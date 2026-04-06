@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FileText, Loader2, Plus, Pencil, Trash2, Inbox, X, Save } from "lucide-react";
 
 import { request } from "../../lib/api";
@@ -18,6 +19,7 @@ async function getBrochures(): Promise<{ items: BrochureItem[] }> {
 }
 
 export function AdminBrochuresPage() {
+  const { t } = useTranslation();
   const [items, setItems] = useState<BrochureItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -113,11 +115,9 @@ export function AdminBrochuresPage() {
           <div>
             <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground mb-1 flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
-              Brochures IA
+              {t("brochures.title")}
             </h1>
-            <p className="text-xs text-muted-foreground">
-              Contenu injecté dans le prompt de l'IA pour enrichir les analyses
-            </p>
+            <p className="text-xs text-muted-foreground">{t("brochures.subtitle")}</p>
           </div>
           <Button
             size="sm"
@@ -130,7 +130,7 @@ export function AdminBrochuresPage() {
             }}
           >
             <Plus className="h-3.5 w-3.5" />
-            Ajouter
+            {t("brochures.add")}
           </Button>
         </div>
 
@@ -145,7 +145,7 @@ export function AdminBrochuresPage() {
             <CardContent className="p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-foreground">
-                  {editId ? "Modifier la brochure" : "Nouvelle brochure"}
+                  {editId ? t("brochures.editBrochure") : t("brochures.newBrochure")}
                 </h3>
                 <button
                   onClick={cancelForm}
@@ -156,13 +156,13 @@ export function AdminBrochuresPage() {
               </div>
               <input
                 type="text"
-                placeholder="Nom de la brochure"
+                placeholder={t("brochures.namePlaceholder")}
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
                 className="w-full h-9 px-3 text-sm rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
               />
               <textarea
-                placeholder="Contenu textuel (informations sur les formations, le programme, etc.)"
+                placeholder={t("brochures.contentPlaceholder")}
                 value={formContent}
                 onChange={(e) => setFormContent(e.target.value)}
                 rows={8}
@@ -179,7 +179,7 @@ export function AdminBrochuresPage() {
                 ) : (
                   <Save className="h-3.5 w-3.5" />
                 )}
-                {editId ? "Mettre à jour" : "Créer"}
+                {editId ? t("brochures.update") : t("common.create")}
               </Button>
             </CardContent>
           </Card>
@@ -193,10 +193,10 @@ export function AdminBrochuresPage() {
           <Card className="border border-border rounded-2xl">
             <CardContent className="p-12 text-center">
               <Inbox className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-sm font-medium text-foreground mb-1">Aucune brochure</p>
-              <p className="text-xs text-muted-foreground">
-                Ajoutez du contenu pour enrichir les analyses IA
+              <p className="text-sm font-medium text-foreground mb-1">
+                {t("brochures.noBrochures")}
               </p>
+              <p className="text-xs text-muted-foreground">{t("brochures.noBrochuresDesc")}</p>
             </CardContent>
           </Card>
         ) : (
