@@ -85,7 +85,7 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="flex h-14 shrink-0 items-center border-b border-border bg-card/95 backdrop-blur-md sticky top-0 z-50">
+      <header className="flex h-14 shrink-0 items-center border-b border-border bg-card shadow-sm sticky top-0 z-50">
         <div className="flex w-full items-center gap-3 px-4 lg:px-6">
           <button
             type="button"
@@ -158,13 +158,22 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar desktop */}
+        {/* Sidebar desktop — fond sombre professionnel */}
         <aside
-          className={`shrink-0 border-r border-border bg-card/50 hidden md:flex flex-col transition-all duration-300 ease-in-out ${
+          className={`shrink-0 hidden md:flex flex-col transition-all duration-300 ease-in-out ${
             sidebarCollapsed ? "w-[60px]" : "w-56"
           }`}
+          style={{ background: "#0d1f35", borderRight: "1px solid #1e3452" }}
         >
-          <nav className="flex-1 p-2.5 space-y-0.5">
+          {/* Logo dans la sidebar */}
+          {!sidebarCollapsed && (
+            <div className="px-4 py-4 border-b border-white/10">
+              <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">
+                Administration
+              </p>
+            </div>
+          )}
+          <nav className="flex-1 p-2 space-y-0.5 pt-3">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPath === item.path || currentPath.startsWith(item.path + "/");
@@ -177,16 +186,24 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
                     sidebarCollapsed ? "px-0 py-2.5 justify-center" : "px-3 py-2.5"
                   } ${
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-accent/60"
+                      ? "bg-white/15 text-white shadow-sm"
+                      : "text-white/50 hover:text-white hover:bg-white/8"
                   }`}
                 >
-                  <Icon className="h-4 w-4 shrink-0" />
+                  <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-blue-400" : ""}`} />
                   {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                  {!sidebarCollapsed && isActive && (
+                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-400 shrink-0" />
+                  )}
                 </button>
               );
             })}
           </nav>
+          {!sidebarCollapsed && (
+            <div className="p-3 border-t border-white/10">
+              <p className="text-[10px] text-white/30 text-center">RH&MOI Admin v3</p>
+            </div>
+          )}
         </aside>
 
         {/* Mobile bottom nav — scrollable horizontally */}

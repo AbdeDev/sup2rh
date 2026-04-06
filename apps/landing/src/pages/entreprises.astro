@@ -469,8 +469,12 @@ const formations = [
     });
   }
 
-  const currentLangCheck = localStorage.getItem("rhmoi_lang") || "fr";
-  if (currentLangCheck === "en") {
+</script>
+
+<script>
+  // i18n — doit être dans un script module (pas define:vars) pour que import() fonctionne
+  const currentLangCheckEnt = localStorage.getItem("rhmoi_lang") || "fr";
+  if (currentLangCheckEnt === "en") {
     import("../i18n/en.json").then((mod) => {
       const dict = mod.default || mod;
       function apply() {

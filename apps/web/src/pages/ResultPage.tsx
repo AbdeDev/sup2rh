@@ -308,7 +308,6 @@ export function ResultPage() {
       : "jobId" in item && item.jobId === activeJobId;
   const answerCount = session?.answers?.length ?? 0;
   const confidencePercent = Math.round((analysis?.confidence ?? 0) * 100);
-  const remainingPercent = Math.max(0, 100 - confidencePercent);
   const topJobLabel =
     analysis?.job?.name ?? (analysis?.jobId ? jobLabel(analysis.jobId) : "Métier RH");
   const fiche = selectedJob ?? analysis?.job ?? null;
@@ -430,74 +429,65 @@ export function ResultPage() {
 
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-3 sm:px-5 md:px-6 lg:px-8 py-4 sm:py-6 md:py-10 space-y-4 sm:space-y-6 md:space-y-8">
-          {/* Bloc explicite : domaine RH auquel tu es lié (toujours celui du résultat, pas la sélection graphique) */}
-          <Card className="border-[#008c54]/30 bg-[#008c54]/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <CardContent className="p-4 sm:p-5">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">
-                Domaine RH auquel tu es lié
-              </p>
-              <p className="text-lg sm:text-xl font-heading font-bold text-foreground">
-                {analysis?.job?.category ??
-                  (analysis?.jobId && allJobs.find((j) => j.id === analysis.jobId)?.category) ??
-                  topJobLabel ??
-                  "Métier RH"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Métier le plus proche :{" "}
-                <span className="font-semibold text-foreground">{topJobLabel}</span>
-              </p>
-            </CardContent>
-          </Card>
+          {/* Résultat principal — bannière hero colorée */}
+          <div
+            className="relative overflow-hidden rounded-3xl animate-in fade-in slide-in-from-bottom-4 duration-500"
+            style={{
+              background: "linear-gradient(135deg, #004080 0%, #005fac 40%, #007a3d 100%)",
+            }}
+          >
+            {/* Déco bg */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full bg-white/[0.05] blur-2xl" />
+              <div className="absolute -bottom-8 -left-8 w-48 h-48 rounded-full bg-white/[0.04] blur-2xl" />
+            </div>
 
-          {/* Résultat principal — Grand domaine RH */}
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="text-center">
-              <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-success/15 border border-success/25 mb-5 transition-transform duration-200 hover:scale-105">
-                <CheckCircle2 className="h-8 w-8 text-success" />
+            <div className="relative p-6 sm:p-8 text-center text-white">
+              {/* Checkmark animé */}
+              <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/20 border border-white/30 mb-5 shadow-lg">
+                <CheckCircle2 className="h-7 w-7 text-white" />
               </div>
-              {/* Domaine = titre principal */}
+
+              <p className="text-xs font-semibold text-white/60 uppercase tracking-[0.2em] mb-2">
+                Ton résultat de quiz
+              </p>
+
               {analysis?.job?.category ? (
                 <>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2">
-                    Ton domaine RH
-                  </p>
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-2 leading-tight">
+                  <h1 className="text-2xl sm:text-3xl md:text-[2.2rem] font-heading font-extrabold text-white mb-2 leading-tight tracking-tight">
                     {analysis.job.category}
                   </h1>
-                  <p className="text-sm text-muted-foreground mb-3">
+                  <p className="text-sm text-white/75 mb-5">
                     Métier le plus proche :{" "}
-                    <span className="font-semibold text-foreground">{topJobLabel}</span>
+                    <span className="font-bold text-white">{topJobLabel}</span>
                   </p>
                 </>
               ) : (
                 <>
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-foreground mb-2">
+                  <h1 className="text-2xl sm:text-3xl md:text-[2.2rem] font-heading font-extrabold text-white mb-2">
                     {topJobLabel}
                   </h1>
-                  <p className="text-sm text-muted-foreground mb-3">
+                  <p className="text-sm text-white/75 mb-5">
                     Domaine : {selectedJob?.category ?? "Métier RH"}
                   </p>
                 </>
               )}
-              <div className="flex items-center justify-center gap-3 flex-wrap">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-sm font-semibold text-primary">
+
+              {/* Chips stats */}
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 border border-white/30 px-3.5 py-1.5 text-sm font-bold text-white backdrop-blur-sm">
+                  <Sparkles className="h-3.5 w-3.5" />
                   {confidencePercent}% de correspondance
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted border border-border px-3 py-1 text-xs text-muted-foreground">
-                  {answerCount} question{answerCount > 1 ? "s" : ""} répondue
-                  {answerCount > 1 ? "s" : ""}
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/20 px-3 py-1.5 text-xs text-white/80">
+                  {answerCount} réponse{answerCount > 1 ? "s" : ""}
                 </span>
                 {categoryJobs.length > 1 && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#008c54]/10 border border-[#008c54]/20 px-3 py-1 text-xs font-semibold text-[#008c54]">
-                    {categoryJobs.length} fiches dans ce domaine
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/20 px-3 py-1.5 text-xs text-white/80">
+                    {categoryJobs.length} fiches
                   </span>
                 )}
               </div>
-              {!!remainingPercent && (
-                <p className="mt-3 text-xs text-muted-foreground max-w-md mx-auto">
-                  Il reste {remainingPercent}% de marge pour explorer d&apos;autres domaines RH.
-                </p>
-              )}
             </div>
           </div>
 
@@ -1027,12 +1017,21 @@ export function ResultPage() {
           </Card>
 
           {/* CTA Contact */}
-          <Card
-            className="border border-primary/30 bg-primary/5 animate-in fade-in slide-in-from-bottom-4 duration-500"
-            style={{ animationDelay: "200ms" }}
+          <div
+            className="relative overflow-hidden rounded-3xl animate-in fade-in slide-in-from-bottom-4 duration-500 border border-[#f37021]/20"
+            style={{
+              animationDelay: "200ms",
+              background: "linear-gradient(135deg, #fff7f0 0%, #fff 60%, #f0f9ff 100%)",
+            }}
           >
-            <CardContent className="p-5 md:p-8 text-center">
-              <h3 className="text-lg font-heading font-semibold text-foreground mb-2">
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-0 right-0 w-48 h-48 rounded-full bg-[#f37021]/[0.06] blur-2xl" />
+            </div>
+            <div className="relative p-5 md:p-8 text-center dark:bg-card dark:border-[#f37021]/15">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f37021]/15 border border-[#f37021]/25 mb-4">
+                <Briefcase className="h-6 w-6 text-[#f37021]" />
+              </div>
+              <h3 className="text-lg font-heading font-bold text-foreground mb-2">
                 Intéressé par ce métier ?
               </h3>
               <p className="text-sm text-muted-foreground mb-5 max-w-md mx-auto">
@@ -1080,8 +1079,8 @@ export function ResultPage() {
                   Être contacté par SUP des RH
                 </Button>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Actions secondaires */}
           <div
