@@ -30,6 +30,9 @@ class ContactRequest
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $explanation = null;
 
+    #[ORM\Column(type: Types::STRING, length: 30, nullable: true)]
+    private ?string $phone = null;
+
     /** Scores par métier (JSON) */
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private ?array $scores = null;
@@ -94,6 +97,17 @@ class ContactRequest
     public function setJobId(?string $jobId): static
     {
         $this->jobId = $jobId;
+        return $this;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(?string $phone): static
+    {
+        $this->phone = $phone;
         return $this;
     }
 

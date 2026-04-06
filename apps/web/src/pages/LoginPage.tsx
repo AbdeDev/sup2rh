@@ -3,6 +3,7 @@ import { ArrowRight, ShieldCheck, Sparkles, ChevronLeft } from "lucide-react";
 import { LoginForm } from "../components/login-form";
 import { AppLogo } from "../components/AppLogo";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export function LoginPage() {
       {/* Bouton retour accueil */}
       <div className="absolute top-4 left-4 md:top-6 md:left-6 z-50">
         <a
-          href="rhetmoi-supdesrh.fr"
+          href="https://www.rhetmoi-supdesrh.fr/"
           className="inline-flex items-center justify-center h-10 w-10 md:h-auto md:w-auto md:px-4 md:py-2 rounded-full bg-background/80 backdrop-blur-md border border-border shadow-sm text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           title="Retour à l'accueil"
         >
@@ -32,6 +33,7 @@ export function LoginPage() {
       </div>
 
       <div className="absolute top-4 right-4 md:top-6 md:right-6 z-50">
+        <LanguageSwitcher />
         <ThemeToggle />
       </div>
 

@@ -1,0 +1,88 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "school": "L'école",
+    "companies": "Entreprises",
+    "login": "Se connecter"
+  },
+  "hero": {
+    "badge": "Quiz d'orientation RH",
+    "title": "Trouve le <span class=\"highlight\">métier RH</span><br/>qui te ressemble",
+    "subtitle": "Réponds à 15 questions et découvre les métiers des Ressources Humaines faits pour toi — Recrutement, Paie, QVCT, Formation et plus encore.",
+    "cta": "Faire le quiz — c'est gratuit",
+    "ctaSecondary": "Explorer les métiers",
+    "proof": "+2 000 étudiants ont déjà trouvé leur voie",
+    "statJobs": "Fiches métiers",
+    "statQuestions": "Questions",
+    "statDuration": "Durée du quiz",
+    "statFree": "Gratuit"
+  },
+  "jobs": {
+    "badge": "Découvrir",
+    "title": "Fiches métiers RH",
+    "desc": "Parcours les métiers RH sans créer de compte. Connecte-toi pour obtenir une recommandation personnalisée.",
+    "seeAll": "Voir toutes les fiches dans l'app →",
+    "seeDetail": "Voir le détail de la fiche →",
+    "showMore": "Voir les {count} autres fiches métiers",
+    "hiring": "embauche",
+    "turnover": "turnover"
+  },
+  "steps": {
+    "badge": "Comment ça marche",
+    "title": "En 3 étapes simples",
+    "desc": "Pas d'inscription longue, pas de mot de passe. Juste un quiz intelligent.",
+    "step1Title": "Connecte-toi",
+    "step1Desc": "Crée un compte en 10 secondes avec ton email. Pas de mot de passe — juste un lien magique.",
+    "step2Title": "Fais le quiz",
+    "step2Desc": "15 questions rapides pour cerner ton profil. Tu lis une affirmation, tu valides ou pas — c'est tout.",
+    "step3Title": "Découvre ton résultat",
+    "step3Desc": "Reçois une recommandation personnalisée avec fiche métier, fourchette salariale et taux d'embauche."
+  },
+  "school": {
+    "eyebrow": "Derrière ce quiz",
+    "title": "SUP des RH — L'école 100% spécialisée en RH depuis 1998",
+    "desc": "Toutes nos formations sont dispensées en alternance et reconnues par l'État (titres RNCP niveaux 6 et 7). Rejoignez les +8 500 alumnis SUP des RH qui évoluent dans tous les secteurs.",
+    "cta": "Découvrir l'école →",
+    "ctaSecondary": "Espace entreprises",
+    "stat1Val": "27 ans",
+    "stat1Lbl": "D'expérience (depuis 1998)",
+    "stat2Val": "100%",
+    "stat2Lbl": "Placement en alternance",
+    "stat3Val": "600+",
+    "stat3Lbl": "Entreprises partenaires",
+    "stat4Val": "+8 500",
+    "stat4Lbl": "Alumnis actifs"
+  },
+  "ent": {
+    "eyebrow": "Espace entreprises",
+    "title": "Recrutez les talents RH de demain",
+    "subtitle": "SUP des RH forme des professionnels RH opérationnels dès la 1ère année. 600+ entreprises partenaires font confiance à notre réseau.",
+    "svc1Title": "Déposer une offre",
+    "svc1Desc": "Alternance ou stage — nos étudiants sont disponibles tout au long de l'année.",
+    "svc2Title": "Recruter un alumni",
+    "svc2Desc": "+8 500 diplômés actifs dans tous les secteurs. Accédez à notre vivier de talents RH.",
+    "svc3Title": "Devenir partenaire",
+    "svc3Desc": "Intégrez notre réseau d'entreprises partenaires et participez à la formation des futurs RH.",
+    "svc4Title": "Interventions & masterclass",
+    "svc4Desc": "Partagez votre expertise en intervenant dans nos formations. Visibilité et engagement RSE.",
+    "stat1Val": "600+",
+    "stat1Lbl": "Entreprises partenaires",
+    "stat2Val": "100%",
+    "stat2Lbl": "Placement en alternance",
+    "stat3Val": "48h",
+    "stat3Lbl": "Délai de réponse",
+    "stat4Val": "27 ans",
+    "stat4Lbl": "D'expérience RH",
+    "ctaPrimary": "Déposer une demande",
+    "ctaSecondary": "Découvrir l'espace entreprises →"
+  },
+  "footer": {
+    "tagline": "Orientation métiers RH, en toute confiance.",
+    "linkSchool": "L'école",
+    "linkCompanies": "Entreprises",
+    "linkTerms": "Conditions d'utilisation",
+    "linkPrivacy": "Politique de confidentialité",
+    "linkQuiz": "Accéder au quiz",
+    "copy": "Tous droits réservés"
+  }
+}

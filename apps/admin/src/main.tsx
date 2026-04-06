@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "./theme/ThemeContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import "./i18n";
 import "./index.css";
 import App from "./App.tsx";
 

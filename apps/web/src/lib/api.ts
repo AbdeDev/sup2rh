@@ -134,6 +134,7 @@ export async function getQuizQuestions(): Promise<QuizQuestionsResponse> {
 export async function submitContactRequest(data: {
   sessionId: string;
   email?: string;
+  phone?: string;
   jobId?: string;
   explanation?: string;
   scores?: Record<string, number>;
@@ -264,5 +265,17 @@ export interface AnalysisResult {
 export async function analyzeQuiz(sessionId: string): Promise<AnalysisResult> {
   return request<AnalysisResult>(`/quiz/session/${sessionId}/analyze`, {
     method: "POST",
+  });
+}
+
+export async function submitSupportTicket(data: {
+  email: string;
+  type: "support" | "feature_request";
+  subject: string;
+  message: string;
+}): Promise<{ id: string; message: string }> {
+  return request<{ id: string; message: string }>("/support", {
+    method: "POST",
+    body: JSON.stringify(data),
   });
 }

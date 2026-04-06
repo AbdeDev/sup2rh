@@ -8,6 +8,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 
 function useQueryParam(name: string) {
   const { search } = useLocation();
@@ -51,6 +52,7 @@ export function VerifyPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6 relative">
       <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
         <ThemeToggle />
       </div>
 
