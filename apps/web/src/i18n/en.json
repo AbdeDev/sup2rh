@@ -123,6 +123,7 @@
   "feedback": {
     "title": "Leave a review",
     "thankYou": "Thanks for your feedback!",
+    "thankYouSub": "Your feedback helps us improve the experience",
     "ratingLabel": "Rating (optional)",
     "placeholder": "Your feedback on SUP des RH…"
   },
@@ -136,6 +137,7 @@
     "suggestionMessagePlaceholder": "Describe your suggestion…",
     "successHelp": "Request sent!",
     "successSuggestion": "Suggestion sent!",
-    "allFieldsRequired": "All fields are required"
+    "allFieldsRequired": "All fields are required",
+    "errorGeneric": "Error while sending"
   }
 }

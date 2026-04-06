@@ -132,22 +132,27 @@ const formations = [
 
       <!-- ── Hero ── -->
       <section class="ent-hero">
+        <!-- Orbes décoratifs -->
+        <div class="orb orb-blue" style="width:350px;height:350px;top:-100px;right:-60px;" aria-hidden="true"></div>
+        <div class="orb orb-green" style="width:260px;height:260px;bottom:10%;left:-80px;" aria-hidden="true"></div>
+        <div class="orb orb-orange" style="width:180px;height:180px;top:30%;left:50%;" aria-hidden="true"></div>
+
         <span class="hero-badge" data-i18n="entreprises.heroBadge">Espace entreprises</span>
         <h1 class="hero-title" data-i18n="entreprises.heroTitle" data-i18n-html>
-          Recrutez les talents RH <span class="highlight">de demain</span>
+          Recrutez les talents RH <span class="highlight gradient-text">de demain</span>
         </h1>
         <p class="hero-sub" data-i18n="entreprises.heroSubtitle">
           SUP des RH est l'école de référence 100% RH depuis 1998. Plus de 600 entreprises partenaires nous font confiance pour former leurs futurs alternants, recruter leurs talents et développer leurs équipes RH.
         </p>
         <div class="hero-actions">
-          <a href="#contact" class="btn-primary" data-i18n="entreprises.heroCta">Déposer ma demande →</a>
+          <a href="#contact" class="btn-primary btn-glow" data-i18n="entreprises.heroCta">Déposer ma demande →</a>
           <a href="https://www.supdesrh.com/espace-entreprises/" target="_blank" rel="noopener noreferrer" class="btn-secondary" data-i18n="entreprises.heroCtaSecondary">
             Portail entreprises ↗
           </a>
         </div>
 
         <!-- Stats bande -->
-        <div class="hero-stats-band">
+        <div class="hero-stats-band reveal">
           {stats.map((s) => (
             <div class="hstat">
               <span class="hstat-icon">{s.icon}</span>
@@ -160,7 +165,7 @@ const formations = [
 
       <!-- ── Services ── -->
       <section class="section-services">
-        <div class="section-header">
+        <div class="section-header reveal">
           <div class="section-badge" data-i18n="entreprises.servicesBadge">Nos services</div>
           <h2 class="section-title" data-i18n="entreprises.servicesTitle">Comment pouvons-nous vous aider ?</h2>
           <p class="section-desc" data-i18n="entreprises.servicesDesc">SUP des RH met à votre disposition plusieurs dispositifs pour trouver et développer les profils RH dont vous avez besoin.</p>
@@ -182,7 +187,7 @@ const formations = [
 
       <!-- ── Processus ── -->
       <section class="section-process">
-        <div class="section-header">
+        <div class="section-header reveal">
           <div class="section-badge section-badge-green" data-i18n="entreprises.processBadge">Comment ça marche</div>
           <h2 class="section-title" data-i18n="entreprises.processTitle">Recruter un alternant en 4 étapes</h2>
           <p class="section-desc" data-i18n="entreprises.processDesc">Un processus simple et rapide, accompagné par notre équipe du premier contact à l'intégration.</p>
@@ -208,7 +213,7 @@ const formations = [
 
       <!-- ── Avantages ── -->
       <section class="section-avantages">
-        <div class="section-header">
+        <div class="section-header reveal">
           <div class="section-badge section-badge-orange" data-i18n="entreprises.avantagesBadge">Pourquoi nous choisir</div>
           <h2 class="section-title" data-i18n="entreprises.avantagesTitle">Pourquoi recruter chez SUP des RH ?</h2>
           <p class="section-desc" data-i18n="entreprises.avantagesDesc">Des apprenants rigoureusement sélectionnés, formés par des praticiens RH, accompagnés tout au long de leur parcours.</p>
@@ -230,7 +235,7 @@ const formations = [
 
       <!-- ── Profils disponibles ── -->
       <section class="section-formations">
-        <div class="section-header">
+        <div class="section-header reveal">
           <div class="section-badge" data-i18n="entreprises.formationsBadge">Profils disponibles</div>
           <h2 class="section-title" data-i18n="entreprises.formationsTitle">Les formations de nos alternants</h2>
           <p class="section-desc" data-i18n="entreprises.formationsDesc">De Bac+3 à Bac+6, des profils formés aux réalités du terrain RH, tous en alternance et titulaires d'un diplôme reconnu par l'État.</p>
@@ -251,7 +256,7 @@ const formations = [
 
       <!-- ── Témoignages ── -->
       <section class="section-temoignages">
-        <div class="section-header">
+        <div class="section-header reveal">
           <div class="section-badge section-badge-purple" data-i18n="entreprises.temoignagesBadge">Ils nous font confiance</div>
           <h2 class="section-title" data-i18n="entreprises.temoignagesTitle">Ce que disent nos entreprises partenaires</h2>
         </div>
@@ -529,8 +534,10 @@ const formations = [
   .main { flex: 1; max-width: 960px; margin: 0 auto; width: 100%; padding: 0 1.5rem; }
 
   /* ── Buttons ── */
-  .btn-primary { display: inline-flex; align-items: center; padding: 0.75rem 1.75rem; border-radius: 999px; background: #004080; color: #fff !important; font-weight: 700; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 20px rgba(0,64,128,0.35); transition: transform 0.15s, background 0.15s; }
-  .btn-primary:hover { transform: translateY(-2px); background: #003366; }
+  .btn-primary { display: inline-flex; align-items: center; padding: 0.8rem 1.85rem; border-radius: 999px; background: linear-gradient(135deg, #004080, #0059b3); color: #fff !important; font-weight: 700; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 20px rgba(0,64,128,0.35); transition: transform 0.2s, box-shadow 0.2s; }
+  .btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 30px rgba(0,64,128,0.5); }
+  .btn-glow { animation: btn-pulse 3s ease-in-out infinite; }
+  @keyframes btn-pulse { 0%, 100% { box-shadow: 0 4px 20px rgba(0,64,128,0.35); } 50% { box-shadow: 0 4px 30px rgba(0,64,128,0.55), 0 0 60px rgba(0,64,128,0.15); } }
   .btn-secondary { display: inline-flex; align-items: center; padding: 0.75rem 1.75rem; border-radius: 999px; background: transparent; color: var(--landing-text); font-weight: 600; font-size: 0.95rem; text-decoration: none; border: 1.5px solid var(--landing-border); transition: all 0.15s; }
   .btn-secondary:hover { background: var(--landing-bg-soft); border-color: #004080; }
 
@@ -547,7 +554,14 @@ const formations = [
   .section-desc { color: var(--landing-muted); font-size: 0.9rem; max-width: 36rem; margin: 0 auto; line-height: 1.6; }
 
   /* ── Hero ── */
-  .ent-hero { text-align: center; padding: 4.5rem 0 0; animation: heroFadeIn 0.6s ease-out; }
+  .ent-hero {
+    text-align: center; padding: 5rem 0 0; animation: heroFadeIn 0.6s ease-out;
+    position: relative;
+    background: radial-gradient(ellipse 90% 50% at 50% 20%, rgba(0,64,128,0.06) 0%, transparent 60%);
+  }
+  html.dark .ent-hero {
+    background: radial-gradient(ellipse 90% 50% at 50% 20%, rgba(56,189,248,0.04) 0%, transparent 60%);
+  }
   @keyframes heroFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   .hero-badge { display: inline-block; padding: 0.35rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em; background: rgba(0,64,128,0.1); color: #004080; border: 1px solid rgba(0,64,128,0.2); margin-bottom: 1.5rem; }
   html.dark .hero-badge { background: rgba(56,189,248,0.1); color: #38bdf8; border-color: rgba(56,189,248,0.2); }
@@ -558,7 +572,8 @@ const formations = [
   .hero-actions { display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap; }
 
   /* Stats bande */
-  .hero-stats-band { display: flex; justify-content: center; gap: 0; margin-top: 3rem; background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 20px; overflow: hidden; }
+  .hero-stats-band { display: flex; justify-content: center; gap: 0; margin-top: 3rem; background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 20px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.06); }
+  html.dark .hero-stats-band { box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
   .hstat { flex: 1; text-align: center; padding: 1.5rem 0.75rem; border-right: 1px solid var(--landing-border); }
   .hstat:last-child { border-right: none; }
   .hstat-icon { font-size: 1.3rem; display: block; margin-bottom: 0.4rem; }
@@ -568,8 +583,9 @@ const formations = [
   /* ── Services ── */
   .section-services { padding: 4rem 0 3.5rem; }
   .services-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.25rem; }
-  .service-card { background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 16px; overflow: hidden; padding: 0; display: flex; flex-direction: column; transition: box-shadow 0.2s, transform 0.2s; }
-  .service-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.1); transform: translateY(-3px); }
+  .service-card { background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 16px; overflow: hidden; padding: 0; display: flex; flex-direction: column; transition: box-shadow 0.3s, transform 0.3s, border-color 0.3s; }
+  .service-card:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.1); transform: translateY(-4px); border-color: rgba(0,64,128,0.2); }
+  html.dark .service-card:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.3); border-color: rgba(56,189,248,0.2); }
   .service-top-bar { height: 4px; flex-shrink: 0; }
   .service-icon { font-size: 1.75rem; padding: 1.25rem 1.5rem 0; display: block; }
   .service-title { font-size: 0.95rem; font-weight: 700; color: var(--landing-text); margin: 0.5rem 1.5rem 0; font-family: "Figtree","Montserrat",system-ui,sans-serif; line-height: 1.3; }
@@ -582,7 +598,8 @@ const formations = [
   .process-timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
   .process-step { display: flex; flex-direction: column; align-items: center; text-align: center; }
   .step-connector { display: flex; align-items: center; width: 100%; position: relative; justify-content: center; margin-bottom: 1rem; }
-  .step-dot { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #004080, #008c54); display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 1; box-shadow: 0 4px 14px rgba(0,64,128,0.3); }
+  .step-dot { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #004080, #008c54); display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 1; box-shadow: 0 4px 14px rgba(0,64,128,0.3); transition: transform 0.3s, box-shadow 0.3s; }
+  .process-step:hover .step-dot { transform: scale(1.12); box-shadow: 0 6px 24px rgba(0,64,128,0.4); }
   .step-num { font-size: 0.8rem; font-weight: 800; color: #fff; font-family: "Figtree","Montserrat",system-ui,sans-serif; }
   .step-line { position: absolute; height: 2px; background: linear-gradient(90deg, rgba(0,64,128,0.25), rgba(0,140,84,0.25)); left: calc(50% + 26px); right: -50%; top: 50%; transform: translateY(-50%); }
   .step-content { padding: 0 0.75rem; }
@@ -593,8 +610,9 @@ const formations = [
   /* ── Avantages ── */
   .section-avantages { padding: 0 0 3.5rem; }
   .avantages-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.1rem; }
-  .avantage-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1.25rem; background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 14px; transition: box-shadow 0.2s; }
-  .avantage-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+  .avantage-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1.25rem; background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 16px; transition: box-shadow 0.3s, transform 0.3s, border-color 0.3s; }
+  .avantage-item:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-3px); border-color: rgba(0,64,128,0.2); }
+  html.dark .avantage-item:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.25); border-color: rgba(56,189,248,0.15); }
   .avantage-icon-wrap { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .avantage-icon { font-size: 1.35rem; line-height: 1; }
   .avantage-title { font-size: 0.85rem; font-weight: 700; color: var(--landing-text); margin: 0 0 0.3rem; }
@@ -624,7 +642,7 @@ const formations = [
 
   /* ── Contact Branded (full-width) ── */
   .section-contact-branded {
-    background: linear-gradient(135deg, #002855 0%, #003a6e 45%, #004080 100%);
+    background: linear-gradient(135deg, #001d3d 0%, #002855 30%, #003a6e 60%, #004080 100%);
     position: relative;
     overflow: hidden;
   }
@@ -632,8 +650,9 @@ const formations = [
     content: "";
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse 70% 80% at 20% 50%, rgba(0,140,84,0.15) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 60% at 80% 20%, rgba(56,189,248,0.08) 0%, transparent 50%);
+    background: radial-gradient(ellipse 70% 80% at 15% 50%, rgba(0,140,84,0.18) 0%, transparent 55%),
+                radial-gradient(ellipse 50% 60% at 85% 20%, rgba(56,189,248,0.1) 0%, transparent 50%),
+                radial-gradient(ellipse 40% 40% at 60% 80%, rgba(243,112,33,0.06) 0%, transparent 50%);
     pointer-events: none;
   }
   .contact-branded-inner {
@@ -727,14 +746,29 @@ const formations = [
   .contact-feedback.error { background: rgba(220,38,38,0.08); color: #dc2626; border: 1px solid rgba(220,38,38,0.2); }
   .btn-submit {
     display: flex; align-items: center; justify-content: center; width: 100%;
-    padding: 0.85rem 1.75rem; border-radius: 12px;
-    background: linear-gradient(135deg, #004080, #003366);
+    padding: 0.9rem 1.75rem; border-radius: 14px;
+    background: linear-gradient(135deg, #004080, #0059b3);
     color: #fff; font-weight: 700; font-size: 0.9rem; border: none;
     cursor: pointer; font-family: inherit;
     box-shadow: 0 4px 20px rgba(0,64,128,0.45);
-    transition: transform 0.15s, box-shadow 0.15s;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
   }
-  .btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,64,128,0.55); }
+  .btn-submit::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.15);
+    border-radius: 50%;
+    transform: translate(-50%,-50%);
+    transition: width 0.5s, height 0.5s;
+  }
+  .btn-submit:hover::after { width: 300px; height: 300px; }
+  .btn-submit:hover:not(:disabled) { transform: translateY(-2px) scale(1.01); box-shadow: 0 8px 30px rgba(0,64,128,0.6); }
   .btn-submit:disabled { opacity: 0.65; cursor: not-allowed; }
 
   /* ── Footer ── */

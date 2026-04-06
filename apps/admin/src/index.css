@@ -71,13 +71,13 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background: var(--background);
-  background-image: linear-gradient(160deg, #f4f7fb 0%, #eef3fa 60%, #f0f5fd 100%);
+  background-image: linear-gradient(160deg, #f4f7fb 0%, #eff4fa 35%, #f0f4f9 65%, #f8f7f5 100%);
   background-attachment: fixed;
   color: var(--foreground);
 }
 
 .dark body {
-  background-image: linear-gradient(160deg, #0c111d 0%, #0f1726 60%, #0c1221 100%);
+  background-image: linear-gradient(160deg, #0c111d 0%, #0f1726 40%, #0c1221 70%, #0d1320 100%);
 }
 
 #root {
