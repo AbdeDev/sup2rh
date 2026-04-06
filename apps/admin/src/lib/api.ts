@@ -414,10 +414,6 @@ export function getExportCsvUrl(type: "contact-requests" | "company-contacts"): 
   return `${API_BASE_URL}/admin/${type}/export`;
 }
 
-export function getAdminToken(): string | null {
-  return localStorage.getItem(ADMIN_TOKEN_KEY);
-}
-
 export async function downloadCsv(type: "contact-requests" | "company-contacts"): Promise<void> {
   const token = getAdminToken();
   const res = await fetch(getExportCsvUrl(type), {
