@@ -84,6 +84,10 @@ export function AdminFeedbacksPage() {
         <div className="mb-6">
           <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
             <div>
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#008c54]/10 border border-[#008c54]/20 text-[#008c54] text-[10px] font-semibold mb-2">
+                <MessageSquare className="h-3 w-3" />
+                Avis
+              </div>
               <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground mb-1">
                 Avis utilisateurs
               </h1>

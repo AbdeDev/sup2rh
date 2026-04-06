@@ -123,7 +123,7 @@ const pedagogie = [
           <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
           <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
-        <a href={WEB_APP_URL + "/login"} class="btn-connect">Se connecter</a>
+        <a href={WEB_APP_URL + "/login"} class="btn-connect" data-i18n="nav.login">Se connecter</a>
         <button type="button" class="btn-menu" id="mobile-menu-toggle" aria-label="Ouvrir le menu">
           <span class="menu-line"></span>
           <span class="menu-line"></span>
@@ -135,7 +135,7 @@ const pedagogie = [
         <a href="/entreprises" class="mobile-nav-link" data-i18n="nav.companies">Entreprises</a>
         <div class="mobile-nav-actions">
           <button type="button" class="btn-lang" id="mobile-lang-toggle" aria-label="Changer la langue">FR</button>
-          <a href={WEB_APP_URL + "/login"} class="btn-connect" style="font-size:0.82rem;">Se connecter</a>
+          <a href={WEB_APP_URL + "/login"} class="btn-connect" style="font-size:0.82rem;" data-i18n="nav.login">Se connecter</a>
         </div>
       </nav>
     </header>
@@ -144,17 +144,17 @@ const pedagogie = [
 
       <!-- ── Hero ── -->
       <section class="ecole-hero">
-        <span class="hero-badge">L'école de référence 100% RH</span>
-        <h1 class="hero-title">
+        <span class="hero-badge" data-i18n="ecole.heroBadge">L'école de référence 100% RH</span>
+        <h1 class="hero-title" data-i18n="ecole.heroTitle" data-i18n-html>
           <span class="highlight">SUP des RH</span><br/>
           Former les professionnels RH depuis 1998
         </h1>
-        <p class="hero-sub">
+        <p class="hero-sub" data-i18n="ecole.heroSubtitle">
           École spécialisée dans les métiers des Ressources Humaines, SUP des RH accompagne chaque année des centaines d'apprenants vers des postes RH opérationnels, en France et à l'international.
         </p>
         <div class="hero-actions">
-          <a href="#formations" class="btn-primary">Découvrir nos formations</a>
-          <a href="/entreprises" class="btn-secondary">Espace entreprises →</a>
+          <a href="#formations" class="btn-primary" data-i18n="ecole.heroCta">Découvrir nos formations</a>
+          <a href="/entreprises" class="btn-secondary" data-i18n="ecole.heroCtaSecondary">Espace entreprises →</a>
         </div>
       </section>
 
@@ -174,21 +174,21 @@ const pedagogie = [
       <!-- ── Présentation ── -->
       <section class="section-presentation">
         <div class="section-header">
-          <div class="section-badge">Notre mission</div>
-          <h2 class="section-title">L'école innovante dédiée aux RH depuis 1998</h2>
+          <div class="section-badge" data-i18n="ecole.presentationBadge">Notre mission</div>
+          <h2 class="section-title" data-i18n="ecole.presentationTitle">L'école innovante dédiée aux RH depuis 1998</h2>
         </div>
         <div class="presentation-content">
           <div class="presentation-text">
-            <p>
+            <p data-i18n="ecole.presentationText1" data-i18n-html>
               Depuis sa création, la vocation de SUP des RH est de <strong>former les professionnels des Ressources Humaines sur toutes les fonctions et métiers RH</strong> : recrutement, formation, paie, gestion de compétences, expatriation, droit social, RSE, etc.
             </p>
-            <p>
+            <p data-i18n="ecole.presentationText2" data-i18n-html>
               Notre école à taille humaine se donne pour mission de former les professionnels RH <strong>en impliquant les RRH et DRH partenaires</strong> dans la formation et l'évaluation de ses apprenants.
             </p>
-            <p>
+            <p data-i18n="ecole.presentationText3" data-i18n-html>
               Dans un monde de plus en plus connecté, SUP des RH a construit un projet pédagogique focalisé sur <strong>l'innovation, l'accompagnement personnalisé, la recherche de l'excellence et l'employabilité</strong> de ses stagiaires.
             </p>
-            <a href="https://www.supdesrh.com/" target="_blank" rel="noopener noreferrer" class="lien-site">
+            <a href="https://www.supdesrh.com/" target="_blank" rel="noopener noreferrer" class="lien-site" data-i18n="ecole.presentationLink">
               Visiter le site officiel supdesrh.com →
             </a>
           </div>
@@ -196,29 +196,29 @@ const pedagogie = [
             <div class="highlight-item">
               <span class="highlight-icon">🎓</span>
               <div>
-                <p class="highlight-title">Titres RNCP reconnus par l'État</p>
-                <p class="highlight-desc">Niveaux 6 et 7 — reconnus en France et en Europe</p>
+                <p class="highlight-title" data-i18n="ecole.highlight1Title">Titres RNCP reconnus par l'État</p>
+                <p class="highlight-desc" data-i18n="ecole.highlight1Desc">Niveaux 6 et 7 — reconnus en France et en Europe</p>
               </div>
             </div>
             <div class="highlight-item">
               <span class="highlight-icon">🤝</span>
               <div>
-                <p class="highlight-title">100% en alternance</p>
-                <p class="highlight-desc">Études financées par l'entreprise, aucun frais pour l'étudiant</p>
+                <p class="highlight-title" data-i18n="ecole.highlight2Title">100% en alternance</p>
+                <p class="highlight-desc" data-i18n="ecole.highlight2Desc">Études financées par l'entreprise, aucun frais pour l'étudiant</p>
               </div>
             </div>
             <div class="highlight-item">
               <span class="highlight-icon">📍</span>
               <div>
-                <p class="highlight-title">Paris & campus en régions</p>
-                <p class="highlight-desc">39 rue De Moscou, 75008 Paris + campus partenaires en province</p>
+                <p class="highlight-title" data-i18n="ecole.highlight3Title">Paris & campus en régions</p>
+                <p class="highlight-desc" data-i18n="ecole.highlight3Desc">39 rue De Moscou, 75008 Paris + campus partenaires en province</p>
               </div>
             </div>
             <div class="highlight-item">
               <span class="highlight-icon">🦙</span>
               <div>
-                <p class="highlight-title">Lama Scott, notre mascotte</p>
-                <p class="highlight-desc">Symbole de l'esprit SUP des RH : curieux, tenace et bienveillant</p>
+                <p class="highlight-title" data-i18n="ecole.highlight4Title">Lama Scott, notre mascotte</p>
+                <p class="highlight-desc" data-i18n="ecole.highlight4Desc">Symbole de l'esprit SUP des RH : curieux, tenace et bienveillant</p>
               </div>
             </div>
           </div>
@@ -228,9 +228,9 @@ const pedagogie = [
       <!-- ── Pédagogie ── -->
       <section class="section-pedagogie">
         <div class="section-header">
-          <div class="section-badge section-badge-green">Approche pédagogique</div>
-          <h2 class="section-title">Une pédagogie innovante</h2>
-          <p class="section-desc">SUP des RH a construit une approche pédagogique centrée sur l'employabilité réelle et l'immersion professionnelle.</p>
+          <div class="section-badge section-badge-green" data-i18n="ecole.pedagogieBadge">Approche pédagogique</div>
+          <h2 class="section-title" data-i18n="ecole.pedagogieTitle">Une pédagogie innovante</h2>
+          <p class="section-desc" data-i18n="ecole.pedagogieDesc">SUP des RH a construit une approche pédagogique centrée sur l'employabilité réelle et l'immersion professionnelle.</p>
         </div>
         <div class="pedagogie-grid">
           {pedagogie.map((p) => (
@@ -246,9 +246,9 @@ const pedagogie = [
       <!-- ── Formations ── -->
       <section id="formations" class="section-formations">
         <div class="section-header">
-          <div class="section-badge">Programmes</div>
-          <h2 class="section-title">Nos formations en alternance</h2>
-          <p class="section-desc">De Bac+3 à Bac+6, des cursus pensés pour les réalités du terrain RH, 100% en alternance et reconnus par l'État.</p>
+          <div class="section-badge" data-i18n="ecole.formationsBadge">Programmes</div>
+          <h2 class="section-title" data-i18n="ecole.formationsTitle">Nos formations en alternance</h2>
+          <p class="section-desc" data-i18n="ecole.formationsDesc">De Bac+3 à Bac+6, des cursus pensés pour les réalités du terrain RH, 100% en alternance et reconnus par l'État.</p>
         </div>
 
         <div class="formations-grid" id="formations-grid">
@@ -288,9 +288,9 @@ const pedagogie = [
       <!-- ── Témoignages ── -->
       <section class="section-temoignages">
         <div class="section-header">
-          <div class="section-badge section-badge-orange">Ils témoignent</div>
-          <h2 class="section-title">Leur aventure SUP des RH</h2>
-          <p class="section-desc">Apprenants, intervenants et alumnis partagent leur expérience.</p>
+          <div class="section-badge section-badge-orange" data-i18n="ecole.temoignagesBadge">Ils témoignent</div>
+          <h2 class="section-title" data-i18n="ecole.temoignagesTitle">Leur aventure SUP des RH</h2>
+          <p class="section-desc" data-i18n="ecole.temoignagesDesc">Apprenants, intervenants et alumnis partagent leur expérience.</p>
         </div>
         <div class="temoignages-grid">
           {temoignages.map((t) => (
@@ -314,12 +314,12 @@ const pedagogie = [
       <section class="section-cta-ecole">
         <div class="cta-card">
           <div class="cta-content">
-            <p class="cta-eyebrow">Vous ne savez pas quelle formation choisir ?</p>
-            <h2 class="cta-title">Faites le quiz d'orientation RH</h2>
-            <p class="cta-desc">En 3 minutes, découvrez quel métier RH vous correspond et quelle formation SUP des RH est faite pour vous.</p>
+            <p class="cta-eyebrow" data-i18n="ecole.ctaEyebrow">Vous ne savez pas quelle formation choisir ?</p>
+            <h2 class="cta-title" data-i18n="ecole.ctaTitle">Faites le quiz d'orientation RH</h2>
+            <p class="cta-desc" data-i18n="ecole.ctaDesc">En 3 minutes, découvrez quel métier RH vous correspond et quelle formation SUP des RH est faite pour vous.</p>
             <div class="cta-actions">
-              <a href={WEB_APP_URL + "/login"} class="btn-primary">Faire le quiz gratuitement →</a>
-              <a href="https://www.supdesrh.com/inscription/" target="_blank" rel="noopener noreferrer" class="btn-secondary">Candidater ↗</a>
+              <a href={WEB_APP_URL + "/login"} class="btn-primary" data-i18n="ecole.ctaPrimary">Faire le quiz gratuitement →</a>
+              <a href="https://www.supdesrh.com/inscription/" target="_blank" rel="noopener noreferrer" class="btn-secondary" data-i18n="ecole.ctaSecondary">Candidater ↗</a>
             </div>
           </div>
         </div>
@@ -334,16 +334,16 @@ const pedagogie = [
             <img src="/lamascott-hero.png" alt="" class="footer-logo logo-theme-safe" width="32" height="32" />
             <p class="footer-brand">RH&MOI by SUP des RH</p>
           </div>
-          <p class="footer-tagline">Orientation métiers RH, en toute confiance.</p>
+          <p class="footer-tagline" data-i18n="footer.tagline">Orientation métiers RH, en toute confiance.</p>
         </div>
         <nav class="footer-links">
-          <a href="/">Accueil</a>
-          <a href="/entreprises">Entreprises</a>
-          <a href={WEB_APP_URL + "/legal/conditions"}>Conditions d'utilisation</a>
-          <a href={WEB_APP_URL + "/legal/confidentialite"}>Politique de confidentialité</a>
-          <a href={WEB_APP_URL + "/login"}>Accéder au quiz</a>
+          <a href="/" data-i18n="nav.home">Accueil</a>
+          <a href="/entreprises" data-i18n="nav.companies">Entreprises</a>
+          <a href={WEB_APP_URL + "/legal/conditions"} data-i18n="footer.linkTerms">Conditions d'utilisation</a>
+          <a href={WEB_APP_URL + "/legal/confidentialite"} data-i18n="footer.linkPrivacy">Politique de confidentialité</a>
+          <a href={WEB_APP_URL + "/login"} data-i18n="footer.linkQuiz">Accéder au quiz</a>
         </nav>
-        <p class="footer-copy">© {new Date().getFullYear()} RH&MOI by SUP des RH — Tous droits réservés</p>
+        <p class="footer-copy">© {new Date().getFullYear()} RH&MOI by SUP des RH — <span data-i18n="footer.copy">Tous droits réservés</span></p>
       </div>
     </footer>
   </div>
@@ -379,8 +379,17 @@ const pedagogie = [
   const currentLangCheck = localStorage.getItem("rhmoi_lang") || "fr";
   if (currentLangCheck === "en") {
     import("../i18n/en.json").then((mod) => {
-      // @ts-expect-error
-      if (typeof window.supdesrhApplyI18n === "function") window.supdesrhApplyI18n(mod.default || mod);
+      const dict = mod.default || mod;
+      function apply() {
+        // @ts-expect-error
+        if (typeof window.supdesrhApplyI18n === "function") {
+          // @ts-expect-error
+          window.supdesrhApplyI18n(dict);
+        } else {
+          setTimeout(apply, 50);
+        }
+      }
+      apply();
     });
   }
 </script>

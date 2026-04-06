@@ -140,8 +140,9 @@ export function FichesPage() {
 
       <main className="flex-1 overflow-y-auto">
         {/* Page header */}
-        <div className="border-b border-border bg-card/50">
-          <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="border-b border-border bg-gradient-to-br from-primary/5 via-card/50 to-[#008c54]/5 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-64 h-64 rounded-full bg-[#f37021]/5 blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2" />
+          <div className="max-w-5xl mx-auto px-4 py-6 relative">
             <button
               type="button"
               onClick={() => navigate(-1)}
@@ -152,13 +153,17 @@ export function FichesPage() {
             </button>
             <div className="flex flex-col sm:flex-row sm:items-end gap-4">
               <div className="flex-1">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] font-semibold mb-3">
+                  <Briefcase className="h-3 w-3" />
+                  Catalogue
+                </div>
                 <h1 className="text-2xl sm:text-3xl font-heading font-bold text-foreground flex items-center gap-2.5">
                   <LayoutGrid className="h-7 w-7 text-primary shrink-0" />
                   Fiches métiers RH
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-sm text-muted-foreground mt-1 max-w-lg">
                   {jobs.length > 0
-                    ? `${jobs.length} fiche${jobs.length > 1 ? "s" : ""} · ${categories.length} domaine${categories.length > 1 ? "s" : ""}`
+                    ? `${jobs.length} fiche${jobs.length > 1 ? "s" : ""} · ${categories.length} domaine${categories.length > 1 ? "s" : ""} — explore les carrières des Ressources Humaines`
                     : "Découvre les métiers des Ressources Humaines"}
                 </p>
               </div>
@@ -321,19 +326,19 @@ export function FichesPage() {
 
         {/* CTA Quiz */}
         {!loading && jobs.length > 0 && (
-          <div className="border-t border-border bg-card/50">
-            <div className="max-w-5xl mx-auto px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div>
-                <p className="text-sm font-heading font-semibold text-foreground">
+          <div className="border-t border-border bg-gradient-to-r from-primary/5 via-card/50 to-[#008c54]/5">
+            <div className="max-w-5xl mx-auto px-4 py-8 sm:py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-center sm:text-left">
+                <p className="text-base font-heading font-bold text-foreground">
                   Tu ne sais pas par où commencer ?
                 </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Fais le quiz pour découvrir ton domaine RH idéal.
+                <p className="text-sm text-muted-foreground mt-1">
+                  Le quiz RH analyse ton profil et te recommande les métiers qui te correspondent.
                 </p>
               </div>
               <Button
                 onClick={() => navigate("/quiz/start")}
-                className="shrink-0 gap-2 rounded-xl h-10 px-5 text-sm"
+                className="shrink-0 gap-2 rounded-xl h-11 px-6 text-sm shadow-lg hover:scale-105 transition-all duration-200"
                 style={{ backgroundColor: "#004080", color: "#fff" }}
               >
                 Faire le quiz
