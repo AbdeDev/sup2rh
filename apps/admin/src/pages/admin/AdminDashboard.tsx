@@ -166,7 +166,7 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
           {!sidebarCollapsed && (
             <div className="px-4 py-3 border-b border-border">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
-                {t("nav.navigation") || "Navigation"}
+                {t("Espace admin") || "Espace admin"}
               </p>
             </div>
           )}
