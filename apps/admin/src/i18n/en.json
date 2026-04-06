@@ -23,10 +23,11 @@
     "feedbacks": "Reviews",
     "support": "Support",
     "brochures": "AI Brochures",
+    "profile": "My profile",
     "logout": "Log out"
   },
   "dashboard": {
-    "title": "Dashboard",
+    "title": "RH&MOI Admin",
     "welcome": "Welcome to the RH&MOI admin panel"
   },
   "contacts": {

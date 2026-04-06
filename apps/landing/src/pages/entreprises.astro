@@ -111,7 +111,7 @@ const formations = [
           <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
           <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
-        <a href={WEB_APP_URL + "/login"} class="btn-connect">Se connecter</a>
+        <a href={WEB_APP_URL + "/login"} class="btn-connect" data-i18n="nav.login">Se connecter</a>
         <button type="button" class="btn-menu" id="mobile-menu-toggle" aria-label="Ouvrir le menu">
           <span class="menu-line"></span>
           <span class="menu-line"></span>
@@ -123,7 +123,7 @@ const formations = [
         <a href="/entreprises" class="mobile-nav-link" data-i18n="nav.companies">Entreprises</a>
         <div class="mobile-nav-actions">
           <button type="button" class="btn-lang" id="mobile-lang-toggle" aria-label="Changer la langue">FR</button>
-          <a href={WEB_APP_URL + "/login"} class="btn-connect" style="font-size:0.82rem;">Se connecter</a>
+          <a href={WEB_APP_URL + "/login"} class="btn-connect" style="font-size:0.82rem;" data-i18n="nav.login">Se connecter</a>
         </div>
       </nav>
     </header>
@@ -132,16 +132,16 @@ const formations = [
 
       <!-- ── Hero ── -->
       <section class="ent-hero">
-        <span class="hero-badge">Espace entreprises</span>
-        <h1 class="hero-title">
+        <span class="hero-badge" data-i18n="entreprises.heroBadge">Espace entreprises</span>
+        <h1 class="hero-title" data-i18n="entreprises.heroTitle" data-i18n-html>
           Recrutez les talents RH <span class="highlight">de demain</span>
         </h1>
-        <p class="hero-sub">
+        <p class="hero-sub" data-i18n="entreprises.heroSubtitle">
           SUP des RH est l'école de référence 100% RH depuis 1998. Plus de 600 entreprises partenaires nous font confiance pour former leurs futurs alternants, recruter leurs talents et développer leurs équipes RH.
         </p>
         <div class="hero-actions">
-          <a href="#contact" class="btn-primary">Déposer ma demande →</a>
-          <a href="https://www.supdesrh.com/espace-entreprises/" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+          <a href="#contact" class="btn-primary" data-i18n="entreprises.heroCta">Déposer ma demande →</a>
+          <a href="https://www.supdesrh.com/espace-entreprises/" target="_blank" rel="noopener noreferrer" class="btn-secondary" data-i18n="entreprises.heroCtaSecondary">
             Portail entreprises ↗
           </a>
         </div>
@@ -161,9 +161,9 @@ const formations = [
       <!-- ── Services ── -->
       <section class="section-services">
         <div class="section-header">
-          <div class="section-badge">Nos services</div>
-          <h2 class="section-title">Comment pouvons-nous vous aider ?</h2>
-          <p class="section-desc">SUP des RH met à votre disposition plusieurs dispositifs pour trouver et développer les profils RH dont vous avez besoin.</p>
+          <div class="section-badge" data-i18n="entreprises.servicesBadge">Nos services</div>
+          <h2 class="section-title" data-i18n="entreprises.servicesTitle">Comment pouvons-nous vous aider ?</h2>
+          <p class="section-desc" data-i18n="entreprises.servicesDesc">SUP des RH met à votre disposition plusieurs dispositifs pour trouver et développer les profils RH dont vous avez besoin.</p>
         </div>
         <div class="services-grid">
           {services.map((s) => (
@@ -183,9 +183,9 @@ const formations = [
       <!-- ── Processus ── -->
       <section class="section-process">
         <div class="section-header">
-          <div class="section-badge section-badge-green">Comment ça marche</div>
-          <h2 class="section-title">Recruter un alternant en 4 étapes</h2>
-          <p class="section-desc">Un processus simple et rapide, accompagné par notre équipe du premier contact à l'intégration.</p>
+          <div class="section-badge section-badge-green" data-i18n="entreprises.processBadge">Comment ça marche</div>
+          <h2 class="section-title" data-i18n="entreprises.processTitle">Recruter un alternant en 4 étapes</h2>
+          <p class="section-desc" data-i18n="entreprises.processDesc">Un processus simple et rapide, accompagné par notre équipe du premier contact à l'intégration.</p>
         </div>
         <div class="process-timeline">
           {etapes.map((e, idx) => (
@@ -209,9 +209,9 @@ const formations = [
       <!-- ── Avantages ── -->
       <section class="section-avantages">
         <div class="section-header">
-          <div class="section-badge section-badge-orange">Pourquoi nous choisir</div>
-          <h2 class="section-title">Pourquoi recruter chez SUP des RH ?</h2>
-          <p class="section-desc">Des apprenants rigoureusement sélectionnés, formés par des praticiens RH, accompagnés tout au long de leur parcours.</p>
+          <div class="section-badge section-badge-orange" data-i18n="entreprises.avantagesBadge">Pourquoi nous choisir</div>
+          <h2 class="section-title" data-i18n="entreprises.avantagesTitle">Pourquoi recruter chez SUP des RH ?</h2>
+          <p class="section-desc" data-i18n="entreprises.avantagesDesc">Des apprenants rigoureusement sélectionnés, formés par des praticiens RH, accompagnés tout au long de leur parcours.</p>
         </div>
         <div class="avantages-grid">
           {avantages.map((a) => (
@@ -231,9 +231,9 @@ const formations = [
       <!-- ── Profils disponibles ── -->
       <section class="section-formations">
         <div class="section-header">
-          <div class="section-badge">Profils disponibles</div>
-          <h2 class="section-title">Les formations de nos alternants</h2>
-          <p class="section-desc">De Bac+3 à Bac+6, des profils formés aux réalités du terrain RH, tous en alternance et titulaires d'un diplôme reconnu par l'État.</p>
+          <div class="section-badge" data-i18n="entreprises.formationsBadge">Profils disponibles</div>
+          <h2 class="section-title" data-i18n="entreprises.formationsTitle">Les formations de nos alternants</h2>
+          <p class="section-desc" data-i18n="entreprises.formationsDesc">De Bac+3 à Bac+6, des profils formés aux réalités du terrain RH, tous en alternance et titulaires d'un diplôme reconnu par l'État.</p>
         </div>
         <div class="formations-strip">
           {formations.map((f) => (
@@ -245,15 +245,15 @@ const formations = [
           ))}
         </div>
         <div style="text-align:center; margin-top:1.5rem;">
-          <a href="/ecole#formations" class="btn-secondary">Voir le détail des formations →</a>
+          <a href="/ecole#formations" class="btn-secondary" data-i18n="entreprises.formationsLink">Voir le détail des formations →</a>
         </div>
       </section>
 
       <!-- ── Témoignages ── -->
       <section class="section-temoignages">
         <div class="section-header">
-          <div class="section-badge section-badge-purple">Ils nous font confiance</div>
-          <h2 class="section-title">Ce que disent nos entreprises partenaires</h2>
+          <div class="section-badge section-badge-purple" data-i18n="entreprises.temoignagesBadge">Ils nous font confiance</div>
+          <h2 class="section-title" data-i18n="entreprises.temoignagesTitle">Ce que disent nos entreprises partenaires</h2>
         </div>
         <div class="temoignages-grid">
           {temoignages.map((t) => (
@@ -282,24 +282,24 @@ const formations = [
 
         <!-- Panneau bleu : infos -->
         <div class="contact-blue-panel">
-          <span class="cp-badge">Contact direct</span>
-          <h2 class="cp-title">Déposez votre<br/>demande</h2>
-          <p class="cp-sub">Notre équipe vous recontacte sous <strong>48h ouvrées</strong> avec les profils les plus adaptés à votre organisation.</p>
+          <span class="cp-badge" data-i18n="entreprises.contactBadge">Contact direct</span>
+          <h2 class="cp-title" data-i18n="entreprises.contactTitle" data-i18n-html>Déposez votre<br/>demande</h2>
+          <p class="cp-sub" data-i18n="entreprises.contactSub" data-i18n-html>Notre équipe vous recontacte sous <strong>48h ouvrées</strong> avec les profils les plus adaptés à votre organisation.</p>
 
           <div class="cp-stats">
             <div class="cp-stat">
-              <span class="cp-stat-val">600+</span>
-              <span class="cp-stat-lbl">Entreprises partenaires</span>
+              <span class="cp-stat-val" data-i18n="entreprises.contactStat1Val">600+</span>
+              <span class="cp-stat-lbl" data-i18n="entreprises.contactStat1Lbl">Entreprises partenaires</span>
             </div>
             <div class="cp-stat-sep"></div>
             <div class="cp-stat">
-              <span class="cp-stat-val">100%</span>
-              <span class="cp-stat-lbl">Placement en alternance</span>
+              <span class="cp-stat-val" data-i18n="entreprises.contactStat2Val">100%</span>
+              <span class="cp-stat-lbl" data-i18n="entreprises.contactStat2Lbl">Placement en alternance</span>
             </div>
             <div class="cp-stat-sep"></div>
             <div class="cp-stat">
-              <span class="cp-stat-val">27 ans</span>
-              <span class="cp-stat-lbl">D'expérience RH</span>
+              <span class="cp-stat-val" data-i18n="entreprises.contactStat3Val">27 ans</span>
+              <span class="cp-stat-lbl" data-i18n="entreprises.contactStat3Lbl">D'expérience RH</span>
             </div>
           </div>
 
@@ -307,21 +307,21 @@ const formations = [
             <div class="cp-coord">
               <span class="cp-coord-icon">📍</span>
               <div>
-                <p class="cp-coord-label">Adresse</p>
+                <p class="cp-coord-label" data-i18n="entreprises.contactAddrLabel">Adresse</p>
                 <p class="cp-coord-val">39 rue De Moscou, 75008 Paris</p>
               </div>
             </div>
             <div class="cp-coord">
               <span class="cp-coord-icon">📞</span>
               <div>
-                <p class="cp-coord-label">Téléphone</p>
+                <p class="cp-coord-label" data-i18n="entreprises.contactPhoneLabel">Téléphone</p>
                 <a href="tel:0144780808" class="cp-coord-link">01 44 78 08 08</a>
               </div>
             </div>
             <div class="cp-coord">
               <span class="cp-coord-icon">🌐</span>
               <div>
-                <p class="cp-coord-label">Portail entreprises</p>
+                <p class="cp-coord-label" data-i18n="entreprises.contactPortalLabel">Portail entreprises</p>
                 <a href="https://www.supdesrh.com/espace-entreprises/" target="_blank" rel="noopener noreferrer" class="cp-coord-link">supdesrh.com ↗</a>
               </div>
             </div>
@@ -331,33 +331,33 @@ const formations = [
         <!-- Formulaire -->
         <div class="contact-form-panel">
           <div class="contact-form-card">
-            <p class="form-card-eyebrow">Votre demande</p>
-            <h3 class="form-card-title">Partagez votre besoin</h3>
+            <p class="form-card-eyebrow" data-i18n="entreprises.formEyebrow">Votre demande</p>
+            <h3 class="form-card-title" data-i18n="entreprises.formTitle">Partagez votre besoin</h3>
             <form class="contact-form" id="company-contact-form">
               <div class="form-row">
                 <div class="form-group">
-                  <label for="companyName">Entreprise *</label>
-                  <input type="text" id="companyName" name="companyName" placeholder="Nom de l'entreprise" required />
+                  <label for="companyName" data-i18n="entreprises.labelCompany">Entreprise *</label>
+                  <input type="text" id="companyName" name="companyName" placeholder="Nom de l'entreprise" data-i18n-placeholder="entreprises.placeholderCompany" required />
                 </div>
                 <div class="form-group">
-                  <label for="contactName">Votre nom *</label>
-                  <input type="text" id="contactName" name="contactName" placeholder="Prénom Nom" required />
+                  <label for="contactName" data-i18n="entreprises.labelContact">Votre nom *</label>
+                  <input type="text" id="contactName" name="contactName" placeholder="Prénom Nom" data-i18n-placeholder="entreprises.placeholderContact" required />
                 </div>
               </div>
               <div class="form-row">
                 <div class="form-group">
-                  <label for="email">Email professionnel *</label>
-                  <input type="email" id="email" name="email" placeholder="vous@entreprise.com" required />
+                  <label for="email" data-i18n="entreprises.labelEmail">Email professionnel *</label>
+                  <input type="email" id="email" name="email" placeholder="vous@entreprise.com" data-i18n-placeholder="entreprises.placeholderEmail" required />
                 </div>
                 <div class="form-group">
-                  <label for="phone">Téléphone</label>
-                  <input type="tel" id="phone" name="phone" placeholder="01 44 78 08 08" />
+                  <label for="phone" data-i18n="entreprises.labelPhone">Téléphone</label>
+                  <input type="tel" id="phone" name="phone" placeholder="01 44 78 08 08" data-i18n-placeholder="entreprises.placeholderPhone" />
                 </div>
               </div>
               <div class="form-group">
-                <label for="formationInterest">Formation souhaitée</label>
+                <label for="formationInterest" data-i18n="entreprises.labelFormation">Formation souhaitée</label>
                 <select id="formationInterest" name="formationInterest">
-                  <option value="">Sélectionnez une formation</option>
+                  <option value="" data-i18n="entreprises.placeholderFormation">Sélectionnez une formation</option>
                   <option value="Chargé des RH (Bac+3) — alternance post Bac+2">Chargé des RH — Bac+3 (post Bac+2)</option>
                   <option value="Manager des RH (Bac+5) — filière RH">Manager des RH — Bac+5, filière RH</option>
                   <option value="Manager des RH (Bac+5) — toutes filières">Manager des RH — Bac+5, toutes filières</option>
@@ -368,12 +368,12 @@ const formations = [
                 </select>
               </div>
               <div class="form-group">
-                <label for="message">Votre besoin *</label>
-                <textarea id="message" name="message" rows="4" placeholder="Décrivez le poste souhaité, le secteur d'activité, le profil recherché, la période souhaitée…" required></textarea>
+                <label for="message" data-i18n="entreprises.labelMessage">Votre besoin *</label>
+                <textarea id="message" name="message" rows="4" placeholder="Décrivez le poste souhaité, le secteur d'activité, le profil recherché, la période souhaitée…" data-i18n-placeholder="entreprises.placeholderMessage" required></textarea>
               </div>
               <div id="contact-feedback" class="contact-feedback hidden"></div>
               <button type="submit" class="btn-submit" id="contact-submit">
-                <span id="contact-submit-label">Envoyer ma demande →</span>
+                <span id="contact-submit-label" data-i18n="entreprises.formSubmit">Envoyer ma demande →</span>
               </button>
             </form>
           </div>
@@ -389,16 +389,16 @@ const formations = [
             <img src="/lamascott-hero.png" alt="" class="footer-logo logo-theme-safe" width="32" height="32" />
             <p class="footer-brand">RH&MOI by SUP des RH</p>
           </div>
-          <p class="footer-tagline">Orientation métiers RH, en toute confiance.</p>
+          <p class="footer-tagline" data-i18n="footer.tagline">Orientation métiers RH, en toute confiance.</p>
         </div>
         <nav class="footer-links">
-          <a href="/">Accueil</a>
-          <a href="/ecole">L'école</a>
-          <a href={WEB_APP_URL + "/legal/conditions"}>Conditions d'utilisation</a>
-          <a href={WEB_APP_URL + "/legal/confidentialite"}>Politique de confidentialité</a>
-          <a href={WEB_APP_URL + "/login"}>Accéder au quiz</a>
+          <a href="/" data-i18n="nav.home">Accueil</a>
+          <a href="/ecole" data-i18n="footer.linkSchool">L'école</a>
+          <a href={WEB_APP_URL + "/legal/conditions"} data-i18n="footer.linkTerms">Conditions d'utilisation</a>
+          <a href={WEB_APP_URL + "/legal/confidentialite"} data-i18n="footer.linkPrivacy">Politique de confidentialité</a>
+          <a href={WEB_APP_URL + "/login"} data-i18n="footer.linkQuiz">Accéder au quiz</a>
         </nav>
-        <p class="footer-copy">© {new Date().getFullYear()} RH&MOI by SUP des RH — Tous droits réservés</p>
+        <p class="footer-copy">© {new Date().getFullYear()} RH&MOI by SUP des RH — <span data-i18n="footer.copy">Tous droits réservés</span></p>
       </div>
     </footer>
   </div>
@@ -472,8 +472,17 @@ const formations = [
   const currentLangCheck = localStorage.getItem("rhmoi_lang") || "fr";
   if (currentLangCheck === "en") {
     import("../i18n/en.json").then((mod) => {
-      // @ts-expect-error
-      if (typeof window.supdesrhApplyI18n === "function") window.supdesrhApplyI18n(mod.default || mod);
+      const dict = mod.default || mod;
+      function apply() {
+        // @ts-expect-error
+        if (typeof window.supdesrhApplyI18n === "function") {
+          // @ts-expect-error
+          window.supdesrhApplyI18n(dict);
+        } else {
+          setTimeout(apply, 50);
+        }
+      }
+      apply();
     });
   }
 </script>

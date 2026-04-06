@@ -83,11 +83,16 @@ export function AdminJobsPage() {
         <div className="mb-6">
           <div className="flex items-start justify-between gap-4 mb-4">
             <div>
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-semibold mb-2">
+                <Briefcase className="h-3 w-3" />
+                Gestion
+              </div>
               <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground mb-1">
                 Fiches métier RH
               </h1>
               <p className="text-xs text-muted-foreground">
-                {jobs.length} fiche{jobs.length > 1 ? "s" : ""} métier
+                {jobs.length} fiche{jobs.length > 1 ? "s" : ""} métier enregistrée
+                {jobs.length > 1 ? "s" : ""}
               </p>
             </div>
             <Button

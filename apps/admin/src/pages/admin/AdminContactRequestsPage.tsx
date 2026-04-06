@@ -84,6 +84,10 @@ export function AdminContactRequestsPage() {
         <div className="mb-6">
           <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
             <div>
+              <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#f37021]/10 border border-[#f37021]/20 text-[#f37021] text-[10px] font-semibold mb-2">
+                <Mail className="h-3 w-3" />
+                Demandes
+              </div>
               <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground mb-1">
                 Demandes de contact
               </h1>

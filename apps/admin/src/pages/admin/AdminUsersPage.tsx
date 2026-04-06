@@ -125,6 +125,10 @@ export function AdminUsersPage() {
       <div className="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto">
         {/* Header + stats */}
         <div className="mb-6">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-semibold mb-2">
+            <Users className="h-3 w-3" />
+            Gestion
+          </div>
           <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground mb-1">
             Utilisateurs
           </h1>

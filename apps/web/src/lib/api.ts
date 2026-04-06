@@ -78,7 +78,7 @@ async function request<T>(
       error = {
         message:
           response.status === 401
-            ? "Session expirée. Reconnecte-toi."
+            ? "Session expirée ou invalide. Essaie de te reconnecter."
             : response.status === 404
               ? "Ressource introuvable."
               : response.status === 403

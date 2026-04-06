@@ -14,7 +14,8 @@ import {
   LifeBuoy,
   FileText,
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 
 import { supabase } from "../../lib/supabase";
 import { clearAdminToken } from "../../lib/api";
@@ -23,29 +24,43 @@ import { ThemeToggle } from "../../components/ThemeToggle";
 import { LanguageSwitcher } from "../../components/LanguageSwitcher";
 import { AppLogo } from "../../components/AppLogo";
 
-const navItems = [
-  { id: "jobs", label: "Fiches métier", icon: Briefcase, path: "/admin/jobs" },
-  { id: "job-categories", label: "Domaines RH", icon: LayoutGrid, path: "/admin/job-categories" },
-  { id: "quizzes", label: "Quiz", icon: FileQuestion, path: "/admin/quizzes" },
-  { id: "users", label: "Utilisateurs", icon: Users, path: "/admin/users" },
-  { id: "contact-requests", label: "Demandes", icon: Mail, path: "/admin/contact-requests" },
-  {
-    id: "company-contacts",
-    label: "Entreprises",
-    icon: Building2,
-    path: "/admin/company-contacts",
-  },
-  { id: "feedbacks", label: "Avis", icon: MessageSquare, path: "/admin/feedbacks" },
-  { id: "support", label: "Support", icon: LifeBuoy, path: "/admin/support" },
-  { id: "brochures", label: "Brochures IA", icon: FileText, path: "/admin/brochures" },
-];
-
 export function AdminDashboard({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const userMenuRef = useRef<HTMLDivElement>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const navItems = useMemo(
+    () => [
+      { id: "jobs", label: t("nav.jobs"), icon: Briefcase, path: "/admin/jobs" },
+      {
+        id: "job-categories",
+        label: t("nav.categories"),
+        icon: LayoutGrid,
+        path: "/admin/job-categories",
+      },
+      { id: "quizzes", label: t("nav.quizzes"), icon: FileQuestion, path: "/admin/quizzes" },
+      { id: "users", label: t("nav.users"), icon: Users, path: "/admin/users" },
+      {
+        id: "contact-requests",
+        label: t("nav.contacts"),
+        icon: Mail,
+        path: "/admin/contact-requests",
+      },
+      {
+        id: "company-contacts",
+        label: t("nav.companies"),
+        icon: Building2,
+        path: "/admin/company-contacts",
+      },
+      { id: "feedbacks", label: t("nav.feedbacks"), icon: MessageSquare, path: "/admin/feedbacks" },
+      { id: "support", label: t("nav.support"), icon: LifeBuoy, path: "/admin/support" },
+      { id: "brochures", label: t("nav.brochures"), icon: FileText, path: "/admin/brochures" },
+    ],
+    [t],
+  );
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -80,10 +95,10 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
             <AppLogo className="h-9 w-9 shrink-0 object-contain" />
             <div className="hidden sm:flex items-center gap-2">
               <p className="text-sm font-heading font-bold text-foreground leading-tight">
-                Admin RH&MOI
+                {t("dashboard.title")}
               </p>
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-primary/10 text-primary border border-primary/20 shrink-0">
-                Administration
+                Admin
               </span>
             </div>
           </button>
@@ -123,7 +138,7 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
                     onClick={() => setUserMenuOpen(false)}
                   >
                     <User className="h-3.5 w-3.5 text-muted-foreground" />
-                    Mon profil
+                    {t("nav.profile")}
                   </button>
                   <div className="my-1 border-t border-border" />
                   <button
@@ -133,7 +148,7 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
                     onClick={logout}
                   >
                     <LogOut className="h-3.5 w-3.5" />
-                    Déconnexion
+                    {t("nav.logout")}
                   </button>
                 </div>
               )}

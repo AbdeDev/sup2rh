@@ -22,11 +22,12 @@
     "companies": "Entreprises",
     "feedbacks": "Avis",
     "support": "Support",
-    "brochures": "Brochures IA",
+    "brochures": "Brochures",
+    "profile": "Mon profil",
     "logout": "Déconnexion"
   },
   "dashboard": {
-    "title": "Tableau de bord",
+    "title": "Admin RH&MOI",
     "welcome": "Bienvenue dans l'administration RH&MOI"
   },
   "contacts": {
@@ -53,7 +54,7 @@
     "noTicketsDesc": "Les demandes de support et suggestions apparaîtront ici"
   },
   "brochures": {
-    "title": "Brochures IA",
+    "title": "Brochures",
     "subtitle": "Contenu injecté dans le prompt de l'IA pour enrichir les analyses",
     "add": "Ajouter",
     "namePlaceholder": "Nom de la brochure",

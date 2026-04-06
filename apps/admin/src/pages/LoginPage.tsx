@@ -36,14 +36,19 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6">
-      <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6 relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-primary/[0.06] blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-[#008c54]/[0.05] blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full bg-[#f37021]/[0.03] blur-[80px]" />
+      </div>
+      <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
         <div className="text-center mb-8">
-          <div className="inline-flex h-16 w-16 items-center justify-center mb-5 transition-transform duration-200 hover:scale-105">
-            <AppLogo className="h-16 w-16 object-contain" />
+          <div className="inline-flex h-20 w-20 items-center justify-center mb-5 transition-transform duration-300 hover:scale-110">
+            <AppLogo className="h-20 w-20 object-contain drop-shadow-lg" />
           </div>
           <h1 className="text-2xl font-heading font-bold text-foreground mb-2">Admin SUP des RH</h1>
-          <p className="text-sm text-muted-foreground">Panneau d'administration</p>
+          <p className="text-sm text-muted-foreground">Panneau d'administration sécurisé</p>
         </div>
 
         <Card className="border border-border bg-card rounded-2xl shadow-lg">

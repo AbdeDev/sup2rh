@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { MessageCircle, X, Loader2, Star } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { submitFeedback } from "../lib/api";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 
 export function FeedbackButton() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [rating, setRating] = useState<number | null>(null);
@@ -38,9 +40,9 @@ export function FeedbackButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all hover:scale-110 hover:shadow-xl"
-        title="Laisser un avis"
-        aria-label="Laisser un avis"
+        className="fixed bottom-[136px] right-4 sm:bottom-20 sm:right-5 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-muted-foreground/80 text-background shadow-lg transition-all hover:scale-110 hover:shadow-xl hover:bg-muted-foreground"
+        title={t("feedback.title")}
+        aria-label={t("feedback.title")}
       >
         <MessageCircle className="h-5 w-5" />
       </button>
@@ -54,7 +56,7 @@ export function FeedbackButton() {
           />
           <div className="relative w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-xl animate-in fade-in scale-in">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-foreground">Laisser un avis</h3>
+              <h3 className="text-sm font-semibold text-foreground">{t("feedback.title")}</h3>
               <button
                 type="button"
                 onClick={() => !loading && setOpen(false)}
@@ -65,11 +67,11 @@ export function FeedbackButton() {
               </button>
             </div>
             {sent ? (
-              <p className="py-4 text-sm text-success text-center">Merci pour ton avis !</p>
+              <p className="py-4 text-sm text-success text-center">{t("feedback.thankYou")}</p>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-3">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-2">Note (optionnel)</p>
+                  <p className="text-xs text-muted-foreground mb-2">{t("feedback.ratingLabel")}</p>
                   <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map((i) => (
                       <button
@@ -91,7 +93,7 @@ export function FeedbackButton() {
                   </div>
                 </div>
                 <Textarea
-                  placeholder="Ton avis sur SUP des RH…"
+                  placeholder={t("feedback.placeholder")}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   rows={4}
@@ -106,10 +108,10 @@ export function FeedbackButton() {
                     onClick={() => setOpen(false)}
                     disabled={loading}
                   >
-                    Annuler
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" size="sm" disabled={loading || !message.trim()}>
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Envoyer"}
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("common.send")}
                   </Button>
                 </div>
               </form>

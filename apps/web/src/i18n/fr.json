@@ -15,10 +15,11 @@
     "confirm": "Confirmer"
   },
   "nav": {
+    "home": "Accueil",
     "quiz": "Quiz",
     "sessions": "Mes sessions",
     "fiches": "Fiches métiers",
-    "profile": "Profil",
+    "profile": "Mon profil",
     "logout": "Déconnexion",
     "backToSite": "Retour au site"
   },
@@ -76,12 +77,34 @@
     "allJobs": "Toutes les fiches"
   },
   "sessions": {
-    "title": "Mes sessions",
+    "title": "Mes sessions de quiz",
+    "history": "Historique",
     "noSessions": "Aucune session pour le moment",
     "noSessionsDesc": "Commence un quiz pour voir tes résultats ici",
+    "heroSubtitleEmpty": "Commence ton premier quiz pour découvrir ton métier RH idéal",
+    "exploreResults": "explore tes résultats",
+    "filteredOfTotal": "{{filtered}} sur {{total}} session",
+    "filteredOfTotal_plural": "{{filtered}} sur {{total}} sessions",
     "answers": "réponses",
     "seeResult": "Voir le résultat",
-    "inProgress": "En cours"
+    "inProgress": "En cours",
+    "filterByDate": "Filtrer par date",
+    "newQuiz": "Nouveau quiz",
+    "completed": "Complétées",
+    "total": "Total",
+    "selectAll": "Tout sélectionner",
+    "deselectAll": "Tout désélectionner",
+    "retry": "Réessayer",
+    "welcome": "Bienvenue !",
+    "welcomeDesc": "Commence par créer ton premier quiz pour découvrir quel métier RH est fait pour toi.",
+    "startFirst": "Lancer mon premier quiz",
+    "quizInProgress": "Quiz en cours",
+    "sessionCount": "{{count}} session au total",
+    "sessionCount_plural": "{{count}} sessions au total",
+    "loadError": "Impossible de charger les sessions",
+    "loadErrorFallback": "Impossible de charger les sessions. Vérifie ta connexion.",
+    "deleteConfirm": "Supprimer {{count}} session ? Cette action est définitive.",
+    "deleteConfirm_plural": "Supprimer {{count}} sessions ? Cette action est définitive."
   },
   "fiches": {
     "title": "Fiches métiers RH",
@@ -96,6 +119,12 @@
     "sessions": "Sessions de quiz",
     "memberSince": "Membre depuis",
     "logout": "Se déconnecter"
+  },
+  "feedback": {
+    "title": "Laisser un avis",
+    "thankYou": "Merci pour ton avis !",
+    "ratingLabel": "Note (optionnel)",
+    "placeholder": "Ton avis sur SUP des RH…"
   },
   "support": {
     "buttonTitle": "Besoin d'aide ?",
