@@ -3,7 +3,6 @@ import { Navigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
 import { supabase } from "../lib/supabase";
-import { FeedbackButton } from "../components/FeedbackButton";
 
 type AuthState = "loading" | "authenticated" | "unauthenticated";
 
@@ -40,10 +39,5 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  return (
-    <>
-      {children}
-      <FeedbackButton />
-    </>
-  );
+  return <>{children}</>;
 }

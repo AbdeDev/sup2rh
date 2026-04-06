@@ -144,22 +144,27 @@ const pedagogie = [
 
       <!-- ── Hero ── -->
       <section class="ecole-hero">
+        <!-- Orbes décoratifs -->
+        <div class="orb orb-blue" style="width:350px;height:350px;top:-100px;left:-80px;" aria-hidden="true"></div>
+        <div class="orb orb-green" style="width:250px;height:250px;bottom:0;right:-40px;" aria-hidden="true"></div>
+        <div class="orb orb-orange" style="width:180px;height:180px;top:50%;left:70%;" aria-hidden="true"></div>
+
         <span class="hero-badge" data-i18n="ecole.heroBadge">L'école de référence 100% RH</span>
         <h1 class="hero-title" data-i18n="ecole.heroTitle" data-i18n-html>
-          <span class="highlight">SUP des RH</span><br/>
+          <span class="highlight gradient-text">SUP des RH</span><br/>
           Former les professionnels RH depuis 1998
         </h1>
         <p class="hero-sub" data-i18n="ecole.heroSubtitle">
           École spécialisée dans les métiers des Ressources Humaines, SUP des RH accompagne chaque année des centaines d'apprenants vers des postes RH opérationnels, en France et à l'international.
         </p>
         <div class="hero-actions">
-          <a href="#formations" class="btn-primary" data-i18n="ecole.heroCta">Découvrir nos formations</a>
+          <a href="#formations" class="btn-primary btn-glow" data-i18n="ecole.heroCta">Découvrir nos formations</a>
           <a href="/entreprises" class="btn-secondary" data-i18n="ecole.heroCtaSecondary">Espace entreprises →</a>
         </div>
       </section>
 
       <!-- ── Chiffres clés ── -->
-      <section class="section-chiffres">
+      <section class="section-chiffres reveal">
         <div class="chiffres-grid">
           {chiffres.map((c) => (
             <div class="chiffre-card">
@@ -173,7 +178,7 @@ const pedagogie = [
 
       <!-- ── Présentation ── -->
       <section class="section-presentation">
-        <div class="section-header">
+        <div class="section-header reveal">
           <div class="section-badge" data-i18n="ecole.presentationBadge">Notre mission</div>
           <h2 class="section-title" data-i18n="ecole.presentationTitle">L'école innovante dédiée aux RH depuis 1998</h2>
         </div>
@@ -227,7 +232,7 @@ const pedagogie = [
 
       <!-- ── Pédagogie ── -->
       <section class="section-pedagogie">
-        <div class="section-header">
+        <div class="section-header reveal">
           <div class="section-badge section-badge-green" data-i18n="ecole.pedagogieBadge">Approche pédagogique</div>
           <h2 class="section-title" data-i18n="ecole.pedagogieTitle">Une pédagogie innovante</h2>
           <p class="section-desc" data-i18n="ecole.pedagogieDesc">SUP des RH a construit une approche pédagogique centrée sur l'employabilité réelle et l'immersion professionnelle.</p>
@@ -245,7 +250,7 @@ const pedagogie = [
 
       <!-- ── Formations ── -->
       <section id="formations" class="section-formations">
-        <div class="section-header">
+        <div class="section-header reveal">
           <div class="section-badge" data-i18n="ecole.formationsBadge">Programmes</div>
           <h2 class="section-title" data-i18n="ecole.formationsTitle">Nos formations en alternance</h2>
           <p class="section-desc" data-i18n="ecole.formationsDesc">De Bac+3 à Bac+6, des cursus pensés pour les réalités du terrain RH, 100% en alternance et reconnus par l'État.</p>
@@ -287,7 +292,7 @@ const pedagogie = [
 
       <!-- ── Témoignages ── -->
       <section class="section-temoignages">
-        <div class="section-header">
+        <div class="section-header reveal">
           <div class="section-badge section-badge-orange" data-i18n="ecole.temoignagesBadge">Ils témoignent</div>
           <h2 class="section-title" data-i18n="ecole.temoignagesTitle">Leur aventure SUP des RH</h2>
           <p class="section-desc" data-i18n="ecole.temoignagesDesc">Apprenants, intervenants et alumnis partagent leur expérience.</p>
@@ -311,7 +316,7 @@ const pedagogie = [
       </section>
 
       <!-- ── CTA ── -->
-      <section class="section-cta-ecole">
+      <section class="section-cta-ecole reveal">
         <div class="cta-card">
           <div class="cta-content">
             <p class="cta-eyebrow" data-i18n="ecole.ctaEyebrow">Vous ne savez pas quelle formation choisir ?</p>
@@ -433,8 +438,10 @@ const pedagogie = [
   .main { flex: 1; max-width: 960px; margin: 0 auto; width: 100%; padding: 0 1.5rem; }
 
   /* ── Buttons ── */
-  .btn-primary { display: inline-flex; align-items: center; padding: 0.75rem 1.75rem; border-radius: 999px; background: #004080; color: #fff !important; font-weight: 700; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 20px rgba(0,64,128,0.35); transition: transform 0.15s, background 0.15s; }
-  .btn-primary:hover { transform: translateY(-2px); background: #003366; }
+  .btn-primary { display: inline-flex; align-items: center; padding: 0.8rem 1.85rem; border-radius: 999px; background: linear-gradient(135deg, #004080, #0059b3); color: #fff !important; font-weight: 700; font-size: 0.95rem; text-decoration: none; box-shadow: 0 4px 20px rgba(0,64,128,0.35); transition: transform 0.2s, box-shadow 0.2s; }
+  .btn-primary:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 8px 30px rgba(0,64,128,0.5); }
+  .btn-glow { animation: btn-pulse 3s ease-in-out infinite; }
+  @keyframes btn-pulse { 0%, 100% { box-shadow: 0 4px 20px rgba(0,64,128,0.35); } 50% { box-shadow: 0 4px 30px rgba(0,64,128,0.55), 0 0 60px rgba(0,64,128,0.15); } }
   .btn-secondary { display: inline-flex; align-items: center; padding: 0.75rem 1.75rem; border-radius: 999px; background: transparent; color: var(--landing-text); font-weight: 600; font-size: 0.95rem; text-decoration: none; border: 1.5px solid var(--landing-border); transition: all 0.15s; }
   .btn-secondary:hover { background: var(--landing-bg-soft); border-color: #004080; }
   html.dark .btn-secondary:hover { border-color: #38bdf8; }
@@ -450,7 +457,14 @@ const pedagogie = [
   .section-desc { color: var(--landing-muted); font-size: 0.9rem; max-width: 34rem; margin: 0 auto; line-height: 1.6; }
 
   /* ── Hero ── */
-  .ecole-hero { text-align: center; padding: 4.5rem 0 3.5rem; animation: heroFadeIn 0.6s ease-out; }
+  .ecole-hero {
+    text-align: center; padding: 5rem 0 4rem; animation: heroFadeIn 0.6s ease-out;
+    position: relative;
+    background: radial-gradient(ellipse 90% 50% at 50% 30%, rgba(0,64,128,0.06) 0%, transparent 60%);
+  }
+  html.dark .ecole-hero {
+    background: radial-gradient(ellipse 90% 50% at 50% 30%, rgba(56,189,248,0.04) 0%, transparent 60%);
+  }
   @keyframes heroFadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   .hero-badge { display: inline-block; padding: 0.35rem 1rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.03em; background: rgba(0,64,128,0.1); color: #004080; border: 1px solid rgba(0,64,128,0.2); margin-bottom: 1.5rem; }
   html.dark .hero-badge { background: rgba(56,189,248,0.1); color: #38bdf8; border-color: rgba(56,189,248,0.2); }
@@ -463,8 +477,12 @@ const pedagogie = [
   /* ── Chiffres ── */
   .section-chiffres { padding: 0 0 3.5rem; }
   .chiffres-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 1rem; }
-  .chiffre-card { text-align: center; background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 16px; padding: 1.5rem 0.75rem; transition: box-shadow 0.2s, transform 0.2s; }
-  .chiffre-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+  .chiffre-card { text-align: center; background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 18px; padding: 1.5rem 0.75rem; transition: box-shadow 0.3s, transform 0.3s, border-color 0.3s; position: relative; overflow: hidden; }
+  .chiffre-card::after { content: ""; position: absolute; bottom: 0; left: 20%; right: 20%; height: 3px; border-radius: 3px 3px 0 0; background: linear-gradient(90deg, #004080, #008c54); opacity: 0; transition: opacity 0.3s; }
+  .chiffre-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.1); transform: translateY(-4px); border-color: rgba(0,64,128,0.2); }
+  .chiffre-card:hover::after { opacity: 1; }
+  html.dark .chiffre-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.3); border-color: rgba(56,189,248,0.2); }
+  html.dark .chiffre-card::after { background: linear-gradient(90deg, #38bdf8, #4ade80); }
   .chiffre-icon { font-size: 1.5rem; display: block; margin-bottom: 0.5rem; }
   .chiffre-value { font-size: 1.5rem; font-weight: 800; color: var(--landing-accent); margin: 0 0 0.25rem; font-family: "Figtree","Montserrat",system-ui,sans-serif; }
   .chiffre-label { font-size: 0.72rem; color: var(--landing-muted); margin: 0; line-height: 1.4; }
@@ -488,8 +506,11 @@ const pedagogie = [
   /* ── Pédagogie ── */
   .section-pedagogie { padding: 0 0 3.5rem; }
   .pedagogie-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.25rem; }
-  .pedagogie-card { background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 16px; padding: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; transition: box-shadow 0.2s, transform 0.2s; }
-  .pedagogie-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+  .pedagogie-card { background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 18px; padding: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; transition: box-shadow 0.3s, transform 0.3s, border-color 0.3s; position: relative; overflow: hidden; }
+  .pedagogie-card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.1); transform: translateY(-4px); border-color: rgba(0,140,84,0.25); }
+  html.dark .pedagogie-card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.3); border-color: rgba(74,222,128,0.2); }
+  .pedagogie-card::before { content: ""; position: absolute; top: 0; left: 0; width: 3px; height: 0; background: linear-gradient(180deg, #008c54, #004080); transition: height 0.4s ease; border-radius: 0 0 3px 0; }
+  .pedagogie-card:hover::before { height: 100%; }
   .pedagogie-icon { font-size: 1.75rem; }
   .pedagogie-title { font-size: 0.95rem; font-weight: 700; color: var(--landing-text); margin: 0; font-family: "Figtree","Montserrat",system-ui,sans-serif; }
   .pedagogie-desc { font-size: 0.82rem; color: var(--landing-muted); line-height: 1.6; margin: 0; }
@@ -505,8 +526,9 @@ const pedagogie = [
   html.dark .btn-show-more:hover { border-color: #38bdf8; }
 
   .formations-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.25rem; }
-  .formation-card { background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 16px; overflow: hidden; padding: 0; display: flex; flex-direction: column; transition: box-shadow 0.2s, transform 0.2s; }
-  .formation-card:hover { box-shadow: 0 10px 28px rgba(0,0,0,0.1); transform: translateY(-3px); }
+  .formation-card { background: var(--landing-card); border: 1px solid var(--landing-border); border-radius: 16px; overflow: hidden; padding: 0; display: flex; flex-direction: column; transition: box-shadow 0.3s, transform 0.3s, border-color 0.3s; }
+  .formation-card:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.1); transform: translateY(-4px); border-color: rgba(0,64,128,0.2); }
+  html.dark .formation-card:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.3); border-color: rgba(56,189,248,0.2); }
   .formation-top-bar { height: 4px; width: 100%; flex-shrink: 0; }
   .formation-header { padding: 1.4rem 1.5rem 0; display: flex; flex-direction: column; gap: 0.6rem; }
   .formation-badges { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
@@ -533,8 +555,24 @@ const pedagogie = [
 
   /* ── CTA ── */
   .section-cta-ecole { padding: 0 0 5rem; }
-  .cta-card { background: linear-gradient(135deg, rgba(0,64,128,0.07) 0%, rgba(0,140,84,0.07) 100%); border: 1px solid rgba(0,64,128,0.15); border-radius: 24px; padding: 3.5rem 2.5rem; text-align: center; }
-  html.dark .cta-card { background: linear-gradient(135deg, rgba(56,189,248,0.06) 0%, rgba(74,222,128,0.06) 100%); border-color: rgba(56,189,248,0.15); }
+  .cta-card {
+    background: linear-gradient(135deg, rgba(0,64,128,0.08) 0%, rgba(0,140,84,0.05) 50%, rgba(243,112,33,0.04) 100%);
+    border: 1px solid rgba(0,64,128,0.15);
+    border-radius: 24px; padding: 3.5rem 2.5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .cta-card::before {
+    content: "";
+    position: absolute;
+    top: -40%;
+    right: -20%;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,140,84,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  html.dark .cta-card { background: linear-gradient(135deg, rgba(56,189,248,0.06) 0%, rgba(74,222,128,0.04) 50%, rgba(251,146,60,0.03) 100%); border-color: rgba(56,189,248,0.15); }
   .cta-eyebrow { font-size: 0.8rem; font-weight: 600; color: #004080; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.5rem; }
   html.dark .cta-eyebrow { color: #38bdf8; }
   .cta-title { font-size: clamp(1.4rem,3vw,1.8rem); font-weight: 800; color: var(--landing-text); margin: 0 0 0.75rem; font-family: "Figtree","Montserrat",system-ui,sans-serif; }

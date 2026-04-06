@@ -83,9 +83,9 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
   const currentPath = location.pathname;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="flex h-14 shrink-0 items-center border-b border-border bg-card shadow-sm sticky top-0 z-50">
+      <header className="flex h-14 shrink-0 items-center border-b border-border bg-card/80 backdrop-blur-xl shadow-sm z-50">
         <div className="flex w-full items-center gap-3 px-4 lg:px-6">
           <button
             type="button"
@@ -103,7 +103,6 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
             </div>
           </button>
 
-          {/* Desktop toggle sidebar */}
           <Button
             variant="ghost"
             size="icon"
@@ -157,23 +156,21 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar desktop — fond sombre professionnel */}
+      <div className="flex flex-1 min-h-0">
+        {/* Sidebar desktop */}
         <aside
-          className={`shrink-0 hidden md:flex flex-col transition-all duration-300 ease-in-out ${
+          className={`shrink-0 hidden md:flex flex-col border-r border-border bg-card transition-all duration-300 ease-in-out ${
             sidebarCollapsed ? "w-[60px]" : "w-56"
           }`}
-          style={{ background: "#0d1f35", borderRight: "1px solid #1e3452" }}
         >
-          {/* Logo dans la sidebar */}
           {!sidebarCollapsed && (
-            <div className="px-4 py-4 border-b border-white/10">
-              <p className="text-xs font-semibold text-white/50 uppercase tracking-widest">
-                Administration
+            <div className="px-4 py-3 border-b border-border">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">
+                {t("nav.navigation") || "Navigation"}
               </p>
             </div>
           )}
-          <nav className="flex-1 p-2 space-y-0.5 pt-3">
+          <nav className="flex-1 overflow-y-auto p-2 space-y-0.5 pt-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPath === item.path || currentPath.startsWith(item.path + "/");
@@ -186,27 +183,27 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
                     sidebarCollapsed ? "px-0 py-2.5 justify-center" : "px-3 py-2.5"
                   } ${
                     isActive
-                      ? "bg-white/15 text-white shadow-sm"
-                      : "text-white/50 hover:text-white hover:bg-white/8"
+                      ? "bg-primary/10 text-primary font-semibold shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-accent"
                   }`}
                 >
-                  <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-blue-400" : ""}`} />
+                  <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
                   {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
                   {!sidebarCollapsed && isActive && (
-                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-400 shrink-0" />
+                    <span className="ml-auto h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
                   )}
                 </button>
               );
             })}
           </nav>
           {!sidebarCollapsed && (
-            <div className="p-3 border-t border-white/10">
-              <p className="text-[10px] text-white/30 text-center">RH&MOI Admin v3</p>
+            <div className="p-3 border-t border-border">
+              <p className="text-[10px] text-muted-foreground/60 text-center">RH&MOI Admin v3</p>
             </div>
           )}
         </aside>
 
-        {/* Mobile bottom nav — scrollable horizontally */}
+        {/* Mobile bottom nav */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-border bg-card/95 backdrop-blur-md z-40 safe-area-pb">
           <nav className="flex items-center overflow-x-auto hide-scrollbar px-2 py-1.5 gap-1">
             {navItems.map((item) => {
