@@ -123,6 +123,7 @@
   "feedback": {
     "title": "Laisser un avis",
     "thankYou": "Merci pour ton avis !",
+    "thankYouSub": "Ton retour aide à améliorer l'expérience",
     "ratingLabel": "Note (optionnel)",
     "placeholder": "Ton avis sur SUP des RH…"
   },
@@ -136,6 +137,7 @@
     "suggestionMessagePlaceholder": "Décris ta suggestion…",
     "successHelp": "Demande envoyée !",
     "successSuggestion": "Suggestion envoyée !",
-    "allFieldsRequired": "Tous les champs sont requis"
+    "allFieldsRequired": "Tous les champs sont requis",
+    "errorGeneric": "Erreur lors de l'envoi"
   }
 }

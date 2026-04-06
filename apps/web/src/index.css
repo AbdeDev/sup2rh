@@ -74,14 +74,13 @@ body {
   color: var(--foreground);
 }
 
-/* Fond chaleureux — light mode : légère texture linéaire */
 body {
-  background-image: linear-gradient(135deg, #f8f9fc 0%, #f0f4f9 50%, #f8faff 100%);
+  background-image: linear-gradient(160deg, #f8f9fc 0%, #eff4fb 35%, #f0f4f9 65%, #faf8f5 100%);
   background-attachment: fixed;
 }
 
 .dark body {
-  background-image: linear-gradient(135deg, #0c111d 0%, #0f1726 50%, #0c1221 100%);
+  background-image: linear-gradient(160deg, #0c111d 0%, #0f1726 40%, #0c1221 70%, #0d1320 100%);
   background-attachment: fixed;
 }
 
