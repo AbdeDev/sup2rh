@@ -72,6 +72,7 @@ final class ContactController extends AbstractController
         $contact->setUserId($userId);
         $contact->setSessionId($sessionId);
         $contact->setJobId($data['jobId'] ?? $session->getFinalJobId());
+        $contact->setPhone(!empty($data['phone']) && is_string($data['phone']) ? trim($data['phone']) : null);
         $contact->setExplanation($data['explanation'] ?? null);
         $contact->setScores($data['scores'] ?? $session->getScores());
 

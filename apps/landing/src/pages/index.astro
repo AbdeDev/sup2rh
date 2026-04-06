@@ -59,11 +59,12 @@ try {
 				</div>
 			</div>
 			<nav class="header-nav">
-				<a href="/" class="nav-link nav-link-active">Accueil</a>
-				<a href="/ecole" class="nav-link">L'école</a>
-				<a href="/entreprises" class="nav-link">Entreprises</a>
+				<a href="/" class="nav-link nav-link-active" data-i18n="nav.home">Accueil</a>
+				<a href="/ecole" class="nav-link" data-i18n="nav.school">L'école</a>
+				<a href="/entreprises" class="nav-link" data-i18n="nav.companies">Entreprises</a>
 			</nav>
 			<div class="header-actions">
+				<button type="button" class="btn-lang" id="lang-toggle" aria-label="Changer la langue">FR</button>
 				<button type="button" class="btn-theme" id="theme-toggle" aria-label="Changer le thème">
 					<svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
 					<svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -74,11 +75,15 @@ try {
 					<span class="menu-line"></span>
 				</button>
 			</div>
-			<nav class="mobile-nav" id="mobile-nav">
-				<a href="/" class="mobile-nav-link">Accueil</a>
-				<a href="/ecole" class="mobile-nav-link">L'école</a>
-				<a href="/entreprises" class="mobile-nav-link">Entreprises</a>
-			</nav>
+		<nav class="mobile-nav" id="mobile-nav">
+			<a href="/" class="mobile-nav-link" data-i18n="nav.home">Accueil</a>
+			<a href="/ecole" class="mobile-nav-link" data-i18n="nav.school">L'école</a>
+			<a href="/entreprises" class="mobile-nav-link" data-i18n="nav.companies">Entreprises</a>
+			<div class="mobile-nav-actions">
+				<button type="button" class="btn-lang" id="mobile-lang-toggle" aria-label="Changer la langue">FR</button>
+				<a href={WEB_APP_URL + "/login"} class="btn-connect" style="font-size:0.82rem;">Se connecter</a>
+			</div>
+		</nav>
 		</header>
 
 		<main class="main">
@@ -91,10 +96,10 @@ try {
 						<span class="hero-badge-dot" aria-hidden="true"></span>
 						Quiz d'orientation RH
 					</div>
-					<h1 class="hero-title">
+					<h1 class="hero-title" data-i18n="hero.title" data-i18n-html>
 						Trouve le <span class="highlight">métier RH</span><br/>qui te ressemble
 					</h1>
-					<p class="hero-sub">
+					<p class="hero-sub" data-i18n="hero.subtitle">
 						Réponds à 15 questions et découvre les métiers des Ressources Humaines faits pour toi — Recrutement, Paie, QVCT, Formation et plus encore.
 					</p>
 					<div class="hero-actions">
@@ -113,19 +118,19 @@ try {
 							<span class="pa" style="background:#008c54">M</span>
 							<span class="pa" style="background:#f37021">L</span>
 						</div>
-						<span class="proof-text">+2 000 étudiants ont déjà trouvé leur voie</span>
+						<span class="proof-text" data-i18n="hero.proof">+2 000 étudiants ont déjà trouvé leur voie</span>
 					</div>
 				</div>
 
 				<div class="hero-stats">
 					<div class="stat">
 						<span class="stat-number">{jobs.length || "5+"}</span>
-						<span class="stat-label">Fiches métiers</span>
+						<span class="stat-label" data-i18n="hero.statJobs">Fiches métiers</span>
 					</div>
 					<div class="stat-divider"></div>
 					<div class="stat">
 						<span class="stat-number">15</span>
-						<span class="stat-label">Questions</span>
+						<span class="stat-label" data-i18n="hero.statQuestions">Questions</span>
 					</div>
 					<div class="stat-divider"></div>
 					<div class="stat">
@@ -135,16 +140,16 @@ try {
 					<div class="stat-divider"></div>
 					<div class="stat">
 						<span class="stat-number">100%</span>
-						<span class="stat-label">Gratuit</span>
+						<span class="stat-label" data-i18n="hero.statFree">Gratuit</span>
 					</div>
 				</div>
 			</section>
 
 			<section id="metiers" class="section-metiers">
 				<div class="section-header">
-					<div class="section-badge">Découvrir</div>
-					<h2 class="section-title">Fiches métiers RH</h2>
-					<p class="section-desc">Parcours les métiers RH sans créer de compte. Connecte-toi pour obtenir une recommandation personnalisée.</p>
+					<div class="section-badge" data-i18n="jobs.badge">Découvrir</div>
+					<h2 class="section-title" data-i18n="jobs.title">Fiches métiers RH</h2>
+					<p class="section-desc" data-i18n="jobs.desc">Parcours les métiers RH sans créer de compte. Connecte-toi pour obtenir une recommandation personnalisée.</p>
 				</div>
 
 				<div class="jobs-grid" id="jobs-grid">
@@ -190,15 +195,15 @@ try {
 				)}
 
 				<div class="section-cta">
-					<a href={WEB_APP_URL + "/fiches"} class="link-app">Voir toutes les fiches dans l'app →</a>
+					<a href={WEB_APP_URL + "/fiches"} class="link-app" data-i18n="jobs.seeAll">Voir toutes les fiches dans l'app →</a>
 				</div>
 			</section>
 
 			<section class="section-how">
 				<div class="section-header">
-					<div class="section-badge">Comment ça marche</div>
-					<h2 class="section-title">En 3 étapes simples</h2>
-					<p class="section-desc">Pas d'inscription longue, pas de mot de passe. Juste un quiz intelligent.</p>
+					<div class="section-badge" data-i18n="steps.badge">Comment ça marche</div>
+					<h2 class="section-title" data-i18n="steps.title">En 3 étapes simples</h2>
+					<p class="section-desc" data-i18n="steps.desc">Pas d'inscription longue, pas de mot de passe. Juste un quiz intelligent.</p>
 				</div>
 				<div class="steps-grid">
 					<div class="step-card step-card-blue">
@@ -209,8 +214,8 @@ try {
 						<div class="step-icon step-icon-blue" aria-hidden="true">
 							<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 						</div>
-						<h3 class="step-title">Connecte-toi</h3>
-						<p class="step-desc">Crée un compte en 10 secondes avec ton email. Pas de mot de passe — juste un lien magique.</p>
+						<h3 class="step-title" data-i18n="steps.step1Title">Connecte-toi</h3>
+						<p class="step-desc" data-i18n="steps.step1Desc">Crée un compte en 10 secondes avec ton email. Pas de mot de passe — juste un lien magique.</p>
 					</div>
 					<div class="step-card step-card-green">
 						<div class="step-top">
@@ -220,18 +225,19 @@ try {
 						<div class="step-icon step-icon-green" aria-hidden="true">
 							<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
 						</div>
-						<h3 class="step-title">Fais le quiz</h3>
-						<p class="step-desc">15 questions rapides pour cerner ton profil. Tu lis une affirmation, tu valides ou pas — c'est tout.</p>
+						<h3 class="step-title" data-i18n="steps.step2Title">Fais le quiz</h3>
+						<p class="step-desc" data-i18n="steps.step2Desc">15 questions rapides pour cerner ton profil. Tu lis une affirmation, tu valides ou pas — c'est tout.</p>
 					</div>
 					<div class="step-card step-card-orange">
 						<div class="step-top">
 							<div class="step-number step-number-orange">3</div>
+							<div class="step-connector" aria-hidden="true"></div>
 						</div>
 						<div class="step-icon step-icon-orange" aria-hidden="true">
 							<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
 						</div>
-						<h3 class="step-title">Découvre ton résultat</h3>
-						<p class="step-desc">Reçois une recommandation personnalisée avec fiche métier, fourchette salariale et taux d'embauche.</p>
+						<h3 class="step-title" data-i18n="steps.step3Title">Découvre ton résultat</h3>
+						<p class="step-desc" data-i18n="steps.step3Desc">Reçois une recommandation personnalisée avec fiche métier, fourchette salariale et taux d'embauche.</p>
 					</div>
 				</div>
 		</section>
@@ -240,30 +246,30 @@ try {
 		<section class="section-school">
 			<div class="school-inner">
 				<div class="school-text">
-					<span class="school-eyebrow">Derrière ce quiz</span>
-					<h2 class="school-title">SUP des RH — L'école 100% spécialisée en RH depuis 1998</h2>
-					<p class="school-sub">Toutes nos formations sont dispensées en alternance et reconnues par l'État (titres RNCP niveaux 6 et 7). Rejoignez les +8 500 alumnis SUP des RH qui évoluent dans tous les secteurs.</p>
+					<span class="school-eyebrow" data-i18n="school.eyebrow">Derrière ce quiz</span>
+					<h2 class="school-title" data-i18n="school.title">SUP des RH — L'école 100% spécialisée en RH depuis 1998</h2>
+					<p class="school-sub" data-i18n="school.desc">Toutes nos formations sont dispensées en alternance et reconnues par l'État (titres RNCP niveaux 6 et 7). Rejoignez les +8 500 alumnis SUP des RH qui évoluent dans tous les secteurs.</p>
 					<div class="school-actions">
-						<a href="/ecole" class="btn-school">Découvrir l'école →</a>
-						<a href="/entreprises" class="btn-school-ghost">Espace entreprises</a>
+						<a href="/ecole" class="btn-school" data-i18n="school.cta">Découvrir l'école →</a>
+						<a href="/entreprises" class="btn-school-ghost" data-i18n="school.ctaSecondary">Espace entreprises</a>
 					</div>
 				</div>
 				<div class="school-stats">
 					<div class="school-stat">
 						<span class="ss-val">27 ans</span>
-						<span class="ss-lbl">D'expérience (depuis 1998)</span>
+						<span class="ss-lbl" data-i18n="school.stat1Lbl">D'expérience (depuis 1998)</span>
 					</div>
 					<div class="school-stat">
 						<span class="ss-val">100%</span>
-						<span class="ss-lbl">Placement en alternance</span>
+						<span class="ss-lbl" data-i18n="school.stat2Lbl">Placement en alternance</span>
 					</div>
 					<div class="school-stat">
 						<span class="ss-val">600+</span>
-						<span class="ss-lbl">Entreprises partenaires</span>
+						<span class="ss-lbl" data-i18n="school.stat3Lbl">Entreprises partenaires</span>
 					</div>
 					<div class="school-stat">
 						<span class="ss-val">+8 500</span>
-						<span class="ss-lbl">Alumnis actifs</span>
+						<span class="ss-lbl" data-i18n="school.stat4Lbl">Alumnis actifs</span>
 					</div>
 				</div>
 			</div>
@@ -276,9 +282,9 @@ try {
 
 			<!-- En-tête de section -->
 			<div class="ent-header">
-				<span class="ent-eyebrow">Espace entreprises</span>
-				<h2 class="ent-title">Recrutez les talents RH de demain</h2>
-				<p class="ent-subtitle">SUP des RH forme des professionnels RH opérationnels dès la 1ère année. 600+ entreprises partenaires font confiance à notre réseau.</p>
+				<span class="ent-eyebrow" data-i18n="ent.eyebrow">Espace entreprises</span>
+				<h2 class="ent-title" data-i18n="ent.title">Recrutez les talents RH de demain</h2>
+				<p class="ent-subtitle" data-i18n="ent.subtitle">SUP des RH forme des professionnels RH opérationnels dès la 1ère année. 600+ entreprises partenaires font confiance à notre réseau.</p>
 			</div>
 
 			<!-- Grille services -->
@@ -287,29 +293,29 @@ try {
 					<div class="ent-svc-icon ent-svc-icon-blue">
 						<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
 					</div>
-					<h3 class="ent-svc-title">Déposer une offre</h3>
-					<p class="ent-svc-desc">Alternance ou stage — nos étudiants sont disponibles tout au long de l'année.</p>
+					<h3 class="ent-svc-title" data-i18n="ent.svc1Title">Déposer une offre</h3>
+					<p class="ent-svc-desc" data-i18n="ent.svc1Desc">Alternance ou stage — nos étudiants sont disponibles tout au long de l'année.</p>
 				</div>
 				<div class="ent-service-card">
 					<div class="ent-svc-icon ent-svc-icon-green">
 						<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
 					</div>
-					<h3 class="ent-svc-title">Recruter un alumni</h3>
-					<p class="ent-svc-desc">+8 500 diplômés actifs dans tous les secteurs. Accédez à notre vivier de talents RH.</p>
+					<h3 class="ent-svc-title" data-i18n="ent.svc2Title">Recruter un alumni</h3>
+					<p class="ent-svc-desc" data-i18n="ent.svc2Desc">+8 500 diplômés actifs dans tous les secteurs. Accédez à notre vivier de talents RH.</p>
 				</div>
 				<div class="ent-service-card">
 					<div class="ent-svc-icon ent-svc-icon-orange">
 						<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
 					</div>
-					<h3 class="ent-svc-title">Devenir partenaire</h3>
-					<p class="ent-svc-desc">Intégrez notre réseau d'entreprises partenaires et participez à la formation des futurs RH.</p>
+					<h3 class="ent-svc-title" data-i18n="ent.svc3Title">Devenir partenaire</h3>
+					<p class="ent-svc-desc" data-i18n="ent.svc3Desc">Intégrez notre réseau d'entreprises partenaires et participez à la formation des futurs RH.</p>
 				</div>
 				<div class="ent-service-card">
 					<div class="ent-svc-icon ent-svc-icon-purple">
 						<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
 					</div>
-					<h3 class="ent-svc-title">Interventions & masterclass</h3>
-					<p class="ent-svc-desc">Partagez votre expertise en intervenant dans nos formations. Visibilité et engagement RSE.</p>
+					<h3 class="ent-svc-title" data-i18n="ent.svc4Title">Interventions & masterclass</h3>
+					<p class="ent-svc-desc" data-i18n="ent.svc4Desc">Partagez votre expertise en intervenant dans nos formations. Visibilité et engagement RSE.</p>
 				</div>
 			</div>
 
@@ -318,12 +324,12 @@ try {
 				<div class="ent-stats-row">
 					<div class="ent-stat-item">
 						<span class="ent-stat-val">600+</span>
-						<span class="ent-stat-lbl">Entreprises partenaires</span>
+						<span class="ent-stat-lbl" data-i18n="ent.stat1Lbl">Entreprises partenaires</span>
 					</div>
 					<div class="ent-stat-sep" aria-hidden="true"></div>
 					<div class="ent-stat-item">
 						<span class="ent-stat-val">100%</span>
-						<span class="ent-stat-lbl">Placement en alternance</span>
+						<span class="ent-stat-lbl" data-i18n="ent.stat2Lbl">Placement en alternance</span>
 					</div>
 					<div class="ent-stat-sep" aria-hidden="true"></div>
 					<div class="ent-stat-item">
@@ -333,7 +339,7 @@ try {
 					<div class="ent-stat-sep" aria-hidden="true"></div>
 					<div class="ent-stat-item">
 						<span class="ent-stat-val">27 ans</span>
-						<span class="ent-stat-lbl">D'expérience RH</span>
+						<span class="ent-stat-lbl" data-i18n="ent.stat4Lbl">D'expérience RH</span>
 					</div>
 				</div>
 				<div class="ent-cta-group">
@@ -355,14 +361,14 @@ try {
 						<img src="/lamascott-hero.png" alt="" class="footer-logo logo-theme-safe" width="32" height="32" />
 						<p class="footer-brand">RH&MOI by SUP des RH</p>
 					</div>
-					<p class="footer-tagline">Orientation métiers RH, en toute confiance.</p>
+					<p class="footer-tagline" data-i18n="footer.tagline">Orientation métiers RH, en toute confiance.</p>
 				</div>
 				<nav class="footer-links">
-					<a href="/ecole">L'école</a>
-					<a href="/entreprises">Entreprises</a>
-					<a href={WEB_APP_URL + "/legal/conditions"}>Conditions d'utilisation</a>
-					<a href={WEB_APP_URL + "/legal/confidentialite"}>Politique de confidentialité</a>
-					<a href={WEB_APP_URL + "/login"}>Accéder au quiz</a>
+					<a href="/ecole" data-i18n="footer.linkSchool">L'école</a>
+					<a href="/entreprises" data-i18n="footer.linkCompanies">Entreprises</a>
+					<a href={WEB_APP_URL + "/legal/conditions"} data-i18n="footer.linkTerms">Conditions d'utilisation</a>
+					<a href={WEB_APP_URL + "/legal/confidentialite"} data-i18n="footer.linkPrivacy">Politique de confidentialité</a>
+					<a href={WEB_APP_URL + "/login"} data-i18n="footer.linkQuiz">Accéder au quiz</a>
 				</nav>
 				<p class="footer-copy">© {new Date().getFullYear()} RH&MOI by SUP des RH — Tous droits réservés</p>
 			</div>
@@ -379,6 +385,17 @@ try {
 		});
 	}
 
+	const currentLang = localStorage.getItem("rhmoi_lang") || "fr";
+	const langLabel = currentLang === "fr" ? "EN" : "FR";
+
+	document.querySelectorAll("#lang-toggle, #mobile-lang-toggle").forEach((el) => {
+		el.textContent = langLabel;
+		el.addEventListener("click", () => {
+			// @ts-expect-error
+			if (typeof window.supdesrhToggleLang === "function") window.supdesrhToggleLang();
+		});
+	});
+
 	// Fiches métier — show more
 	const showMoreBtn = document.getElementById("jobs-show-more") as HTMLButtonElement | null;
 	if (showMoreBtn) {
@@ -386,6 +403,14 @@ try {
 			const extras = document.querySelectorAll(".job-card-extra");
 			extras.forEach((el) => el.classList.add("job-visible"));
 			showMoreBtn.parentElement?.remove();
+		});
+	}
+
+	// i18n : appliquer les traductions si langue != fr
+	if (currentLang === "en") {
+		import("../i18n/en.json").then((mod) => {
+			// @ts-expect-error
+			if (typeof window.supdesrhApplyI18n === "function") window.supdesrhApplyI18n(mod.default || mod);
 		});
 	}
 </script>
@@ -489,6 +514,23 @@ try {
 	.icon-sun, .icon-moon { color: var(--landing-text); }
 	html.dark .icon-sun { display: none; }
 	html.dark .icon-moon { display: block; }
+
+	.btn-lang {
+		background: none;
+		border: 1.5px solid var(--landing-border);
+		border-radius: 8px;
+		padding: 5px 12px;
+		font-size: 12px;
+		font-weight: 700;
+		color: var(--landing-text);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		letter-spacing: 0.03em;
+	}
+	.btn-lang:hover {
+		background: var(--landing-bg-soft);
+		border-color: var(--landing-text);
+	}
 
 	.btn-connect {
 		padding: 0.55rem 1.25rem;
@@ -608,6 +650,15 @@ try {
 		.mobile-nav-link:hover {
 			background: var(--landing-bg-soft);
 			color: var(--landing-accent);
+		}
+
+		.mobile-nav-actions {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			padding: 0.5rem 0.75rem 0.25rem;
+			border-top: 1px solid var(--landing-border);
+			margin-top: 0.25rem;
 		}
 	}
 
@@ -1642,6 +1693,8 @@ try {
 	@media (max-width: 640px) {
 		.header-nav { display: none; }
 
+		.header-actions .btn-lang { display: none; }
+
 		.btn-connect {
 			padding: 0.5rem 0.9rem;
 			font-size: 0.78rem;
@@ -1719,6 +1772,8 @@ try {
 		.site-header {
 			padding: 0.75rem 1rem;
 		}
+
+		.header-actions .btn-connect { display: none; }
 
 		.hero {
 			padding: 2rem 0 1.5rem;

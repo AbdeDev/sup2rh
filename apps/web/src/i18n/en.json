@@ -1,0 +1,112 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "error": "Error",
+    "back": "Back",
+    "cancel": "Cancel",
+    "send": "Send",
+    "save": "Save",
+    "delete": "Delete",
+    "close": "Close",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "noResults": "No results",
+    "confirm": "Confirm"
+  },
+  "nav": {
+    "quiz": "Quiz",
+    "sessions": "My sessions",
+    "fiches": "Job profiles",
+    "profile": "Profile",
+    "logout": "Log out",
+    "backToSite": "Back to site"
+  },
+  "login": {
+    "title": "Discover your future HR career",
+    "subtitle": "Sign in to start the quiz",
+    "emailPlaceholder": "Your email address",
+    "magicLink": "Get a login link",
+    "privacy": "Your email is never used for commercial purposes. It is only used to save your results.",
+    "features": {
+      "quiz": "Smart 2-minute quiz",
+      "fiches": "Detailed job profiles",
+      "free": "100% free, no commitment",
+      "privacy": "Private and protected data"
+    },
+    "socialProof": "2,000+ students have already found their path",
+    "legalAccept": "By continuing, you accept our",
+    "cgu": "Terms of Service",
+    "privacyPolicy": "Privacy Policy"
+  },
+  "quizLanding": {
+    "title": "Discover your HR career",
+    "subtitle": "Answer 15 questions and find out which HR career best matches your profile.",
+    "startButton": "Start the quiz",
+    "resumeButton": "Resume my session",
+    "stats": {
+      "questions": "questions",
+      "minutes": "minutes",
+      "jobs": "HR jobs"
+    },
+    "domains": "Key HR domains"
+  },
+  "quiz": {
+    "question": "Question",
+    "of": "of",
+    "strongly_disagree": "Strongly disagree",
+    "disagree": "Somewhat disagree",
+    "neutral": "Neutral",
+    "agree": "Somewhat agree",
+    "strongly_agree": "Strongly agree",
+    "analysing": "Analysing…"
+  },
+  "result": {
+    "title": "Your result",
+    "match": "Match",
+    "domains": "HR Domains",
+    "interestedTitle": "Interested in this career?",
+    "interestedDesc": "The SUP des RH team can help you find an internship or apprenticeship in this field.",
+    "contactButton": "Get in touch with SUP des RH",
+    "phonePlaceholder": "Your phone number (optional)",
+    "sendRequest": "Send my request",
+    "contactSent": "Request sent! The SUP des RH team will contact you soon.",
+    "newQuiz": "New quiz",
+    "mySessions": "My sessions",
+    "allJobs": "All job profiles"
+  },
+  "sessions": {
+    "title": "My sessions",
+    "noSessions": "No sessions yet",
+    "noSessionsDesc": "Start a quiz to see your results here",
+    "answers": "answers",
+    "seeResult": "See result",
+    "inProgress": "In progress"
+  },
+  "fiches": {
+    "title": "HR Job Profiles",
+    "subtitle": "Discover the careers in Human Resources",
+    "salary": "Average salary",
+    "employability": "Employment rate",
+    "seeDetails": "View profile"
+  },
+  "profile": {
+    "title": "My profile",
+    "email": "Email",
+    "sessions": "Quiz sessions",
+    "memberSince": "Member since",
+    "logout": "Log out"
+  },
+  "support": {
+    "buttonTitle": "Need help?",
+    "helpTab": "Help",
+    "suggestionTab": "Suggestion",
+    "emailPlaceholder": "Your email",
+    "subjectPlaceholder": "Subject",
+    "helpMessagePlaceholder": "Describe your issue…",
+    "suggestionMessagePlaceholder": "Describe your suggestion…",
+    "successHelp": "Request sent!",
+    "successSuggestion": "Suggestion sent!",
+    "allFieldsRequired": "All fields are required"
+  }
+}

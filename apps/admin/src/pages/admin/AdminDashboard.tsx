@@ -11,6 +11,8 @@ import {
   PanelLeftClose,
   PanelLeft,
   LayoutGrid,
+  LifeBuoy,
+  FileText,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -18,6 +20,7 @@ import { supabase } from "../../lib/supabase";
 import { clearAdminToken } from "../../lib/api";
 import { Button } from "../../components/ui/button";
 import { ThemeToggle } from "../../components/ThemeToggle";
+import { LanguageSwitcher } from "../../components/LanguageSwitcher";
 import { AppLogo } from "../../components/AppLogo";
 
 const navItems = [
@@ -33,6 +36,8 @@ const navItems = [
     path: "/admin/company-contacts",
   },
   { id: "feedbacks", label: "Avis", icon: MessageSquare, path: "/admin/feedbacks" },
+  { id: "support", label: "Support", icon: LifeBuoy, path: "/admin/support" },
+  { id: "brochures", label: "Brochures IA", icon: FileText, path: "/admin/brochures" },
 ];
 
 export function AdminDashboard({ children }: { children: React.ReactNode }) {
@@ -98,6 +103,7 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
           </Button>
 
           <div className="ml-auto flex items-center gap-1.5">
+            <LanguageSwitcher />
             <ThemeToggle />
             <div className="relative" ref={userMenuRef}>
               <Button
@@ -168,9 +174,9 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
           </nav>
         </aside>
 
-        {/* Mobile bottom nav */}
+        {/* Mobile bottom nav — scrollable horizontally */}
         <div className="md:hidden fixed bottom-0 left-0 right-0 border-t border-border bg-card/95 backdrop-blur-md z-40 safe-area-pb">
-          <nav className="flex items-center justify-around px-1 py-1.5">
+          <nav className="flex items-center overflow-x-auto hide-scrollbar px-2 py-1.5 gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPath === item.path || currentPath.startsWith(item.path + "/");
@@ -178,16 +184,16 @@ export function AdminDashboard({ children }: { children: React.ReactNode }) {
                 <button
                   key={item.id}
                   onClick={() => navigate(item.path)}
-                  className={`flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl text-[10px] font-medium transition-all duration-200 min-w-0 ${
+                  className={`flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-xl text-[10px] font-medium transition-all duration-200 shrink-0 ${
                     isActive ? "text-primary" : "text-muted-foreground active:text-foreground"
                   }`}
                 >
                   <div
                     className={`p-1 rounded-lg transition-colors ${isActive ? "bg-primary/10" : ""}`}
                   >
-                    <Icon className="h-4.5 w-4.5" />
+                    <Icon className="h-4 w-4" />
                   </div>
-                  <span className="truncate max-w-[56px]">{item.label}</span>
+                  <span className="whitespace-nowrap text-[9px]">{item.label}</span>
                 </button>
               );
             })}

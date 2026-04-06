@@ -19,6 +19,7 @@ import { getJobs } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { AppLogo } from "../components/AppLogo";
 
 const STEPS = [
@@ -189,6 +190,7 @@ export function QuizLandingPage() {
               <Briefcase className="h-3.5 w-3.5 mr-1.5" />
               Fiches métier
             </Button>
+            <LanguageSwitcher />
             <ThemeToggle />
             <div className="relative" ref={userMenuRef}>
               <Button

@@ -19,7 +19,7 @@ export function clearAdminToken(): void {
   localStorage.removeItem(ADMIN_TOKEN_KEY);
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const adminToken = getAdminToken();
   let token: string | null = adminToken;
 
@@ -246,6 +246,7 @@ export async function updateUserRole(userId: string, role: "USER" | "ADMIN"): Pr
 // Admin - Demandes de contact (1 card par user avec toutes ses sessions)
 export interface ContactRequestUserItem {
   email: string;
+  phone?: string | null;
   userId: string;
   contactRequestedAt: string;
   sessions: Array<{
@@ -407,4 +408,27 @@ export async function deleteJobCategory(id: string): Promise<void> {
   return request<void>(`/admin/job-categories/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
+}
+
+export function getExportCsvUrl(type: "contact-requests" | "company-contacts"): string {
+  return `${API_BASE_URL}/admin/${type}/export`;
+}
+
+export function getAdminToken(): string | null {
+  return localStorage.getItem(ADMIN_TOKEN_KEY);
+}
+
+export async function downloadCsv(type: "contact-requests" | "company-contacts"): Promise<void> {
+  const token = getAdminToken();
+  const res = await fetch(getExportCsvUrl(type), {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error("Erreur lors de l'export");
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = type === "contact-requests" ? "demandes-contact.csv" : "demandes-entreprises.csv";
+  a.click();
+  URL.revokeObjectURL(url);
 }

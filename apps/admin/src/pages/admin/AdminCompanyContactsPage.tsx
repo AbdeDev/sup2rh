@@ -14,7 +14,7 @@ import {
   Check,
 } from "lucide-react";
 
-import { getCompanyContacts, type CompanyContactItem } from "../../lib/api";
+import { getCompanyContacts, downloadCsv, type CompanyContactItem } from "../../lib/api";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
@@ -103,16 +103,27 @@ export function AdminCompanyContactsPage() {
                 : `${filtered.length} résultat${filtered.length !== 1 ? "s" : ""} sur ${items.length}`}
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-9 text-xs rounded-lg gap-1.5"
-            onClick={load}
-            disabled={loading}
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-            Actualiser
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 text-xs rounded-lg gap-1.5"
+              onClick={() => downloadCsv("company-contacts")}
+            >
+              <Download className="h-3.5 w-3.5" />
+              Exporter CSV
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-9 text-xs rounded-lg gap-1.5"
+              onClick={load}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              Actualiser
+            </Button>
+          </div>
         </div>
 
         {/* Recherche */}

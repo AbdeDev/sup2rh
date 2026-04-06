@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTO\AnalysisResult;
 use App\Entity\Job;
 use App\Entity\QuizSession;
+use App\Repository\BrochureRepository;
 use App\Repository\JobRepository;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -13,9 +14,9 @@ final class AiAnalyzer
 {
     private HttpClientInterface $httpClient;
 
-    /** Ordre de priorité : Groq (gratuit, puissant) → OpenRouter (gratuit) → HuggingFace → règles */
     public function __construct(
         private readonly JobRepository $jobRepository,
+        private readonly BrochureRepository $brochureRepository,
         private readonly ?string $groqApiKey = null,
         private readonly ?string $openRouterApiKey = null,
         private readonly ?string $huggingFaceApiKey = null
@@ -24,8 +25,9 @@ final class AiAnalyzer
     }
 
     /**
-     * Analyse les réponses d'une session de quiz et retourne le métier RH (fiche en BDD) le plus adapté.
-     * Les questions et réponses sont strictement cantonnées au domaine RH.
+     * Analyse hybride : scoring par regles + explication IA personnalisee.
+     * 1) Les scores sont TOUJOURS calcules par les regles (fiable, deterministe)
+     * 2) L'IA est appelee pour generer une explication riche et personnalisee
      */
     public function analyze(QuizSession $session): AnalysisResult
     {
@@ -36,65 +38,158 @@ final class AiAnalyzer
             return new AnalysisResult(
                 jobId: '',
                 confidence: 0,
-                explanation: 'Aucune fiche métier RH disponible. Configurez des fiches depuis l’admin.',
+                explanation: "Aucune fiche metier RH disponible. Configurez des fiches depuis l'admin.",
                 scores: []
             );
         }
 
-        // Priorité : utiliser la table quiz_session_answers où chaque réponse
-        // est liée à une question elle-même liée à une fiche (jobId).
-        // Si on a des réponses avec jobId, le scoring par règles est le plus fiable.
-        $hasJobLinkedAnswers = $this->hasJobLinkedAnswers($answers);
-        if ($hasJobLinkedAnswers) {
-            return $this->analyzeWithRules($answers, $jobs);
+        // Etape 1 : Scoring par regles (toujours, pour des scores fiables et deterministes)
+        $rulesResult = $this->analyzeWithRules($answers, $jobs);
+
+        // Etape 2 : Appeler l'IA pour enrichir avec une vraie explication personnalisee
+        $context = $this->buildContext($answers);
+        $aiExplanation = $this->getAiExplanation($context, $jobs, $rulesResult);
+
+        if ($aiExplanation !== null) {
+            return new AnalysisResult(
+                jobId: $rulesResult->jobId,
+                confidence: $rulesResult->confidence,
+                explanation: $aiExplanation,
+                scores: $rulesResult->scores
+            );
         }
 
-        $context = $this->buildContext($answers);
+        return $rulesResult;
+    }
+
+    /**
+     * Appelle l'IA (Groq puis OpenRouter en fallback) pour generer
+     * une explication personnalisee basee sur les reponses et le metier recommande.
+     */
+    private function getAiExplanation(string $context, array $jobs, AnalysisResult $rulesResult): ?string
+    {
+        $jobName = 'Metier RH';
+        foreach ($jobs as $j) {
+            if ($j->getId() === $rulesResult->jobId) {
+                $jobName = $j->getName();
+                break;
+            }
+        }
+
+        $topScores = $rulesResult->scores;
+        arsort($topScores);
+        $topJobs = [];
+        $i = 0;
+        foreach ($topScores as $jid => $score) {
+            if ($i >= 3) break;
+            $name = $jid;
+            foreach ($jobs as $j) {
+                if ($j->getId() === $jid) { $name = $j->getName(); break; }
+            }
+            $topJobs[] = $name . ' (' . round($score * 100) . '%)';
+            $i++;
+        }
+
+        $brochureContext = $this->getBrochureContext();
+        $topJobsStr = implode(', ', $topJobs);
+
+        $prompt = <<<PROMPT
+{$brochureContext}Tu es un expert en orientation vers les metiers des Ressources Humaines. Voici les reponses d'un candidat a un quiz RH :
+
+{$context}
+
+Le scoring algorithmique a determine que le metier le plus adapte est : **{$jobName}**
+Top 3 des affinites : {$topJobsStr}
+
+Redige une explication personnalisee de 3 a 5 phrases maximum qui :
+1. Explique POURQUOI ce metier correspond au profil du candidat en se basant sur ses reponses
+2. Met en avant les qualites et tendances visibles dans ses reponses (leadership, rigueur, empathie, creativite, etc.)
+3. Mentionne brievement ce que ce metier implique au quotidien
+4. Est encourageante et professionnelle, tutoie le candidat
+
+Reponds UNIQUEMENT avec le texte de l'explication, sans guillemets, sans JSON, sans prefixe.
+PROMPT;
 
         if ($this->groqApiKey !== null && $this->groqApiKey !== '') {
-            return $this->analyzeWithGroq($context, $jobs, $answers);
+            $result = $this->callLlmForExplanation(
+                'https://api.groq.com/openai/v1/chat/completions',
+                $this->groqApiKey,
+                'llama-3.3-70b-versatile',
+                $prompt
+            );
+            if ($result !== null) return $result;
         }
 
         if ($this->openRouterApiKey !== null && $this->openRouterApiKey !== '') {
-            return $this->analyzeWithOpenRouter($context, $jobs, $answers);
+            $result = $this->callLlmForExplanation(
+                'https://openrouter.ai/api/v1/chat/completions',
+                $this->openRouterApiKey,
+                'meta-llama/llama-3.1-8b-instruct:free',
+                $prompt
+            );
+            if ($result !== null) return $result;
         }
 
-        if ($this->huggingFaceApiKey !== null && $this->huggingFaceApiKey !== '') {
-            return $this->analyzeWithHuggingFace($context, $jobs, $answers);
-        }
-
-        return $this->analyzeWithRules($answers, $jobs);
+        return null;
     }
 
-    /** Vérifie si des réponses ont un jobId (lien question → fiche métier). */
-    private function hasJobLinkedAnswers(array $answers): bool
+    private function callLlmForExplanation(string $url, string $apiKey, string $model, string $prompt): ?string
     {
-        foreach ($answers as $a) {
-            if ($a->getJobId() !== null && $a->getJobId() !== '') {
-                return true;
+        try {
+            $response = $this->httpClient->request('POST', $url, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $apiKey,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'model' => $model,
+                    'messages' => [
+                        [
+                            'role' => 'system',
+                            'content' => "Tu es un conseiller en orientation specialise dans les metiers des Ressources Humaines. Tu analyses le profil d'un candidat et tu lui expliques pourquoi un metier RH precis lui correspond. Tu es bienveillant, professionnel et tu tutoies le candidat. Tu reponds en francais uniquement.",
+                        ],
+                        [
+                            'role' => 'user',
+                            'content' => $prompt,
+                        ],
+                    ],
+                    'temperature' => 0.7,
+                    'max_tokens' => 300,
+                ],
+            ]);
+
+            $data = $response->toArray();
+            $content = trim($data['choices'][0]['message']['content'] ?? '');
+
+            if (strlen($content) > 30) {
+                $content = preg_replace('/^["\']+|["\']+$/', '', $content);
+                return $content;
             }
+        } catch (\Throwable $e) {
+            // IA indisponible, on reste sur le fallback regles
         }
-        return false;
+
+        return null;
     }
 
     private function buildContext(array $answers): string
     {
         $labels = [
             'a1' => 'Pas du tout d\'accord',
-            'a2' => 'Plutôt pas d\'accord',
+            'a2' => 'Plutot pas d\'accord',
             'a3' => 'Neutre',
-            'a4' => 'Plutôt d\'accord',
-            'a5' => 'Tout à fait d\'accord',
+            'a4' => 'Plutot d\'accord',
+            'a5' => 'Tout a fait d\'accord',
         ];
 
-        $context = "Réponses du quiz RH (échelle de 1 à 5, 1=pas d'accord, 5=d'accord):\n\n";
+        $context = "Reponses du quiz RH (echelle de 1 a 5, 1=pas d'accord, 5=d'accord):\n\n";
 
         foreach ($answers as $answer) {
             $raw = $answer->getTextValue() ?? $answer->getAnswerId() ?? 'N/A';
             $label = $labels[$raw] ?? $raw;
             $questionLabel = $answer->getQuestionText() ?: $answer->getQuestionId();
             $context .= sprintf(
-                "- %s → %s\n",
+                "- %s : %s\n",
                 $questionLabel,
                 $label
             );
@@ -103,100 +198,16 @@ final class AiAnalyzer
         return $context;
     }
 
-    /**
-     * Groq : gratuit, sans CB, très rapide. Modèles Llama 3 (ex. 70B).
-     * Clé : https://console.groq.com
-     *
-     * @param list<Job> $jobs
-     */
-    private function analyzeWithGroq(string $context, array $jobs, array $answers): AnalysisResult
-    {
-        $prompt = $this->buildPrompt($context, $jobs);
-
-        try {
-            $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->groqApiKey,
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'model' => 'llama-3.3-70b-versatile',
-                    'messages' => [
-                        [
-                            'role' => 'system',
-                            'content' => 'Tu es un expert en ressources humaines. Tu analyses UNIQUEMENT des réponses à un quiz strictement cantonné au domaine RH (recrutement, formation, rémunération, droit du travail, QVT, GPEC, etc.). Tu recommandes le métier RH (parmi la liste fournie) le plus cohérent avec le profil. Tu réponds UNIQUEMENT au format JSON demandé, avec jobId égal à l’un des identifiants de la liste.',
-                        ],
-                        [
-                            'role' => 'user',
-                            'content' => $prompt,
-                        ],
-                    ],
-                    'temperature' => 0.5,
-                ],
-            ]);
-
-            $data = $response->toArray();
-            $content = $data['choices'][0]['message']['content'] ?? '';
-
-            return $this->parseAiResponse($content, $jobs, $answers);
-        } catch (\Throwable $e) {
-            return $this->analyzeWithRules($answers, $jobs);
-        }
-    }
-
-    /** @param list<Job> $jobs */
-    private function analyzeWithOpenRouter(string $context, array $jobs, array $answers): AnalysisResult
-    {
-        $prompt = $this->buildPrompt($context, $jobs);
-
-        try {
-            $response = $this->httpClient->request('POST', 'https://openrouter.ai/api/v1/chat/completions', [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $this->openRouterApiKey,
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'model' => 'meta-llama/llama-3.1-8b-instruct:free',
-                    'messages' => [
-                        [
-                            'role' => 'system',
-                            'content' => 'Tu es un expert en ressources humaines. Tu analyses UNIQUEMENT des réponses à un quiz strictement cantonné au domaine RH (recrutement, formation, rémunération, droit du travail, QVT, GPEC, etc.). Tu recommandes le métier RH (parmi la liste fournie) le plus cohérent avec le profil. Tu réponds UNIQUEMENT au format JSON demandé, avec jobId égal à l’un des identifiants de la liste.',
-                        ],
-                        [
-                            'role' => 'user',
-                            'content' => $prompt,
-                        ],
-                    ],
-                    'temperature' => 0.5,
-                ],
-            ]);
-
-            $data = $response->toArray();
-            $content = $data['choices'][0]['message']['content'] ?? '';
-
-            return $this->parseAiResponse($content, $jobs, $answers);
-        } catch (\Throwable $e) {
-            return $this->analyzeWithRules($answers, $jobs);
-        }
-    }
-
-    /** @param list<Job> $jobs */
-    private function analyzeWithHuggingFace(string $context, array $jobs, array $answers): AnalysisResult
-    {
-        return $this->analyzeWithRules($answers, $jobs);
-    }
-
     /** @param list<Job> $jobs */
     private function analyzeWithRules(array $answers, array $jobs): AnalysisResult
     {
         if (empty($jobs)) {
-            return new AnalysisResult(jobId: '', confidence: 0, explanation: 'Aucun métier disponible.', scores: []);
+            return new AnalysisResult(jobId: '', confidence: 0, explanation: 'Aucun metier disponible.', scores: []);
         }
 
         $labels = ['a1' => 1, 'a2' => 2, 'a3' => 3, 'a4' => 4, 'a5' => 5];
         $validJobIds = array_flip(array_map(fn (Job $j) => $j->getId(), $jobs));
 
-        // Grouper les réponses par jobId (chaque question est liée à une fiche métier)
         $answersByJob = [];
         $answersWithoutJob = [];
         foreach ($answers as $a) {
@@ -237,7 +248,7 @@ final class AiAnalyzer
             return new AnalysisResult(
                 jobId: $first->getId(),
                 confidence: 0.65,
-                explanation: 'Profil analysé ; nous vous recommandons le métier RH le plus adapté.',
+                explanation: 'Profil analyse ; nous vous recommandons le metier RH le plus adapte.',
                 scores: array_fill_keys(array_map(fn (Job $j) => $j->getId(), $jobs), 0.5)
             );
         }
@@ -245,7 +256,7 @@ final class AiAnalyzer
         arsort($jobScores);
         $jobId = (string) array_key_first($jobScores);
         $confidence = $jobScores[$jobId] ?? 0.7;
-        $jobName = 'Métier RH';
+        $jobName = 'Metier RH';
         foreach ($jobs as $j) {
             if ($j->getId() === $jobId) {
                 $jobName = $j->getName();
@@ -256,9 +267,22 @@ final class AiAnalyzer
         return new AnalysisResult(
             jobId: $jobId,
             confidence: $confidence,
-            explanation: sprintf('Vos réponses indiquent une affinité avec le profil « %s ».', $jobName),
+            explanation: sprintf('Tes reponses indiquent une affinite avec le profil %s. Ce metier correspond a ta sensibilite et ton approche des ressources humaines.', $jobName),
             scores: $jobScores
         );
+    }
+
+    private function getBrochureContext(): string
+    {
+        $brochures = $this->brochureRepository->findAll();
+        if (empty($brochures)) {
+            return '';
+        }
+        $parts = ["Voici des informations sur les formations SUP des RH (utilise ce contexte pour personnaliser ton analyse) :\n"];
+        foreach ($brochures as $b) {
+            $parts[] = "### " . $b->getName() . "\n" . $b->getContent();
+        }
+        return implode("\n\n", $parts) . "\n\n---\n\n";
     }
 
     /** @param list<Job> $jobs */
@@ -270,13 +294,14 @@ final class AiAnalyzer
         }
         $jobsList = implode("\n", $list);
         $validIds = implode(', ', array_map(fn (Job $j) => '"' . $j->getId() . '"', $jobs));
+        $brochureContext = $this->getBrochureContext();
 
         return <<<PROMPT
-Analyse les réponses suivantes d'un quiz strictement RH (domaine des ressources humaines uniquement) et recommande le métier RH le plus adapté parmi la liste ci-dessous.
+{$brochureContext}Analyse les reponses suivantes d'un quiz strictement RH (domaine des ressources humaines uniquement) et recommande le metier RH le plus adapte parmi la liste ci-dessous.
 
 {$context}
 
-Réponds UNIQUEMENT au format JSON suivant (sans texte avant ou après), avec jobId égal à l'un des identifiants listés :
+Reponds UNIQUEMENT au format JSON suivant (sans texte avant ou apres), avec jobId egal a l'un des identifiants listes :
 {
   "jobId": "<un des id ci-dessous>",
   "confidence": 0.85,
@@ -284,7 +309,7 @@ Réponds UNIQUEMENT au format JSON suivant (sans texte avant ou après), avec jo
   "scores": { "id1": 0.85, "id2": 0.60, ... }
 }
 
-Métiers RH disponibles (tu DOIS choisir parmi ceux-ci) :
+Metiers RH disponibles (tu DOIS choisir parmi ceux-ci) :
 {$jobsList}
 
 Identifiants valides : {$validIds}
@@ -316,7 +341,7 @@ PROMPT;
                     return new AnalysisResult(
                         jobId: $jobId,
                         confidence: $confidence,
-                        explanation: is_string($data['explanation'] ?? null) ? $data['explanation'] : 'Analyse effectuée.',
+                        explanation: is_string($data['explanation'] ?? null) ? $data['explanation'] : 'Analyse effectuee.',
                         scores: $scores
                     );
                 }

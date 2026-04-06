@@ -1,126 +1,213 @@
-# Fonctionnement technique du projet SupdesRH
+# RH&MOI by SUP des RH — Document de présentation technique
 
-Ce document décrit les mécanismes et l’architecture du projet, de façon technique mais accessible.
-
----
-
-## Vue d’ensemble de l’architecture
-
-SupdesRH est composé de **Cinq applications** qui communiquent entre elles :
-
-| Application      | Rôle                                                                                                                                                                                           |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **App Web**      | Interface grand public : quiz, résultats, fiches métiers, profil utilisateur uniquement accessible apres authentification                                                                      |
-| **App Admin**    | Interface de gestion : fiches métiers, questions de quiz, demandes de contact, feedbacks, utilisateurs, sessions de quiz, etc. uniquement accessible apres authentification avec un role ADMIN |
-| **API Backend**  | Service central qui gère la logique, l’authentification et les données                                                                                                                         |
-| **API IA**       | Service qui gère l'analyse IA                                                                                                                                                                  |
-| **PAGE LANDING** | Qui est la page d'accueil du site                                                                                                                                                              |
-
-Les apps web et admin s’appuient sur l’API pour toutes les opérations. L’authentification des utilisateurs est gérée par **Supabase Auth** (connexion par email/mot de passe, JWT).
+> **Public visé** : jury, encadrants, parties prenantes non techniques.
+> Ce document présente le fonctionnement du projet de façon claire et accessible.
 
 ---
 
-## Flux principal : du quiz au résultat
+## 1. Qu'est-ce que RH&MOI ?
 
-### 1. Authentification
+**RH&MOI** est une plateforme web d'orientation vers les métiers des Ressources Humaines, développée par et pour **SUP des RH**, l'école 100 % spécialisée en RH depuis 1998.
 
-- L’utilisateur se connecte via Supabase Auth.
-- L’API vérifie le **token JWT** sur chaque requête protégée.
-- Les routes publiques (fiches métiers, page de login) ne demandent pas de connexion.
+L'outil permet à un utilisateur (étudiant, lycéen, professionnel en reconversion) de :
 
-### 2. Chargement des questions
-
-- L’API agrège les questions de **tous les quiz** liés aux fiches métiers.
-- Chaque question est associée à une **fiche métier** (Job).
-- Les questions sont mélangées aléatoirement, puis 15 aléatoires sont sélectionnées parmis toutes les questions.
-- En cas de doublons (même texte dans plusieurs fiches), une seule occurrence est conservée.
-
-### 3. Session de quiz
-
-- Une **session** est créée au premier clic sur « Suivant ».
-- Chaque réponse est enregistrée immédiatement avec :
-  - l’identifiant de la question,
-  - la valeur choisie (échelle 1 à 5),
-  - l’identifiant de la fiche métier liée à la question.
-- La session peut être reprise plus tard (l’utilisateur retrouve ses réponses).
-
-### 4. Analyse et recommandation
-
-Deux étapes distinctes :
-
-1. **Sélection du métier** : basée sur une **logique de règles** qui exploite les liens question ↔ fiche. Pour chaque fiche, un score est calculé à partir des réponses des questions qui lui sont rattachées. La fiche avec le meilleur score est recommandée.
-2. **Explication personnalisée** : si une clé API IA (Groq ou OpenRouter) est configurée, une requête est envoyée pour générer un texte explicatif à partir des réponses et de la fiche recommandée.
-
-### 5. Résultat et suite
-
-- Le résultat (métier, pourcentage, fiche, explication) est affiché.
-- L’utilisateur peut demander à être contacté par l’équipe SupdesRH.
-- Les sessions et résultats restent consultables dans « Mes sessions ».
+- Répondre à un **quiz rapide** (~2 minutes, 15 questions)
+- Obtenir une **recommandation personnalisée** d'un métier RH
+- Consulter des **fiches métiers détaillées** (missions, salaire, taux d'embauche, vidéo)
+- Demander à **être contacté** par l'équipe SUP des RH
 
 ---
 
-## Structure des données clés
+## 2. Architecture générale
 
-### Entités principales
+Le projet est composé de **4 briques principales** qui communiquent entre elles :
 
-- **Jobs (fiches métiers)** : métiers RH (nom, description, salaire, indicateurs, etc.).
-- **Quizzes** : parcours de questions liés à une fiche. Chaque quiz contient des questions au format JSON.
-- **Quiz Sessions** : une session = un utilisateur qui passe un quiz à un moment donné.
-- **Quiz Session Answers** : chaque réponse contient la question, la valeur choisie, et l’identifiant de la fiche métier.
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        UTILISATEURS                         │
+└──────────┬──────────────────┬───────────────────┬───────────┘
+           │                  │                   │
+     ┌─────▼─────┐    ┌──────▼──────┐    ┌───────▼───────┐
+     │  Landing   │    │   App Web   │    │  App Admin    │
+     │  (Vitrine) │    │   (Quiz)    │    │  (Gestion)    │
+     └─────┬─────┘    └──────┬──────┘    └───────┬───────┘
+           │                  │                   │
+           └──────────┬───────┴───────────────────┘
+                      │
+               ┌──────▼──────┐
+               │ API Backend │
+               │  (Symfony)  │
+               └──────┬──────┘
+                      │
+          ┌───────────┼───────────┐
+          │           │           │
+    ┌─────▼────┐ ┌────▼────┐ ┌───▼────┐
+    │ Base de  │ │Supabase │ │  IA    │
+    │ données  │ │  Auth   │ │(Groq)  │
+    │(Postgres)│ │ (JWT)   │ │        │
+    └──────────┘ └─────────┘ └────────┘
+```
 
-### Lien question ↔ fiche
-
-Le lien est essentiel pour l’analyse :
-
-- Chaque **question** appartient à un quiz.
-- Chaque **quiz** est lié à une **fiche métier**.
-- Quand une réponse est enregistrée, l’identifiant de la fiche est stocké avec la réponse.
-- L’analyse s’appuie sur ces liens pour calculer un score par fiche.
-
----
-
-## Moteurs d’analyse
-
-### Priorité utilisée
-
-1. **Logique par règles** (toujours utilisée quand les réponses ont un lien avec une fiche)
-   - Regroupe les réponses par fiche métier.
-   - Calcule une moyenne par fiche et en déduit un score.
-   - Le métier avec le score le plus élevé est recommandé.
-   - Nous utilisons deux IA pour l'analyse : Groq et OpenRouter.
-
-2. **IA pour l’explication** (si clé API configurée)
-   - Reçoit les réponses et la fiche recommandée.
-   - Génère un texte personnalisé expliquant la correspondance.
-   - En cas d’échec ou d’absence de clé, une phrase générique est utilisée.
-
-### Fallback sans IA
-
-Sans clé API ou en cas d’erreur IA, seul le moteur par règles est utilisé. La recommandation reste correcte ; seule l’explication est plus simple.
-
----
-
-## Sécurité
-
-- **Authentification** : JWT Supabase vérifié par l’API sur chaque route protégée.
-- **Autorisation** : chaque session de quiz est rattachée à un utilisateur ; on ne peut accéder qu’à ses propres sessions et résultats.
-- **Admin** : l’app admin dispose de ses propres routes et d’une authentification par token dédié.
+| Composant                     | Rôle                                                                 | Technologie                   |
+| ----------------------------- | -------------------------------------------------------------------- | ----------------------------- |
+| **Site vitrine (Landing)**    | Page d'accueil publique, présentation de l'école, espace entreprises | Astro (HTML statique)         |
+| **Application Web**           | Quiz, résultats, fiches métiers, profil utilisateur                  | React + Vite                  |
+| **Application Admin**         | Gestion des fiches, questions, contacts, utilisateurs                | React + Vite                  |
+| **API Backend**               | Logique métier, gestion des données, analyse IA                      | Symfony (PHP 8.4)             |
+| **Base de données**           | Stockage de toutes les données                                       | PostgreSQL (Supabase)         |
+| **Authentification**          | Connexion sécurisée sans mot de passe (lien magique par email)       | Supabase Auth                 |
+| **Intelligence Artificielle** | Analyse des réponses et recommandation personnalisée                 | Groq (Llama 3.3) / OpenRouter |
 
 ---
 
-## Données externes
+## 3. Parcours utilisateur complet
 
-- **Base de données** : PostgreSQL (Supabase).
-- **Authentification** : Supabase Auth.
-- **IA** (optionnel) : Groq ou OpenRouter pour les explications personnalisées et le recapitulatif de la session.
+### Étape 1 — Connexion
+
+L'utilisateur entre son adresse email et reçoit un **lien magique** (pas de mot de passe à retenir). En cliquant sur le lien, il est automatiquement connecté.
+
+### Étape 2 — Le quiz
+
+- **15 questions** sont présentées, tirées aléatoirement parmi l'ensemble des questions en base.
+- Chaque question est liée à un **métier RH** spécifique.
+- L'utilisateur répond sur une échelle de 1 (pas du tout d'accord) à 5 (tout à fait d'accord).
+- Les réponses sont sauvegardées en temps réel : on peut quitter et reprendre plus tard.
+
+### Étape 3 — L'analyse
+
+Deux mécanismes complémentaires :
+
+1. **Scoring par règles** (toujours actif) :
+   - Les réponses sont regroupées par métier RH.
+   - Un score moyen est calculé pour chaque métier.
+   - Le métier avec le meilleur score est recommandé.
+
+2. **Explication par Intelligence Artificielle** (si disponible) :
+   - Les réponses et la liste des métiers sont envoyées à un modèle de langage (Groq / Llama 3.3).
+   - L'IA génère un texte personnalisé expliquant pourquoi ce métier correspond au profil.
+   - En cas d'indisponibilité de l'IA, une explication générique est utilisée.
+
+### Étape 4 — Le résultat
+
+L'utilisateur voit :
+
+- Son **métier RH recommandé** avec un pourcentage de correspondance
+- Un **graphique** montrant la répartition de ses affinités par domaine RH
+- Un **carrousel de fiches métiers** du domaine principal
+- La possibilité de **demander à être contacté** par SUP des RH
+
+### Étape 5 — Suivi
+
+- Toutes les sessions sont sauvegardées dans **« Mes sessions »**
+- L'utilisateur peut refaire le quiz autant de fois qu'il le souhaite
 
 ---
 
-## En résumé
+## 4. Espace Administration
 
-Le projet repose sur :
+L'application admin permet à l'équipe SUP des RH de :
 
-1. Un **lien clair** entre questions, réponses et fiches métiers.
-2. Une **recommandation par règles** basée sur ces liens (robuste, pas dépendante de l’IA).
-3. Une **explication enrichie par l’IA** en option.
-4. Une **séparation nette** entre app utilisateur, app admin et API backend.
+| Fonctionnalité           | Description                                                                             |
+| ------------------------ | --------------------------------------------------------------------------------------- |
+| **Fiches métiers**       | Créer, modifier et supprimer les fiches (nom, description, salaire, indicateurs, vidéo) |
+| **Domaines RH**          | Gérer les grands domaines (Recrutement, Paie, QVCT, etc.) avec emoji personnalisable    |
+| **Questions de quiz**    | Rédiger les questions et les associer à un métier                                       |
+| **Demandes de contact**  | Voir toutes les demandes « Être contacté » avec email, métier recommandé et scores      |
+| **Demandes entreprises** | Consulter les demandes du formulaire entreprises de la landing                          |
+| **Sessions de quiz**     | Consulter les sessions et résultats des utilisateurs                                    |
+
+---
+
+## 5. Sécurité et confidentialité
+
+| Aspect                    | Mise en œuvre                                                                |
+| ------------------------- | ---------------------------------------------------------------------------- |
+| **Authentification**      | Token JWT vérifié sur chaque requête protégée                                |
+| **Isolation des données** | Un utilisateur ne peut voir que ses propres sessions et résultats            |
+| **Admin protégé**         | Routes dédiées avec vérification du rôle ADMIN                               |
+| **Email**                 | Jamais utilisé à des fins commerciales. Sert uniquement au lien de connexion |
+| **Pas de mot de passe**   | Connexion par lien magique = pas de risque de fuite de mot de passe          |
+
+---
+
+## 6. Déploiement
+
+Le projet utilise **Docker** pour garantir un environnement identique partout :
+
+| Environnement     | Usage                               | Accès                     |
+| ----------------- | ----------------------------------- | ------------------------- |
+| **Développement** | Travail local des développeurs      | `localhost`               |
+| **Staging**       | Tests avant mise en production      | Serveur de pré-production |
+| **Production**    | Version accessible aux utilisateurs | Domaine public            |
+
+Le processus de déploiement est automatisé via **GitHub Actions** :
+
+1. À chaque modification du code, des vérifications automatiques sont lancées (qualité, compilation)
+2. Quand une version est validée, une image Docker est construite et publiée
+3. Le serveur de production récupère la nouvelle version et la déploie
+
+---
+
+## 7. Données et stockage
+
+### Entités principales en base de données
+
+| Table                      | Contenu                                                           |
+| -------------------------- | ----------------------------------------------------------------- |
+| `jobs`                     | Fiches métiers RH (nom, description, salaire, indicateurs, vidéo) |
+| `job_categories`           | Grands domaines RH (Recrutement, Formation, Paie, etc.)           |
+| `quizzes`                  | Parcours de quiz (questions JSON liées à un métier)               |
+| `quiz_sessions`            | Sessions de quiz (une par tentative d'un utilisateur)             |
+| `quiz_session_answers`     | Réponses individuelles (question, valeur, métier associé)         |
+| `contact_requests`         | Demandes de contact après le quiz                                 |
+| `company_contact_requests` | Demandes de contact entreprises (landing)                         |
+| `feedbacks`                | Avis et retours des utilisateurs                                  |
+
+### Flux des données du quiz
+
+```
+Utilisateur répond à une question
+        │
+        ▼
+quiz_session_answers (question + réponse + métier lié)
+        │
+        ▼ (15 réponses accumulées)
+        │
+        ▼
+API Backend : scoring par métier
+        │
+        ├── Score calculé par règles (toujours)
+        │
+        ├── Explication IA (si disponible)
+        │
+        ▼
+Résultat : métier recommandé + scores + explication
+```
+
+---
+
+## 8. Technologies utilisées
+
+| Catégorie            | Technologie                     | Pourquoi                                                 |
+| -------------------- | ------------------------------- | -------------------------------------------------------- |
+| **Frontend**         | React, TypeScript, Tailwind CSS | Interface moderne, réactive et maintenable               |
+| **Landing**          | Astro                           | Pages statiques ultra-rapides pour le SEO                |
+| **Backend**          | Symfony (PHP 8.4)               | Framework robuste, sécurisé, adapté aux API              |
+| **Base de données**  | PostgreSQL (Supabase)           | Base relationnelle fiable avec authentification intégrée |
+| **IA**               | Groq (Llama 3.3 70B)            | Analyse gratuite, rapide, modèle performant              |
+| **Conteneurisation** | Docker                          | Déploiement reproductible sur tous les environnements    |
+| **CI/CD**            | GitHub Actions                  | Automatisation des tests et du déploiement               |
+| **UI**               | shadcn/ui                       | Composants accessibles et personnalisables               |
+
+---
+
+## 9. Points forts du projet
+
+- **Gratuit et sans engagement** pour les utilisateurs
+- **Pas de mot de passe** : connexion simplifiée par email
+- **Recommandation fiable** : le scoring par règles fonctionne même sans IA
+- **IA enrichissante** : l'explication personnalisée apporte une valeur ajoutée
+- **Données protégées** : isolation stricte par utilisateur, pas de revente de données
+- **Administration complète** : l'équipe SUP des RH gère tout le contenu sans intervention technique
+- **Responsive** : fonctionne sur mobile, tablette et desktop
+- **Open source** : code versionné et documenté sur GitHub
