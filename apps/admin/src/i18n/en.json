@@ -22,7 +22,7 @@
     "companies": "Companies",
     "feedbacks": "Reviews",
     "support": "Support",
-    "brochures": "AI Brochures",
+    "brochures": "Brochures",
     "profile": "My profile",
     "logout": "Log out"
   },
@@ -54,7 +54,7 @@
     "noTicketsDesc": "Support requests and suggestions will appear here"
   },
   "brochures": {
-    "title": "AI Brochures",
+    "title": "Brochures",
     "subtitle": "Content injected into the AI prompt to enrich analyses",
     "add": "Add",
     "namePlaceholder": "Brochure name",
