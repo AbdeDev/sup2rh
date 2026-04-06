@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageCircle, X, Loader2, Star } from "lucide-react";
+import { Star, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
@@ -27,7 +27,7 @@ export function FeedbackButton() {
       setTimeout(() => {
         setOpen(false);
         setSent(false);
-      }, 1500);
+      }, 1800);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erreur lors de l'envoi");
     } finally {
@@ -37,85 +37,109 @@ export function FeedbackButton() {
 
   return (
     <>
+      {/* Bouton flottant avis — empilé au-dessus du support */}
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed bottom-[136px] right-4 sm:bottom-20 sm:right-5 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-muted-foreground/80 text-background shadow-lg transition-all hover:scale-110 hover:shadow-xl hover:bg-muted-foreground"
+        className="fixed bottom-[132px] right-4 sm:bottom-[76px] sm:right-5 z-40 h-11 w-11 rounded-2xl bg-card border border-border text-foreground shadow-lg flex items-center justify-center transition-all duration-200 hover:scale-110 hover:shadow-xl hover:border-primary/40 hover:text-primary group"
         title={t("feedback.title")}
         aria-label={t("feedback.title")}
       >
-        <MessageCircle className="h-5 w-5" />
+        <Star className="h-5 w-5 fill-current text-orange group-hover:text-primary transition-colors" />
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => !loading && setOpen(false)}
             aria-hidden
           />
-          <div className="relative w-full max-w-md rounded-xl border border-border bg-card p-5 shadow-xl animate-in fade-in scale-in">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-foreground">{t("feedback.title")}</h3>
+          <div className="relative w-full max-w-md bg-card border border-border rounded-2xl shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 overflow-hidden">
+            {/* Header coloré */}
+            <div className="bg-gradient-to-r from-[#f37021]/10 via-card to-orange/5 border-b border-border px-5 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-xl bg-[#f37021]/15 border border-[#f37021]/25 flex items-center justify-center">
+                  <Star className="h-4 w-4 fill-[#f37021] text-[#f37021]" />
+                </div>
+                <h3 className="text-sm font-heading font-bold text-foreground">
+                  {t("feedback.title")}
+                </h3>
+              </div>
               <button
-                type="button"
                 onClick={() => !loading && setOpen(false)}
-                className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-                aria-label="Fermer"
+                className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-lg hover:bg-muted/50"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            {sent ? (
-              <p className="py-4 text-sm text-success text-center">{t("feedback.thankYou")}</p>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-3">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-2">{t("feedback.ratingLabel")}</p>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setRating(i)}
-                        className="p-1 rounded hover:scale-110 transition-transform"
-                        aria-label={`${i} étoile${i > 1 ? "s" : ""}`}
-                      >
-                        <Star
-                          className={`h-6 w-6 ${
-                            rating !== null && i <= rating
-                              ? "fill-orange text-orange"
-                              : "text-muted-foreground"
-                          }`}
-                        />
-                      </button>
-                    ))}
+
+            <div className="p-5">
+              {sent ? (
+                <div className="py-6 text-center flex flex-col items-center gap-3">
+                  <div className="h-14 w-14 rounded-full bg-success/10 border border-success/20 flex items-center justify-center">
+                    <Star className="h-7 w-7 fill-success text-success" />
                   </div>
+                  <p className="text-sm font-semibold text-foreground">{t("feedback.thankYou")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Ton retour aide à améliorer l'expérience
+                  </p>
                 </div>
-                <Textarea
-                  placeholder={t("feedback.placeholder")}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  rows={4}
-                  disabled={loading}
-                  className="resize-none"
-                />
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setOpen(false)}
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">
+                      {t("feedback.ratingLabel")}
+                    </p>
+                    <div className="flex gap-1.5">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setRating(i)}
+                          className="p-1 rounded-lg hover:scale-110 transition-transform"
+                          aria-label={`${i} étoile${i > 1 ? "s" : ""}`}
+                        >
+                          <Star
+                            className={`h-7 w-7 transition-all ${
+                              rating !== null && i <= rating
+                                ? "fill-[#f37021] text-[#f37021] scale-110"
+                                : "text-muted-foreground/40 hover:text-[#f37021]/60"
+                            }`}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <Textarea
+                    placeholder={t("feedback.placeholder")}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    rows={3}
                     disabled={loading}
-                  >
-                    {t("common.cancel")}
-                  </Button>
-                  <Button type="submit" size="sm" disabled={loading || !message.trim()}>
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("common.send")}
-                  </Button>
-                </div>
-              </form>
-            )}
+                    className="resize-none rounded-xl text-sm bg-muted/30 border-border focus:bg-background transition-colors"
+                  />
+                  <div className="flex gap-2.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1 h-10 text-sm rounded-xl"
+                      onClick={() => setOpen(false)}
+                      disabled={loading}
+                    >
+                      {t("common.cancel")}
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="flex-1 h-10 text-sm rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+                      disabled={loading || !message.trim()}
+                    >
+                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("common.send")}
+                    </Button>
+                  </div>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       )}

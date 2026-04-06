@@ -257,57 +257,51 @@ export function QuizLandingPage() {
       </header>
 
       <div className="flex-1 overflow-y-auto">
-        {/* Hero */}
+        {/* Hero — full-width avec dégradé chaud */}
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#004080]/8 via-background to-[#008c54]/5 pointer-events-none" />
-          <div
-            className="absolute top-0 right-0 w-[40vw] h-[40vw] max-w-[500px] max-h-[500px] rounded-full opacity-[0.04] pointer-events-none"
-            style={{
-              background: "radial-gradient(circle, #f37021, transparent)",
-              transform: "translate(30%, -30%)",
-            }}
-          />
+          {/* Fond décoratif */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/6 via-transparent to-[#008c54]/4" />
+            <div className="absolute -top-20 -right-20 w-[500px] h-[500px] rounded-full bg-[#f37021]/[0.06] blur-[80px]" />
+            <div className="absolute -bottom-10 -left-10 w-[400px] h-[400px] rounded-full bg-primary/[0.07] blur-[80px]" />
+          </div>
 
-          <div className="relative max-w-4xl mx-auto px-4 py-12 md:py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-center">
-            {/* Logo tout en haut, au-dessus du badge */}
-            <div className="flex flex-col items-center w-full">
-              <div className="inline-flex h-24 w-24 sm:h-28 sm:w-28 items-center justify-center mb-5 transition-transform duration-300 hover:scale-110 drop-shadow-lg shrink-0">
-                <AppLogo className="h-24 w-24 sm:h-28 sm:w-28 object-contain" />
-              </div>
-              <div className="inline-flex flex-wrap items-center justify-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3.5 py-1.5 text-[11px] font-semibold text-primary mb-5">
-                <Sparkles className="h-3 w-3 shrink-0" />
-                <span>
-                  Quiz gratuit · Résultat immédiat
-                  {metrics != null && (
-                    <>
-                      {" "}
-                      · {metrics.domaines} domaine{metrics.domaines !== 1 ? "s" : ""} RH ·{" "}
-                      {metrics.fiches} fiche{metrics.fiches !== 1 ? "s" : ""}
-                    </>
-                  )}
-                </span>
-              </div>
+          <div className="relative max-w-4xl mx-auto px-4 pt-14 pb-16 md:pt-20 md:pb-24 text-center animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-center">
+            {/* Logo */}
+            <div className="h-20 w-20 sm:h-24 sm:w-24 mb-6 transition-transform duration-300 hover:scale-105 drop-shadow-xl">
+              <AppLogo className="h-full w-full object-contain" />
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-heading font-bold text-foreground mb-5 leading-tight px-1">
+            {/* Badge animé */}
+            <div className="inline-flex flex-wrap items-center justify-center gap-1.5 rounded-full bg-gradient-to-r from-primary/15 to-primary/10 border border-primary/25 px-4 py-2 text-[11px] font-semibold text-primary mb-6 shadow-sm">
+              <Sparkles className="h-3 w-3 shrink-0" />
+              <span>
+                Quiz gratuit · Résultat immédiat · Analyse IA
+                {metrics != null && ` · ${metrics.fiches} fiches métiers`}
+              </span>
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl md:text-[3.2rem] font-heading font-extrabold text-foreground mb-5 leading-[1.15] tracking-tight px-2">
               Quel métier RH est{" "}
-              <span className="bg-gradient-to-r from-[#004080] via-[#008c54] to-[#f37021] bg-clip-text text-transparent">
-                fait pour toi ?
+              <span className="relative inline-block">
+                <span className="bg-gradient-to-r from-[#004080] via-[#0066cc] to-[#008c54] bg-clip-text text-transparent">
+                  fait pour toi ?
+                </span>
+                <span className="absolute -bottom-1 left-0 right-0 h-[3px] bg-gradient-to-r from-[#004080] to-[#008c54] rounded-full opacity-30" />
               </span>
             </h1>
 
-            <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto mb-8 leading-relaxed px-1">
+            <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto mb-8 leading-relaxed px-2">
               Réponds à quelques questions et découvre ton{" "}
-              <strong className="text-foreground">grand domaine RH</strong> et les fiches métiers
-              qui te correspondent, référencés par{" "}
-              <strong className="text-foreground">SUP des RH</strong>.
+              <strong className="text-foreground font-semibold">grand domaine RH</strong> ainsi que
+              les fiches métiers qui te correspondent, référencés par{" "}
+              <strong className="text-foreground font-semibold">SUP des RH</strong>.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md sm:max-w-none">
               <Button
                 onClick={() => navigate("/quiz/start")}
-                className="h-12 px-8 text-base rounded-xl font-semibold transition-all duration-200 hover:scale-105 shadow-lg gap-2"
-                style={{ backgroundColor: "#004080", color: "#fff" }}
+                className="w-full sm:w-auto h-13 px-8 text-base rounded-2xl font-semibold transition-all duration-300 hover:scale-105 shadow-xl gap-2.5 bg-gradient-to-r from-[#004080] to-[#0055aa] text-white hover:shadow-[#004080]/30 hover:shadow-2xl border-0"
               >
                 Commencer le quiz
                 <ArrowRight className="h-5 w-5" />
@@ -315,45 +309,51 @@ export function QuizLandingPage() {
               <Button
                 variant="outline"
                 onClick={() => navigate("/fiches")}
-                className="h-12 px-6 text-sm rounded-xl font-medium gap-2"
+                className="w-full sm:w-auto h-13 px-6 text-sm rounded-2xl font-medium gap-2 border-border/80 hover:border-primary/40 hover:bg-primary/5 transition-all duration-200"
               >
                 <Briefcase className="h-4 w-4" />
                 Explorer les fiches métier
               </Button>
             </div>
 
-            {/* Stats — métriques réelles + fixes (responsive mobile → tablette → desktop) */}
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-3 sm:gap-x-6 sm:gap-y-4 md:gap-x-8 mt-10 pt-6 sm:pt-8 border-t border-border/60">
-              <div className="text-center">
-                <p className="text-lg font-heading font-bold text-foreground">
-                  {metrics != null ? String(metrics.domaines) : "—"}
-                </p>
-                <p className="text-[11px] text-muted-foreground">Domaines RH</p>
-              </div>
-              <div className="text-center">
-                <p className="text-lg font-heading font-bold text-foreground">
-                  {metrics != null ? String(metrics.fiches) : "—"}
-                </p>
-                <p className="text-[11px] text-muted-foreground">Fiches métier</p>
-              </div>
-              <div className="text-center">
-                <p className="text-lg font-heading font-bold text-foreground">~2 min</p>
-                <p className="text-[11px] text-muted-foreground">Durée du quiz</p>
-              </div>
-              <div className="text-center">
-                <p className="text-lg font-heading font-bold text-foreground">100%</p>
-                <p className="text-[11px] text-muted-foreground">Gratuit</p>
-              </div>
-              <div className="text-center">
-                <p className="text-lg font-heading font-bold text-foreground">IA</p>
-                <p className="text-[11px] text-muted-foreground">Analyse instantanée</p>
-              </div>
+            {/* Stats chips */}
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 sm:gap-4 mt-12 w-full max-w-lg sm:max-w-none">
+              {[
+                {
+                  val: metrics != null ? String(metrics.domaines) : "—",
+                  lbl: "Domaines RH",
+                  color: "#004080",
+                },
+                {
+                  val: metrics != null ? String(metrics.fiches) : "—",
+                  lbl: "Fiches métier",
+                  color: "#008c54",
+                },
+                { val: "~2 min", lbl: "Durée", color: "#f37021" },
+                { val: "100%", lbl: "Gratuit", color: "#6b21a8" },
+                { val: "IA", lbl: "Analyse", color: "#0891b2" },
+              ].map((s) => (
+                <div
+                  key={s.lbl}
+                  className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-card border border-border shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <p
+                    className="text-base sm:text-lg font-heading font-extrabold"
+                    style={{ color: s.color }}
+                  >
+                    {s.val}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground text-center leading-tight">
+                    {s.lbl}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Grands domaines RH — bandeau contenu dans la page, défilement auto + manuel */}
-        <div className="border-y border-border/60 bg-muted/20 py-6 sm:py-8 overflow-hidden">
+        {/* Grands domaines RH */}
+        <div className="border-y border-border bg-gradient-to-r from-card via-muted/20 to-card py-6 sm:py-8 overflow-hidden">
           <div className="max-w-4xl mx-auto px-4 text-center mb-4">
             <h2 className="text-base sm:text-lg font-heading font-bold text-foreground">
               Grands domaines RH
