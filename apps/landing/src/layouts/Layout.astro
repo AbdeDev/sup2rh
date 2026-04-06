@@ -10,10 +10,12 @@
 			name="description"
 			content="Découvre le métier RH qui te correspond : Recrutement, Paie, QVCT, Assistant RH, Formation."
 		/>
+		<!-- Umami Analytics (auto-hébergé, RGPD-friendly, pas de cookies) -->
+		<script defer src="https://analytics.rhetmoi.fr/script.js" data-website-id="UMAMI_WEBSITE_ID"></script><script defer src="https://cloud.umami.is/script.js" data-website-id="e2a9fdb5-1d4d-4882-bbc5-4fc80ab7450a"></script>
 	</head>
 	<body>
 		<slot />
-		<script>
+		<script is:inline>
 			(function () {
 				const KEY = "supdesrh-theme";
 				const root = document.documentElement;
@@ -43,8 +45,41 @@
 					applyTheme(theme);
 				};
 
-				// Mobile nav (présent sur Accueil / École / Entreprises)
-				window.addEventListener("DOMContentLoaded", () => {
+			window.supdesrhToggleLang = function () {
+				const LANG_KEY = "rhmoi_lang";
+				try {
+					const current = localStorage.getItem(LANG_KEY) || "fr";
+					const next = current === "fr" ? "en" : "fr";
+					localStorage.setItem(LANG_KEY, next);
+					window.location.reload();
+				} catch (e) {}
+			};
+
+			window.supdesrhApplyI18n = function (dict) {
+				if (!dict) return;
+				function resolve(obj, path) {
+					return path.split(".").reduce(function (o, k) { return o && o[k]; }, obj);
+				}
+				document.querySelectorAll("[data-i18n]").forEach(function (el) {
+					var key = el.getAttribute("data-i18n");
+					var val = resolve(dict, key);
+					if (val != null) {
+						if (el.hasAttribute("data-i18n-html")) {
+							el.innerHTML = val;
+						} else {
+							el.textContent = val;
+						}
+					}
+				});
+				document.querySelectorAll("[data-i18n-placeholder]").forEach(function (el) {
+					var key = el.getAttribute("data-i18n-placeholder");
+					var val = resolve(dict, key);
+					if (val != null) el.placeholder = val;
+				});
+			};
+
+			// Mobile nav (présent sur Accueil / École / Entreprises)
+			window.addEventListener("DOMContentLoaded", () => {
 					const mobileToggle = document.getElementById("mobile-menu-toggle");
 					const mobileNav = document.getElementById("mobile-nav");
 					if (mobileToggle && mobileNav) {

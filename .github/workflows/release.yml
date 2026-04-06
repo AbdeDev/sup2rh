@@ -32,12 +32,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract tag
+      - name: Extract tag & detect environment
         id: meta
         run: |
           TAG=${GITHUB_REF#refs/tags/}
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "sha_short=$(echo $GITHUB_SHA | head -c 7)" >> $GITHUB_OUTPUT
+          if echo "$TAG" | grep -qE '(-rc|-staging)'; then
+            echo "env=staging" >> $GITHUB_OUTPUT
+          else
+            echo "env=production" >> $GITHUB_OUTPUT
+          fi
 
       - name: Normalize image name
         id: image
@@ -58,7 +63,7 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.tag }}
             ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:sha-${{ steps.meta.outputs.sha_short }}
-            ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:latest
+            ${{ env.REGISTRY }}/${{ steps.image.outputs.name }}:${{ steps.meta.outputs.env == 'staging' && 'staging' || 'latest' }}
 
   # ── Frontend builds (vérification uniquement) ──
   build-frontends:
@@ -97,4 +102,4 @@ jobs:
         with:
           generate_release_notes: true
           draft: false
-          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') }}
+          prerelease: ${{ contains(github.ref, '-rc') || contains(github.ref, '-beta') || contains(github.ref, '-staging') }}

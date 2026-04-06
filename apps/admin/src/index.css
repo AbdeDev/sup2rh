@@ -4,6 +4,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Logos : couleurs fixes, non impactés par dark/light mode */
 .logo-theme-safe {
   filter: none !important;

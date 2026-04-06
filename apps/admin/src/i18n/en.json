@@ -1,0 +1,67 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "create": "Create",
+    "edit": "Edit",
+    "close": "Close",
+    "search": "Search",
+    "export": "Export CSV",
+    "refresh": "Refresh",
+    "noResults": "No results"
+  },
+  "nav": {
+    "jobs": "Job profiles",
+    "categories": "HR Domains",
+    "quizzes": "Quizzes",
+    "users": "Users",
+    "contacts": "Requests",
+    "companies": "Companies",
+    "feedbacks": "Reviews",
+    "support": "Support",
+    "brochures": "AI Brochures",
+    "logout": "Log out"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to the RH&MOI admin panel"
+  },
+  "contacts": {
+    "title": "Contact requests",
+    "filterByDate": "Filter by date",
+    "searchByEmail": "Search by email…",
+    "noContacts": "No requests",
+    "noContactsDesc": "Contact requests will appear here",
+    "requestedAt": "Requested on",
+    "sessions": "session(s)",
+    "result": "Result"
+  },
+  "support": {
+    "title": "Support & Suggestions",
+    "all": "All",
+    "help": "Help",
+    "suggestions": "Suggestions",
+    "open": "Open",
+    "inProgress": "In progress",
+    "closed": "Closed",
+    "reopen": "Reopen",
+    "reply": "Reply",
+    "noTickets": "No tickets",
+    "noTicketsDesc": "Support requests and suggestions will appear here"
+  },
+  "brochures": {
+    "title": "AI Brochures",
+    "subtitle": "Content injected into the AI prompt to enrich analyses",
+    "add": "Add",
+    "namePlaceholder": "Brochure name",
+    "contentPlaceholder": "Text content (information about programs, courses, etc.)",
+    "noBrochures": "No brochures",
+    "noBrochuresDesc": "Add content to enrich AI analyses",
+    "newBrochure": "New brochure",
+    "editBrochure": "Edit brochure",
+    "update": "Update"
+  }
+}

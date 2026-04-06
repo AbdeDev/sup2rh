@@ -14,6 +14,7 @@ import {
 import { Button } from "../components/ui/button";
 import { Slider } from "../components/ui/slider";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { AppLogo } from "../components/AppLogo";
 
 const FALLBACK_QUESTIONS: QuizQuestion[] = [
@@ -217,6 +218,7 @@ export function QuizStartPage() {
             <span className="text-xs text-muted-foreground tabular-nums">
               {currentPage + 1}/{totalPages}
             </span>
+            <LanguageSwitcher />
             <ThemeToggle />
           </div>
         </div>

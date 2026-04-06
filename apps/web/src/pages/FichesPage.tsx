@@ -18,6 +18,7 @@ import { getJobs, type JobFiche } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { AppLogo } from "../components/AppLogo";
 
 const ACCENT_COLORS = [
@@ -131,6 +132,7 @@ export function FichesPage() {
               Faire le quiz
               <ChevronRight className="h-3.5 w-3.5" />
             </Button>
+            <LanguageSwitcher />
             <ThemeToggle />
           </div>
         </div>

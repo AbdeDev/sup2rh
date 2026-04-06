@@ -18,6 +18,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { AppLogo } from "../components/AppLogo";
 import { ChartContainer, type ChartConfig } from "../components/ui/chart";
 
@@ -67,6 +68,8 @@ export function ResultPage() {
   const [loading, setLoading] = useState(() => Boolean(id && !hasFullState && !hasSummary));
   const [error, setError] = useState<string | null>(null);
   const [contactLoading, setContactLoading] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactPhone, setContactPhone] = useState("");
   const [showAllScores, setShowAllScores] = useState(false);
   const [allJobs, setAllJobs] = useState<JobFiche[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -224,11 +227,12 @@ export function ResultPage() {
       const current = byCategory[cat] ?? 0;
       byCategory[cat] = Math.max(current, Number(score) || 0);
     }
+    const total = Object.values(byCategory).reduce((s, v) => s + v, 0) || 1;
     const mainCategory = analysis?.job?.category ?? null;
     return Object.entries(byCategory)
       .map(([category, value]) => ({
         category,
-        value: Math.round(value * 100),
+        value: Math.round((value / total) * 100),
         isMain: category === mainCategory,
       }))
       .sort((a, b) => b.value - a.value);
@@ -240,11 +244,12 @@ export function ResultPage() {
     if (!scores || typeof scores !== "object") return [];
     const entries = Object.entries(scores);
     if (entries.length === 0) return [];
+    const total = entries.reduce((s, [, v]) => s + (Number(v) || 0), 0) || 1;
     const sorted = [...entries].sort(([, a], [, b]) => (b ?? 0) - (a ?? 0));
     return sorted.map(([jId, value]) => ({
       jobId: jId,
       label: jId === analysis.jobId && analysis.job?.name ? analysis.job.name : jobLabel(jId),
-      value: Math.round((Number(value) || 0) * 100),
+      value: Math.round(((Number(value) || 0) / total) * 100),
       isMain: jId === analysis.jobId,
     }));
   }, [analysis]);
@@ -319,10 +324,12 @@ export function ResultPage() {
       await submitContactRequest({
         sessionId: session.id,
         email: user?.email,
+        phone: contactPhone.trim() || undefined,
         jobId: analysis.jobId,
         explanation: analysis.explanation,
         scores: analysis.scores,
       });
+      setShowContactForm(false);
       toast.success("Demande envoyée ! L'équipe SUP des RH te contactera bientôt.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erreur lors de l'envoi");
@@ -415,6 +422,7 @@ export function ResultPage() {
             >
               Mes sessions
             </button>
+            <LanguageSwitcher />
             <ThemeToggle />
           </div>
         </div>
@@ -1031,20 +1039,47 @@ export function ResultPage() {
                 L&apos;équipe SUP des RH peut t&apos;aider à trouver une alternance ou un stage dans
                 ce domaine.
               </p>
-              <Button
-                onClick={handleContact}
-                disabled={contactLoading}
-                className="h-11 px-10 text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:scale-105"
-              >
-                {contactLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Envoi…
-                  </>
-                ) : (
-                  "Être contacté par SUP des RH"
-                )}
-              </Button>
+              {showContactForm ? (
+                <div className="max-w-sm mx-auto space-y-3 animate-in fade-in duration-300">
+                  <input
+                    type="tel"
+                    placeholder="Ton numéro de téléphone (optionnel)"
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    className="w-full h-10 px-3 text-sm rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+                  />
+                  <div className="flex gap-2 justify-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowContactForm(false)}
+                      className="h-10 px-5 text-sm"
+                    >
+                      Annuler
+                    </Button>
+                    <Button
+                      onClick={handleContact}
+                      disabled={contactLoading}
+                      className="h-10 px-8 text-sm bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
+                      {contactLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Envoi…
+                        </>
+                      ) : (
+                        "Envoyer ma demande"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => setShowContactForm(true)}
+                  className="h-11 px-10 text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 hover:scale-105"
+                >
+                  Être contacté par SUP des RH
+                </Button>
+              )}
             </CardContent>
           </Card>
 

@@ -14,6 +14,8 @@ import { AdminContactRequestsPage } from "./pages/admin/AdminContactRequestsPage
 import { AdminCompanyContactsPage } from "./pages/admin/AdminCompanyContactsPage";
 import { AdminFeedbacksPage } from "./pages/admin/AdminFeedbacksPage";
 import { AdminJobCategoriesPage } from "./pages/admin/AdminJobCategoriesPage";
+import { AdminSupportPage } from "./pages/admin/AdminSupportPage";
+import { AdminBrochuresPage } from "./pages/admin/AdminBrochuresPage";
 
 export default function App() {
   return (
@@ -104,6 +106,26 @@ export default function App() {
             <RequireAuth>
               <RequireAdmin>
                 <AdminJobCategoriesPage />
+              </RequireAdmin>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/support"
+          element={
+            <RequireAuth>
+              <RequireAdmin>
+                <AdminSupportPage />
+              </RequireAdmin>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/admin/brochures"
+          element={
+            <RequireAuth>
+              <RequireAdmin>
+                <AdminBrochuresPage />
               </RequireAdmin>
             </RequireAuth>
           }

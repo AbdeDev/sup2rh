@@ -21,6 +21,7 @@ import { DateRangeFilter } from "../components/DateRangeFilter";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { AppLogo } from "../components/AppLogo";
 
 export function SessionsPage() {
@@ -179,6 +180,7 @@ export function SessionsPage() {
             </div>
           </button>
           <div className="ml-auto flex items-center gap-1.5">
+            <LanguageSwitcher />
             <ThemeToggle />
             <div className="relative" ref={userMenuRef}>
               <Button

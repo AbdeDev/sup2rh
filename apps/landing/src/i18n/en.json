@@ -1,0 +1,88 @@
+{
+  "nav": {
+    "home": "Home",
+    "school": "School",
+    "companies": "Companies",
+    "login": "Sign in"
+  },
+  "hero": {
+    "badge": "HR career quiz",
+    "title": "Find the <span class=\"highlight\">HR career</span><br/>that suits you",
+    "subtitle": "Answer 15 questions and discover the Human Resources careers made for you — Recruitment, Payroll, QWL, Training and more.",
+    "cta": "Take the quiz — it's free",
+    "ctaSecondary": "Explore careers",
+    "proof": "+2,000 students have already found their path",
+    "statJobs": "Job profiles",
+    "statQuestions": "Questions",
+    "statDuration": "Quiz duration",
+    "statFree": "Free"
+  },
+  "jobs": {
+    "badge": "Discover",
+    "title": "HR job profiles",
+    "desc": "Browse HR careers without creating an account. Sign in to get a personalized recommendation.",
+    "seeAll": "See all profiles in the app →",
+    "seeDetail": "See full profile →",
+    "showMore": "See {count} more job profiles",
+    "hiring": "hiring",
+    "turnover": "turnover"
+  },
+  "steps": {
+    "badge": "How it works",
+    "title": "In 3 simple steps",
+    "desc": "No long sign-up, no password. Just a smart quiz.",
+    "step1Title": "Sign in",
+    "step1Desc": "Create an account in 10 seconds with your email. No password — just a magic link.",
+    "step2Title": "Take the quiz",
+    "step2Desc": "15 quick questions to assess your profile. Read a statement, agree or disagree — that's it.",
+    "step3Title": "Discover your result",
+    "step3Desc": "Get a personalized recommendation with job profile, salary range and hiring rate."
+  },
+  "school": {
+    "eyebrow": "Behind this quiz",
+    "title": "SUP des RH — The school 100% specialized in HR since 1998",
+    "desc": "All our programs are work-study based and state-recognized (RNCP titles levels 6 and 7). Join the 8,500+ SUP des RH alumni working across all industries.",
+    "cta": "Discover the school →",
+    "ctaSecondary": "Companies section",
+    "stat1Val": "27 years",
+    "stat1Lbl": "Of experience (since 1998)",
+    "stat2Val": "100%",
+    "stat2Lbl": "Work-study placement",
+    "stat3Val": "600+",
+    "stat3Lbl": "Partner companies",
+    "stat4Val": "8,500+",
+    "stat4Lbl": "Active alumni"
+  },
+  "ent": {
+    "eyebrow": "Companies section",
+    "title": "Recruit tomorrow's HR talents",
+    "subtitle": "SUP des RH trains operational HR professionals from year one. 600+ partner companies trust our network.",
+    "svc1Title": "Post an offer",
+    "svc1Desc": "Work-study or internship — our students are available year-round.",
+    "svc2Title": "Recruit an alumni",
+    "svc2Desc": "8,500+ active graduates across all industries. Access our HR talent pool.",
+    "svc3Title": "Become a partner",
+    "svc3Desc": "Join our network of partner companies and contribute to training future HR professionals.",
+    "svc4Title": "Workshops & masterclasses",
+    "svc4Desc": "Share your expertise by contributing to our programs. Visibility and CSR engagement.",
+    "stat1Val": "600+",
+    "stat1Lbl": "Partner companies",
+    "stat2Val": "100%",
+    "stat2Lbl": "Work-study placement",
+    "stat3Val": "48h",
+    "stat3Lbl": "Response time",
+    "stat4Val": "27 years",
+    "stat4Lbl": "HR experience",
+    "ctaPrimary": "Submit a request",
+    "ctaSecondary": "Discover the companies section →"
+  },
+  "footer": {
+    "tagline": "HR career guidance, with confidence.",
+    "linkSchool": "School",
+    "linkCompanies": "Companies",
+    "linkTerms": "Terms of use",
+    "linkPrivacy": "Privacy policy",
+    "linkQuiz": "Access the quiz",
+    "copy": "All rights reserved"
+  }
+}

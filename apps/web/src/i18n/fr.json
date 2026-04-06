@@ -1,0 +1,112 @@
+{
+  "common": {
+    "loading": "Chargement…",
+    "error": "Erreur",
+    "back": "Retour",
+    "cancel": "Annuler",
+    "send": "Envoyer",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "close": "Fermer",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "search": "Rechercher",
+    "noResults": "Aucun résultat",
+    "confirm": "Confirmer"
+  },
+  "nav": {
+    "quiz": "Quiz",
+    "sessions": "Mes sessions",
+    "fiches": "Fiches métiers",
+    "profile": "Profil",
+    "logout": "Déconnexion",
+    "backToSite": "Retour au site"
+  },
+  "login": {
+    "title": "Découvre ton futur métier RH",
+    "subtitle": "Connecte-toi pour commencer le quiz",
+    "emailPlaceholder": "Ton adresse email",
+    "magicLink": "Recevoir un lien de connexion",
+    "privacy": "Ton e‑mail n'est jamais utilisé à des fins commerciales. Il sert uniquement à sauvegarder tes résultats.",
+    "features": {
+      "quiz": "Quiz intelligent en 2 min",
+      "fiches": "Fiches métiers détaillées",
+      "free": "100 % gratuit, sans engagement",
+      "privacy": "Données privées et protégées"
+    },
+    "socialProof": "+2 000 étudiants ont déjà trouvé leur voie",
+    "legalAccept": "En continuant, tu acceptes nos",
+    "cgu": "CGU",
+    "privacyPolicy": "Politique de confidentialité"
+  },
+  "quizLanding": {
+    "title": "Découvre ton métier RH",
+    "subtitle": "Réponds à 15 questions et découvre le métier RH qui correspond le mieux à ton profil.",
+    "startButton": "Commencer le quiz",
+    "resumeButton": "Reprendre ma session",
+    "stats": {
+      "questions": "questions",
+      "minutes": "minutes",
+      "jobs": "métiers RH"
+    },
+    "domains": "Grands domaines RH"
+  },
+  "quiz": {
+    "question": "Question",
+    "of": "sur",
+    "strongly_disagree": "Pas du tout d'accord",
+    "disagree": "Plutôt pas d'accord",
+    "neutral": "Neutre",
+    "agree": "Plutôt d'accord",
+    "strongly_agree": "Tout à fait d'accord",
+    "analysing": "Analyse en cours…"
+  },
+  "result": {
+    "title": "Ton résultat",
+    "match": "Correspondance",
+    "domains": "Domaines RH",
+    "interestedTitle": "Intéressé par ce métier ?",
+    "interestedDesc": "L'équipe SUP des RH peut t'aider à trouver une alternance ou un stage dans ce domaine.",
+    "contactButton": "Être contacté par SUP des RH",
+    "phonePlaceholder": "Ton numéro de téléphone (optionnel)",
+    "sendRequest": "Envoyer ma demande",
+    "contactSent": "Demande envoyée ! L'équipe SUP des RH te contactera bientôt.",
+    "newQuiz": "Nouveau quiz",
+    "mySessions": "Mes sessions",
+    "allJobs": "Toutes les fiches"
+  },
+  "sessions": {
+    "title": "Mes sessions",
+    "noSessions": "Aucune session pour le moment",
+    "noSessionsDesc": "Commence un quiz pour voir tes résultats ici",
+    "answers": "réponses",
+    "seeResult": "Voir le résultat",
+    "inProgress": "En cours"
+  },
+  "fiches": {
+    "title": "Fiches métiers RH",
+    "subtitle": "Découvre les métiers des Ressources Humaines",
+    "salary": "Salaire moyen",
+    "employability": "Taux d'embauche",
+    "seeDetails": "Voir la fiche"
+  },
+  "profile": {
+    "title": "Mon profil",
+    "email": "Email",
+    "sessions": "Sessions de quiz",
+    "memberSince": "Membre depuis",
+    "logout": "Se déconnecter"
+  },
+  "support": {
+    "buttonTitle": "Besoin d'aide ?",
+    "helpTab": "Aide",
+    "suggestionTab": "Suggestion",
+    "emailPlaceholder": "Ton email",
+    "subjectPlaceholder": "Sujet",
+    "helpMessagePlaceholder": "Décris ton problème…",
+    "suggestionMessagePlaceholder": "Décris ta suggestion…",
+    "successHelp": "Demande envoyée !",
+    "successSuggestion": "Suggestion envoyée !",
+    "allFieldsRequired": "Tous les champs sont requis"
+  }
+}

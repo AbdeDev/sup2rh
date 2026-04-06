@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import {
   Mail,
+  Phone,
   Loader2,
   Calendar,
   CalendarRange as CalendarRangeIcon,
@@ -11,9 +12,10 @@ import {
   Trophy,
   Search,
   Inbox,
+  Download,
 } from "lucide-react";
 
-import { getContactRequests, type ContactRequestUserItem } from "../../lib/api";
+import { getContactRequests, downloadCsv, type ContactRequestUserItem } from "../../lib/api";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
@@ -91,15 +93,26 @@ export function AdminContactRequestsPage() {
                   : `${filteredItems.length} sur ${items.length} demande(s)`}
               </p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-9 text-xs rounded-lg"
-              onClick={() => setFilterOpen((o) => !o)}
-            >
-              <CalendarRangeIcon className="h-3.5 w-3.5 mr-1.5" />
-              Filtrer par date
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 text-xs rounded-lg"
+                onClick={() => downloadCsv("contact-requests")}
+              >
+                <Download className="h-3.5 w-3.5 mr-1.5" />
+                Exporter CSV
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 text-xs rounded-lg"
+                onClick={() => setFilterOpen((o) => !o)}
+              >
+                <CalendarRangeIcon className="h-3.5 w-3.5 mr-1.5" />
+                Filtrer par date
+              </Button>
+            </div>
           </div>
 
           {filterOpen && (
@@ -180,9 +193,17 @@ export function AdminContactRequestsPage() {
                           </span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground ml-10">
-                        <Calendar className="h-3 w-3" />
-                        Contact demandé le {formatDate(user.contactRequestedAt)}
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground ml-10">
+                        <span className="inline-flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          Contact demandé le {formatDate(user.contactRequestedAt)}
+                        </span>
+                        {user.phone && (
+                          <span className="inline-flex items-center gap-1 text-primary">
+                            <Phone className="h-3 w-3" />
+                            {user.phone}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 text-muted-foreground">

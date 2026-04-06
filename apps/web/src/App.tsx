@@ -16,11 +16,13 @@ import { SessionsPage } from "./pages/SessionsPage";
 import AuthCallbackPage from "./pages/AuthCallbackPage";
 import { LegalConditionsPage } from "./pages/LegalConditionsPage";
 import { LegalPrivacyPage } from "./pages/LegalPrivacyPage";
+import { SupportButton } from "./components/SupportButton";
 
 export default function App() {
   return (
     <>
       <Toaster position="top-right" richColors closeButton />
+      <SupportButton />
       <Routes>
         <Route path="/" element={<HomeRedirect />} />
 

@@ -193,39 +193,41 @@ export function AdminFeedbacksPage() {
                 className="border border-border rounded-2xl hover:border-primary/20 hover:shadow-sm transition-all duration-200 animate-in fade-in slide-in-from-bottom-4"
                 style={{ animationDelay: `${idx * 30}ms` }}
               >
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div className="flex items-center gap-2.5">
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 mb-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
                       <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <Mail className="h-3.5 w-3.5 text-primary" />
                       </div>
-                      <div>
-                        <span className="font-semibold text-sm text-foreground">{f.email}</span>
+                      <div className="min-w-0">
+                        <span className="font-semibold text-sm text-foreground block truncate">
+                          {f.email}
+                        </span>
                         <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
-                          <Calendar className="h-3 w-3" />
+                          <Calendar className="h-3 w-3 shrink-0" />
                           {formatDate(f.createdAt)}
                         </div>
                       </div>
                     </div>
                     {f.rating != null && (
-                      <div className="flex items-center gap-0.5 shrink-0 bg-muted/30 border border-border rounded-lg px-2 py-1">
+                      <div className="flex items-center gap-0.5 bg-muted/30 border border-border rounded-lg px-2 py-1 ml-10 sm:ml-0 w-fit shrink-0">
                         {[1, 2, 3, 4, 5].map((i) => (
                           <Star
                             key={i}
-                            className={`h-3.5 w-3.5 ${
+                            className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${
                               i <= f.rating!
                                 ? "fill-orange text-orange"
                                 : "text-muted-foreground/30"
                             }`}
                           />
                         ))}
-                        <span className="ml-1.5 text-xs font-medium text-foreground">
+                        <span className="ml-1 sm:ml-1.5 text-[11px] sm:text-xs font-medium text-foreground">
                           {f.rating}/5
                         </span>
                       </div>
                     )}
                   </div>
-                  <div className="ml-10.5 pl-0.5">
+                  <div className="ml-0 sm:ml-10.5 sm:pl-0.5">
                     <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">
                       {f.message}
                     </p>

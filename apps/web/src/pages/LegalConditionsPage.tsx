@@ -4,6 +4,7 @@ import { ArrowLeft, FileText } from "lucide-react";
 import { AppLogo } from "../components/AppLogo";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { Button } from "../components/ui/button";
 
 export function LegalConditionsPage() {
@@ -28,6 +29,7 @@ export function LegalConditionsPage() {
             </div>
           </button>
           <div className="ml-auto">
+            <LanguageSwitcher />
             <ThemeToggle />
           </div>
         </div>

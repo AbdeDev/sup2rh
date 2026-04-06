@@ -14,6 +14,7 @@ import { getJobs, type JobFiche } from "../lib/api";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { AppLogo } from "../components/AppLogo";
 
 function FormatDescription({ text }: { text: string }) {
@@ -125,6 +126,7 @@ export function FicheDetailPage() {
             >
               Faire le quiz
             </Button>
+            <LanguageSwitcher />
             <ThemeToggle />
           </div>
         </div>

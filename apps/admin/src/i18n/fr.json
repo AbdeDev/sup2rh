@@ -1,0 +1,67 @@
+{
+  "common": {
+    "loading": "Chargement…",
+    "error": "Erreur",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "create": "Créer",
+    "edit": "Modifier",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "export": "Exporter CSV",
+    "refresh": "Actualiser",
+    "noResults": "Aucun résultat"
+  },
+  "nav": {
+    "jobs": "Fiches métier",
+    "categories": "Domaines RH",
+    "quizzes": "Quiz",
+    "users": "Utilisateurs",
+    "contacts": "Demandes",
+    "companies": "Entreprises",
+    "feedbacks": "Avis",
+    "support": "Support",
+    "brochures": "Brochures IA",
+    "logout": "Déconnexion"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue dans l'administration RH&MOI"
+  },
+  "contacts": {
+    "title": "Demandes de contact",
+    "filterByDate": "Filtrer par date",
+    "searchByEmail": "Rechercher par email…",
+    "noContacts": "Aucune demande",
+    "noContactsDesc": "Les demandes de contact apparaîtront ici",
+    "requestedAt": "Contact demandé le",
+    "sessions": "session(s)",
+    "result": "Résultat"
+  },
+  "support": {
+    "title": "Support & Suggestions",
+    "all": "Tous",
+    "help": "Aide",
+    "suggestions": "Suggestions",
+    "open": "Ouvert",
+    "inProgress": "En cours",
+    "closed": "Fermé",
+    "reopen": "Rouvrir",
+    "reply": "Répondre",
+    "noTickets": "Aucun ticket",
+    "noTicketsDesc": "Les demandes de support et suggestions apparaîtront ici"
+  },
+  "brochures": {
+    "title": "Brochures IA",
+    "subtitle": "Contenu injecté dans le prompt de l'IA pour enrichir les analyses",
+    "add": "Ajouter",
+    "namePlaceholder": "Nom de la brochure",
+    "contentPlaceholder": "Contenu textuel (informations sur les formations, le programme, etc.)",
+    "noBrochures": "Aucune brochure",
+    "noBrochuresDesc": "Ajoutez du contenu pour enrichir les analyses IA",
+    "newBrochure": "Nouvelle brochure",
+    "editBrochure": "Modifier la brochure",
+    "update": "Mettre à jour"
+  }
+}

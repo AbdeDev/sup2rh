@@ -24,7 +24,7 @@ const formations = [
     description: "Mastère expert pour les profils issus d'une filière RH. Stratégie RH, management d'équipe, SIRH et transformation des organisations.",
     competences: ["Stratégie RH", "Management d'équipe", "SIRH & digitalisation", "Conduite du changement"],
     color: "#008c54",
-    href: "https://www.supdesrh.com/alternance/post-bac-3/manager-des-rh-filiere-rh/",
+    href: "https://www.supdesrh.com/formations/manager-rh/manager-des-rh/",
   },
   {
     title: "Manager des RH — Toutes filières",
@@ -35,7 +35,7 @@ const formations = [
     description: "Ouvert à tous les profils, y compris non-RH. Reconversion ou montée en compétences vers les postes RH stratégiques (HRBP, RRH, DRH).",
     competences: ["Droit social avancé", "Développement RH", "Communication interne", "Pilotage RH"],
     color: "#f37021",
-    href: "https://www.supdesrh.com/alternance/post-bac-3/manager-des-rh-toutes-filieres/",
+    href: "https://www.supdesrh.com/formations/manager-rh/mdrh-en-alternance-post-bac3-non-rh/",
   },
   {
     title: "Manager des RH — Parcours international",
@@ -46,7 +46,7 @@ const formations = [
     description: "Spécialisation internationale : mobilité globale, droit social européen, management interculturel. Programme Erasmus+ et séjours à l'étranger inclus.",
     competences: ["Mobilité internationale", "Management interculturel", "Droit social européen", "Erasmus+"],
     color: "#6b21a8",
-    href: "https://www.supdesrh.com/alternance/post-bac-3/manager-des-rh-parcours-international/",
+    href: "https://www.supdesrh.com/formations/manager-rh/manager-des-rh-parcours-international/",
   },
   {
     title: "Responsable Rémunération & Avantages Sociaux",
@@ -57,7 +57,7 @@ const formations = [
     description: "Comp & Ben : conception des politiques de rémunération, épargne salariale, avantages sociaux et pilotage de la masse salariale. Le plus haut niveau de l'école.",
     competences: ["Politique de rémunération", "Épargne salariale", "Avantages sociaux", "Masse salariale"],
     color: "#0891b2",
-    href: "https://www.supdesrh.com/alternance/post-bac-5/responsable-remuneration-et-avantages-sociaux-comp-ben/",
+    href: "https://www.supdesrh.com/formations/mba/executive-mba-responsable-remuneration-globale-avantages-sociaux/",
   },
 ];
 
@@ -113,11 +113,12 @@ const pedagogie = [
           </div>
         </div>
       <nav class="header-nav">
-        <a href="/" class="nav-link">Accueil</a>
-        <a href="/ecole" class="nav-link nav-link-active">L'école</a>
-        <a href="/entreprises" class="nav-link">Entreprises</a>
+        <a href="/" class="nav-link" data-i18n="nav.home">Accueil</a>
+        <a href="/ecole" class="nav-link nav-link-active" data-i18n="nav.school">L'école</a>
+        <a href="/entreprises" class="nav-link" data-i18n="nav.companies">Entreprises</a>
       </nav>
       <div class="header-actions">
+        <button type="button" class="btn-lang" id="lang-toggle" aria-label="Changer la langue">FR</button>
         <button type="button" class="btn-theme" id="theme-toggle" aria-label="Changer le thème">
           <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
           <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -129,9 +130,13 @@ const pedagogie = [
         </button>
       </div>
       <nav class="mobile-nav" id="mobile-nav">
-        <a href="/" class="mobile-nav-link">Accueil</a>
-        <a href="/ecole" class="mobile-nav-link">L'école</a>
-        <a href="/entreprises" class="mobile-nav-link">Entreprises</a>
+        <a href="/" class="mobile-nav-link" data-i18n="nav.home">Accueil</a>
+        <a href="/ecole" class="mobile-nav-link" data-i18n="nav.school">L'école</a>
+        <a href="/entreprises" class="mobile-nav-link" data-i18n="nav.companies">Entreprises</a>
+        <div class="mobile-nav-actions">
+          <button type="button" class="btn-lang" id="mobile-lang-toggle" aria-label="Changer la langue">FR</button>
+          <a href={WEB_APP_URL + "/login"} class="btn-connect" style="font-size:0.82rem;">Se connecter</a>
+        </div>
       </nav>
     </header>
 
@@ -353,11 +358,29 @@ const pedagogie = [
     });
   }
 
+  const currentLang = localStorage.getItem("rhmoi_lang") || "fr";
+  const langLabel = currentLang === "fr" ? "EN" : "FR";
+  document.querySelectorAll("#lang-toggle, #mobile-lang-toggle").forEach((el) => {
+    el.textContent = langLabel;
+    el.addEventListener("click", () => {
+      // @ts-expect-error
+      if (typeof window.supdesrhToggleLang === "function") window.supdesrhToggleLang();
+    });
+  });
+
   const showMoreBtn = document.getElementById("formations-show-more") as HTMLButtonElement | null;
   if (showMoreBtn) {
     showMoreBtn.addEventListener("click", () => {
       document.querySelectorAll(".formation-extra").forEach((el) => el.classList.add("formation-visible"));
       showMoreBtn.closest(".formations-show-more-wrap")?.remove();
+    });
+  }
+
+  const currentLangCheck = localStorage.getItem("rhmoi_lang") || "fr";
+  if (currentLangCheck === "en") {
+    import("../i18n/en.json").then((mod) => {
+      // @ts-expect-error
+      if (typeof window.supdesrhApplyI18n === "function") window.supdesrhApplyI18n(mod.default || mod);
     });
   }
 </script>
@@ -392,6 +415,8 @@ const pedagogie = [
   html.dark .icon-sun { display: none; }
   html.dark .icon-moon { display: block; }
   .icon-sun, .icon-moon { color: var(--landing-text); }
+  .btn-lang { background: none; border: 1.5px solid var(--landing-border); border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 700; color: var(--landing-text); cursor: pointer; transition: all 0.2s; letter-spacing: 0.03em; }
+  .btn-lang:hover { background: var(--landing-bg-soft); border-color: var(--landing-text); }
   .btn-connect { padding: 0.55rem 1.25rem; border-radius: 999px; background: #004080; color: #fff !important; font-weight: 600; font-size: 0.85rem; text-decoration: none; box-shadow: 0 4px 14px rgba(0,64,128,0.3); transition: transform 0.15s, background 0.15s; }
   .btn-connect:hover { transform: translateY(-1px); background: #003366; }
 
@@ -550,7 +575,9 @@ const pedagogie = [
   /* Mobile (≤640px) */
   @media (max-width: 640px) {
     .header-nav { display: none; }
+    .header-actions .btn-lang { display: none; }
     .btn-connect { padding: 0.5rem 0.9rem; font-size: 0.78rem; }
+    .mobile-nav-actions { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem 0.25rem; border-top: 1px solid var(--landing-border); margin-top: 0.25rem; }
     .hero-actions { flex-direction: column; gap: 0.5rem; }
     .btn-primary, .btn-secondary { width: 100%; justify-content: center; text-align: center; }
     .chiffres-grid { grid-template-columns: repeat(2, 1fr); }
@@ -566,6 +593,7 @@ const pedagogie = [
   @media (max-width: 480px) {
     .main { padding: 0 1rem; }
     .site-header { padding: 0.75rem 1rem; }
+    .header-actions .btn-connect { display: none; }
     .ecole-hero { padding: 2rem 0 1.75rem; }
     .hero-title { font-size: 1.5rem; }
     .chiffres-grid { grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }

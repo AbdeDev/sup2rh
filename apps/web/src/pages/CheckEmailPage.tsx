@@ -5,6 +5,7 @@ import { Mail, ArrowLeft, CheckCircle2, Loader2, Inbox } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { supabase } from "../lib/supabase";
 
 export function CheckEmailPage() {
@@ -41,6 +42,7 @@ export function CheckEmailPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4 md:p-6 relative">
       <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
         <ThemeToggle />
       </div>
 
