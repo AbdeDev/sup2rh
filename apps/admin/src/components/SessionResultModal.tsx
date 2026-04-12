@@ -11,7 +11,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { getAdminSessionDetail, type AdminSessionDetail } from "../lib/api";
+import { getAdminSessionDetail, getJobs, type AdminSessionDetail, type Job } from "../lib/api";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 
@@ -22,17 +22,23 @@ interface SessionResultModalProps {
 
 export function SessionResultModal({ sessionId, onClose }: SessionResultModalProps) {
   const [detail, setDetail] = useState<AdminSessionDetail | null>(null);
+  const [allJobs, setAllJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAllScores, setShowAllScores] = useState(false);
+
+  const TOP_DOMAINS = 5;
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    getAdminSessionDetail(sessionId)
-      .then((d) => {
-        if (!cancelled) setDetail(d);
+    Promise.all([getAdminSessionDetail(sessionId), getJobs()])
+      .then(([d, { items }]) => {
+        if (!cancelled) {
+          setDetail(d);
+          setAllJobs(items);
+        }
       })
       .catch((e) => {
         if (!cancelled) setError(e instanceof Error ? e.message : "Erreur chargement");
@@ -44,6 +50,33 @@ export function SessionResultModal({ sessionId, onClose }: SessionResultModalPro
       cancelled = true;
     };
   }, [sessionId]);
+
+  const domainData = useMemo(() => {
+    const scores = detail?.analysis?.scores;
+    if (!scores || typeof scores !== "object" || allJobs.length === 0) return [];
+    const byCategory: Record<string, number> = {};
+    for (const [jobId, score] of Object.entries(scores)) {
+      const job = allJobs.find((j) => j.id === jobId);
+      const cat = job?.category?.trim();
+      if (!cat) continue;
+      const current = byCategory[cat] ?? 0;
+      byCategory[cat] = Math.max(current, Number(score) || 0);
+    }
+    const mainCategory = detail.analysis?.job?.category ?? null;
+    const sorted = Object.entries(byCategory)
+      .map(([category, rawValue]) => ({ category, rawValue, isMain: category === mainCategory }))
+      .sort((a, b) => b.rawValue - a.rawValue);
+
+    const top5Total = sorted.slice(0, TOP_DOMAINS).reduce((s, d) => s + d.rawValue, 0) || 1;
+
+    return sorted.map((d, idx) => ({
+      category: d.category,
+      value: idx < TOP_DOMAINS ? Math.round((d.rawValue / top5Total) * 100) : 0,
+      isMain: d.isMain,
+    }));
+  }, [detail, allJobs]);
+
+  const hasDomains = domainData.length > 0;
 
   const scoresData = useMemo(() => {
     const scores = detail?.analysis?.scores;
@@ -228,77 +261,153 @@ export function SessionResultModal({ sessionId, onClose }: SessionResultModalPro
                     </div>
                   )}
 
-                  {/* Scores chart */}
-                  {scoresData.length > 0 && (
+                  {/* Scores chart — domaines RH ou fallback métiers */}
+                  {(hasDomains ? domainData.length > 0 : scoresData.length > 0) && (
                     <Card className="border border-border">
                       <CardContent className="p-5">
                         <p className="text-xs font-semibold text-foreground uppercase tracking-wider mb-1">
-                          Comparaison des métiers
+                          {hasDomains ? "Domaines RH — affinités" : "Comparaison des métiers"}
                         </p>
                         <p className="text-[11px] text-muted-foreground mb-4">
-                          {scoresData.length} métier{scoresData.length > 1 ? "s" : ""} analysé
-                          {scoresData.length > 1 ? "s" : ""}
+                          {hasDomains
+                            ? `${domainData.length} domaine${domainData.length > 1 ? "s" : ""} identifié${domainData.length > 1 ? "s" : ""} · Top ${TOP_DOMAINS} avec pourcentages`
+                            : `${scoresData.length} métier${scoresData.length > 1 ? "s" : ""} analysé${scoresData.length > 1 ? "s" : ""}`}
                         </p>
-                        <div className="space-y-2">
-                          {visibleScores.map((item, idx) => {
-                            const barColors = [
-                              "#004080",
-                              "#008c54",
-                              "#f37021",
-                              "#0d5aa7",
-                              "#16a34a",
-                              "#d97706",
-                              "#3b82f6",
-                              "#10b981",
-                            ];
-                            const color = item.isMain
-                              ? "#004080"
-                              : barColors[idx % barColors.length];
-                            return (
-                              <div key={item.jobId} className="group">
-                                <div className="flex items-center justify-between mb-1">
-                                  <span
-                                    className={`text-xs truncate max-w-[60%] ${item.isMain ? "font-semibold text-foreground" : "text-muted-foreground"}`}
-                                  >
-                                    {item.label}
-                                  </span>
-                                  <span
-                                    className={`text-xs tabular-nums ${item.isMain ? "font-bold text-primary" : "text-muted-foreground"}`}
-                                  >
-                                    {item.value}%
-                                  </span>
-                                </div>
-                                <div className="h-2.5 rounded-full bg-muted/50 overflow-hidden">
-                                  <div
-                                    className="h-full rounded-full transition-all duration-700 ease-out"
-                                    style={{
-                                      width: `${item.value}%`,
-                                      backgroundColor: color,
-                                      opacity: item.isMain ? 1 : 0.7,
-                                    }}
-                                  />
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        {hasMoreScores && (
-                          <button
-                            type="button"
-                            className="mt-3 flex items-center gap-1 text-xs font-medium text-primary hover:underline mx-auto"
-                            onClick={() => setShowAllScores(!showAllScores)}
-                          >
-                            {showAllScores ? (
-                              <>
-                                Voir moins <ChevronUp className="h-3 w-3" />
-                              </>
-                            ) : (
-                              <>
-                                Voir les {scoresData.length - INITIAL_VISIBLE} autres{" "}
-                                <ChevronDown className="h-3 w-3" />
-                              </>
+                        {hasDomains ? (
+                          <>
+                            <div className="space-y-2">
+                              {(showAllScores
+                                ? domainData
+                                : domainData.slice(0, INITIAL_VISIBLE)
+                              ).map((item, idx) => {
+                                const barColors = [
+                                  "#004080",
+                                  "#008c54",
+                                  "#f37021",
+                                  "#0d5aa7",
+                                  "#16a34a",
+                                  "#d97706",
+                                  "#3b82f6",
+                                  "#10b981",
+                                ];
+                                const color = item.isMain
+                                  ? "#004080"
+                                  : barColors[idx % barColors.length];
+                                const maxVal = domainData[0]?.value || 100;
+                                const barWidth =
+                                  item.value === 0 ? 3 : Math.max((item.value / maxVal) * 100, 4);
+                                return (
+                                  <div key={item.category} className="group">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span
+                                        className={`text-xs truncate max-w-[60%] ${item.isMain ? "font-semibold text-foreground" : "text-muted-foreground"}`}
+                                      >
+                                        {item.category}
+                                      </span>
+                                      <span
+                                        className={`text-xs tabular-nums ${item.value === 0 ? "text-muted-foreground/50" : item.isMain ? "font-bold text-primary" : "text-muted-foreground"}`}
+                                      >
+                                        {item.value > 0 ? `${item.value}%` : "—"}
+                                      </span>
+                                    </div>
+                                    <div className="h-2.5 rounded-full bg-muted/50 overflow-hidden">
+                                      <div
+                                        className="h-full rounded-full transition-all duration-700 ease-out"
+                                        style={{
+                                          width: `${barWidth}%`,
+                                          backgroundColor:
+                                            item.value === 0 ? "var(--muted-foreground)" : color,
+                                          opacity: item.value === 0 ? 0.2 : item.isMain ? 1 : 0.7,
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {domainData.length > INITIAL_VISIBLE && (
+                              <button
+                                type="button"
+                                className="mt-3 flex items-center gap-1 text-xs font-medium text-primary hover:underline mx-auto"
+                                onClick={() => setShowAllScores(!showAllScores)}
+                              >
+                                {showAllScores ? (
+                                  <>
+                                    Voir moins <ChevronUp className="h-3 w-3" />
+                                  </>
+                                ) : (
+                                  <>
+                                    Voir les {domainData.length - INITIAL_VISIBLE} autres{" "}
+                                    <ChevronDown className="h-3 w-3" />
+                                  </>
+                                )}
+                              </button>
                             )}
-                          </button>
+                          </>
+                        ) : (
+                          <>
+                            <div className="space-y-2">
+                              {visibleScores.map((item, idx) => {
+                                const barColors = [
+                                  "#004080",
+                                  "#008c54",
+                                  "#f37021",
+                                  "#0d5aa7",
+                                  "#16a34a",
+                                  "#d97706",
+                                  "#3b82f6",
+                                  "#10b981",
+                                ];
+                                const color = item.isMain
+                                  ? "#004080"
+                                  : barColors[idx % barColors.length];
+                                return (
+                                  <div key={item.jobId} className="group">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span
+                                        className={`text-xs truncate max-w-[60%] ${item.isMain ? "font-semibold text-foreground" : "text-muted-foreground"}`}
+                                      >
+                                        {item.label}
+                                      </span>
+                                      <span
+                                        className={`text-xs tabular-nums ${item.isMain ? "font-bold text-primary" : "text-muted-foreground"}`}
+                                      >
+                                        {item.value}%
+                                      </span>
+                                    </div>
+                                    <div className="h-2.5 rounded-full bg-muted/50 overflow-hidden">
+                                      <div
+                                        className="h-full rounded-full transition-all duration-700 ease-out"
+                                        style={{
+                                          width: `${item.value}%`,
+                                          backgroundColor: color,
+                                          opacity: item.isMain ? 1 : 0.7,
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {hasMoreScores && (
+                              <button
+                                type="button"
+                                className="mt-3 flex items-center gap-1 text-xs font-medium text-primary hover:underline mx-auto"
+                                onClick={() => setShowAllScores(!showAllScores)}
+                              >
+                                {showAllScores ? (
+                                  <>
+                                    Voir moins <ChevronUp className="h-3 w-3" />
+                                  </>
+                                ) : (
+                                  <>
+                                    Voir les {scoresData.length - INITIAL_VISIBLE} autres{" "}
+                                    <ChevronDown className="h-3 w-3" />
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </>
                         )}
                       </CardContent>
                     </Card>

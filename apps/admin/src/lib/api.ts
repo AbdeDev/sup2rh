@@ -345,6 +345,7 @@ export interface AdminSessionDetail {
       salary?: string;
       hiringRate?: number;
       turnoverRate?: number;
+      category?: string;
       createdAt: string;
     } | null;
   } | null;
