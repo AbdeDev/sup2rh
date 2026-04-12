@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { Loader2, User, Sparkles, CheckCircle2, X, ExternalLink, Briefcase } from "lucide-react";
+import {
+  Loader2,
+  User,
+  Sparkles,
+  CheckCircle2,
+  X,
+  ExternalLink,
+  Briefcase,
+  Compass,
+} from "lucide-react";
 
 import { toast } from "sonner";
 import {
@@ -21,6 +30,10 @@ import { ThemeToggle } from "../components/ThemeToggle";
 import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { AppLogo } from "../components/AppLogo";
 import { ChartContainer, type ChartConfig } from "../components/ui/chart";
+import {
+  distributePercentagesAmongWeights,
+  formatDomainPercent,
+} from "../lib/domainChartPercentages";
 
 /** Formate une description qui peut contenir des puces "•" en liste visuelle */
 function FormatDescription({ text }: { text: string }) {
@@ -234,11 +247,13 @@ export function ResultPage() {
       .map(([category, rawValue]) => ({ category, rawValue, isMain: category === mainCategory }))
       .sort((a, b) => b.rawValue - a.rawValue);
 
-    const top5Total = sorted.slice(0, TOP_DOMAINS).reduce((s, d) => s + d.rawValue, 0) || 1;
+    const top5 = sorted.slice(0, TOP_DOMAINS);
+    const topPercents = distributePercentagesAmongWeights(top5.map((d) => d.rawValue));
 
     return sorted.map((d, idx) => ({
       category: d.category,
-      value: idx < TOP_DOMAINS ? Math.round((d.rawValue / top5Total) * 100) : 0,
+      value: idx < TOP_DOMAINS ? topPercents[idx]! : 0,
+      rawValue: d.rawValue,
       isMain: d.isMain,
     }));
   }, [analysis, allJobs]);
@@ -302,7 +317,7 @@ export function ResultPage() {
   const chartCount = chartDataForDisplay.length;
   const showCarouselSection = chartCount > 0;
   type ChartItem =
-    | { category: string; value: number; isMain: boolean }
+    | { category: string; value: number; rawValue: number; isMain: boolean }
     | { jobId: string; label: string; value: number; isMain: boolean };
   const getChartLabel = (item: ChartItem): string =>
     "category" in item ? item.category : item.label;
@@ -320,6 +335,11 @@ export function ResultPage() {
   const chartConfig: ChartConfig = {
     value: { label: "Correspondance", color: "--chart-1" },
   };
+
+  const globalMaxDomainRaw = useMemo(() => {
+    if (!hasDomains || domainChartData.length === 0) return 1;
+    return Math.max(domainChartData[0]?.rawValue ?? 0, 1e-9);
+  }, [hasDomains, domainChartData]);
 
   async function handleContact() {
     if (!session || !analysis) return;
@@ -602,9 +622,16 @@ export function ResultPage() {
                     className={`flex items-end gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 ${visibleChartData.length > 6 ? "overflow-x-auto pb-2" : "justify-center"} min-h-[180px] sm:min-h-[200px]`}
                   >
                     {(visibleChartData as ChartItem[]).map((item, idx) => {
-                      const maxVal = chartDataForDisplay[0]?.value || 100;
-                      const barHeight =
-                        item.value === 0
+                      const maxVal =
+                        Math.max(
+                          ...chartDataForDisplay.map((r) => r.value).filter((v) => v > 0),
+                          1,
+                        ) || 100;
+                      const isSecondaryDomain =
+                        hasDomains && "rawValue" in item && item.value === 0;
+                      const barHeight = isSecondaryDomain
+                        ? Math.max(14, Math.min(92, (item.rawValue / globalMaxDomainRaw) * 108))
+                        : item.value === 0
                           ? 8
                           : Math.max((item.value / Math.max(maxVal, 1)) * 160, 16);
                       const barColors = [
@@ -645,6 +672,9 @@ export function ResultPage() {
                             }
                           }}
                           title={`Voir : ${label}`}
+                          aria-label={
+                            isSecondaryDomain ? `Explorer le domaine ${label}` : undefined
+                          }
                           className="flex flex-col items-center gap-1.5 animate-in fade-in cursor-pointer group transition-transform duration-150 hover:scale-105 focus:outline-none"
                           style={{
                             animationDelay: `${idx * 50}ms`,
@@ -657,26 +687,49 @@ export function ResultPage() {
                           }}
                         >
                           <span
-                            className={`text-[10px] sm:text-xs tabular-nums font-bold ${item.value === 0 ? "text-muted-foreground/50" : isSelected ? "text-foreground" : "text-muted-foreground"}`}
+                            className={`flex h-5 items-center justify-center ${item.value === 0 && !isSecondaryDomain ? "text-muted-foreground/50" : isSecondaryDomain ? "text-muted-foreground/70" : isSelected ? "text-foreground" : "text-muted-foreground"}`}
                           >
-                            {item.value > 0 ? `${item.value}%` : "—"}
+                            {hasDomains ? (
+                              isSecondaryDomain ? (
+                                <Compass
+                                  className="h-3.5 w-3.5 shrink-0 group-hover:text-primary transition-colors"
+                                  aria-hidden
+                                />
+                              ) : (
+                                <span className="text-[10px] sm:text-xs tabular-nums font-bold">
+                                  {formatDomainPercent(item.value)}
+                                </span>
+                              )
+                            ) : item.value > 0 ? (
+                              <span className="text-[10px] sm:text-xs tabular-nums font-bold">
+                                {Math.round(item.value)}%
+                              </span>
+                            ) : (
+                              <span className="text-[10px] sm:text-xs font-bold">—</span>
+                            )}
                           </span>
                           <div className="w-full flex flex-col justify-end h-36 sm:h-40">
                             <div
                               className="w-full rounded-t-lg transition-all duration-700 ease-out"
                               style={{
                                 height: `${barHeight}px`,
-                                background:
-                                  item.value === 0
+                                background: isSecondaryDomain
+                                  ? `linear-gradient(180deg, ${barColor}50 0%, ${barColor}18 100%)`
+                                  : item.value === 0
                                     ? "var(--muted)"
                                     : isSelected
                                       ? `linear-gradient(180deg, ${barColor} 0%, ${barColor}cc 100%)`
                                       : `linear-gradient(180deg, ${barColor}55 0%, ${barColor}33 100%)`,
-                                boxShadow: isSelected ? `0 -4px 16px ${barColor}44` : undefined,
+                                boxShadow: isSelected
+                                  ? `0 -4px 16px ${barColor}44`
+                                  : isSecondaryDomain
+                                    ? `inset 0 0 0 1px ${barColor}55`
+                                    : undefined,
                                 outline: isSelected ? `2px solid ${barColor}` : undefined,
                                 outlineOffset: "2px",
                                 borderRadius: "6px 6px 0 0",
                                 minWidth: "24px",
+                                border: isSecondaryDomain ? `1px dashed ${barColor}77` : undefined,
                               }}
                             />
                           </div>
