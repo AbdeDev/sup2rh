@@ -216,6 +216,8 @@ export function ResultPage() {
 
   const jobLabel = (jid: string) => jid.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
 
+  const TOP_DOMAINS = 5;
+
   const domainChartData = useMemo(() => {
     const scores = analysis?.scores;
     if (!scores || typeof scores !== "object" || allJobs.length === 0) return [];
@@ -227,15 +229,18 @@ export function ResultPage() {
       const current = byCategory[cat] ?? 0;
       byCategory[cat] = Math.max(current, Number(score) || 0);
     }
-    const total = Object.values(byCategory).reduce((s, v) => s + v, 0) || 1;
     const mainCategory = analysis?.job?.category ?? null;
-    return Object.entries(byCategory)
-      .map(([category, value]) => ({
-        category,
-        value: Math.round((value / total) * 100),
-        isMain: category === mainCategory,
-      }))
-      .sort((a, b) => b.value - a.value);
+    const sorted = Object.entries(byCategory)
+      .map(([category, rawValue]) => ({ category, rawValue, isMain: category === mainCategory }))
+      .sort((a, b) => b.rawValue - a.rawValue);
+
+    const top5Total = sorted.slice(0, TOP_DOMAINS).reduce((s, d) => s + d.rawValue, 0) || 1;
+
+    return sorted.map((d, idx) => ({
+      category: d.category,
+      value: idx < TOP_DOMAINS ? Math.round((d.rawValue / top5Total) * 100) : 0,
+      isMain: d.isMain,
+    }));
   }, [analysis, allJobs]);
 
   /** Fallback : graphique par métier quand aucun domaine n'est disponible */
@@ -598,7 +603,10 @@ export function ResultPage() {
                   >
                     {(visibleChartData as ChartItem[]).map((item, idx) => {
                       const maxVal = chartDataForDisplay[0]?.value || 100;
-                      const barHeight = Math.max((item.value / Math.max(maxVal, 1)) * 160, 16);
+                      const barHeight =
+                        item.value === 0
+                          ? 8
+                          : Math.max((item.value / Math.max(maxVal, 1)) * 160, 16);
                       const barColors = [
                         "#004080",
                         "#008c54",
@@ -649,18 +657,21 @@ export function ResultPage() {
                           }}
                         >
                           <span
-                            className={`text-[10px] sm:text-xs tabular-nums font-bold ${isSelected ? "text-foreground" : "text-muted-foreground"}`}
+                            className={`text-[10px] sm:text-xs tabular-nums font-bold ${item.value === 0 ? "text-muted-foreground/50" : isSelected ? "text-foreground" : "text-muted-foreground"}`}
                           >
-                            {item.value}%
+                            {item.value > 0 ? `${item.value}%` : "—"}
                           </span>
                           <div className="w-full flex flex-col justify-end h-36 sm:h-40">
                             <div
                               className="w-full rounded-t-lg transition-all duration-700 ease-out"
                               style={{
                                 height: `${barHeight}px`,
-                                background: isSelected
-                                  ? `linear-gradient(180deg, ${barColor} 0%, ${barColor}cc 100%)`
-                                  : `linear-gradient(180deg, ${barColor}55 0%, ${barColor}33 100%)`,
+                                background:
+                                  item.value === 0
+                                    ? "var(--muted)"
+                                    : isSelected
+                                      ? `linear-gradient(180deg, ${barColor} 0%, ${barColor}cc 100%)`
+                                      : `linear-gradient(180deg, ${barColor}55 0%, ${barColor}33 100%)`,
                                 boxShadow: isSelected ? `0 -4px 16px ${barColor}44` : undefined,
                                 outline: isSelected ? `2px solid ${barColor}` : undefined,
                                 outlineOffset: "2px",

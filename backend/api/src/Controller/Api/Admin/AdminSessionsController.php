@@ -107,6 +107,7 @@ final class AdminSessionsController extends AbstractController
             'salary' => $job->getSalary(),
             'hiringRate' => $job->getHiringRate(),
             'turnoverRate' => $job->getTurnoverRate(),
+            'category' => $job->getCategory(),
             'createdAt' => $job->getCreatedAt()->format(DATE_ATOM),
         ] : null;
 
