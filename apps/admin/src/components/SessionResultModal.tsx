@@ -10,8 +10,13 @@ import {
   FileText,
   ChevronDown,
   ChevronUp,
+  Compass,
 } from "lucide-react";
 import { getAdminSessionDetail, getJobs, type AdminSessionDetail, type Job } from "../lib/api";
+import {
+  distributePercentagesAmongWeights,
+  formatDomainPercent,
+} from "../lib/domainChartPercentages";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 
@@ -67,11 +72,13 @@ export function SessionResultModal({ sessionId, onClose }: SessionResultModalPro
       .map(([category, rawValue]) => ({ category, rawValue, isMain: category === mainCategory }))
       .sort((a, b) => b.rawValue - a.rawValue);
 
-    const top5Total = sorted.slice(0, TOP_DOMAINS).reduce((s, d) => s + d.rawValue, 0) || 1;
+    const top5 = sorted.slice(0, TOP_DOMAINS);
+    const topPercents = distributePercentagesAmongWeights(top5.map((d) => d.rawValue));
 
     return sorted.map((d, idx) => ({
       category: d.category,
-      value: idx < TOP_DOMAINS ? Math.round((d.rawValue / top5Total) * 100) : 0,
+      value: idx < TOP_DOMAINS ? topPercents[idx]! : 0,
+      rawValue: d.rawValue,
       isMain: d.isMain,
     }));
   }, [detail, allJobs]);
@@ -270,7 +277,7 @@ export function SessionResultModal({ sessionId, onClose }: SessionResultModalPro
                         </p>
                         <p className="text-[11px] text-muted-foreground mb-4">
                           {hasDomains
-                            ? `${domainData.length} domaine${domainData.length > 1 ? "s" : ""} identifié${domainData.length > 1 ? "s" : ""} · Top ${TOP_DOMAINS} avec pourcentages`
+                            ? `${domainData.length} domaine${domainData.length > 1 ? "s" : ""} identifié${domainData.length > 1 ? "s" : ""}`
                             : `${scoresData.length} métier${scoresData.length > 1 ? "s" : ""} analysé${scoresData.length > 1 ? "s" : ""}`}
                         </p>
                         {hasDomains ? (
@@ -293,31 +300,49 @@ export function SessionResultModal({ sessionId, onClose }: SessionResultModalPro
                                 const color = item.isMain
                                   ? "#004080"
                                   : barColors[idx % barColors.length];
-                                const maxVal = domainData[0]?.value || 100;
-                                const barWidth =
-                                  item.value === 0 ? 3 : Math.max((item.value / maxVal) * 100, 4);
+                                const globalMaxRaw = Math.max(domainData[0]?.rawValue ?? 0, 1e-9);
+                                const isSecondary = item.value === 0;
+                                const maxVal =
+                                  Math.max(
+                                    ...domainData.map((r) => r.value).filter((v) => v > 0),
+                                    1,
+                                  ) || 100;
+                                const barWidth = isSecondary
+                                  ? Math.max(8, (item.rawValue / globalMaxRaw) * 78)
+                                  : Math.max((item.value / maxVal) * 100, 4);
                                 return (
                                   <div key={item.category} className="group">
-                                    <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center justify-between mb-1 gap-2">
                                       <span
-                                        className={`text-xs truncate max-w-[60%] ${item.isMain ? "font-semibold text-foreground" : "text-muted-foreground"}`}
+                                        className={`text-xs truncate min-w-0 ${item.isMain ? "font-semibold text-foreground" : "text-muted-foreground"}`}
                                       >
                                         {item.category}
                                       </span>
                                       <span
-                                        className={`text-xs tabular-nums ${item.value === 0 ? "text-muted-foreground/50" : item.isMain ? "font-bold text-primary" : "text-muted-foreground"}`}
+                                        className={`shrink-0 flex items-center justify-end min-w-[3.25rem] ${isSecondary ? "text-muted-foreground/70" : item.isMain ? "font-bold text-primary" : "text-muted-foreground"}`}
                                       >
-                                        {item.value > 0 ? `${item.value}%` : "—"}
+                                        {isSecondary ? (
+                                          <Compass className="h-3.5 w-3.5" aria-hidden />
+                                        ) : (
+                                          <span className="text-xs tabular-nums">
+                                            {formatDomainPercent(item.value)}
+                                          </span>
+                                        )}
                                       </span>
                                     </div>
-                                    <div className="h-2.5 rounded-full bg-muted/50 overflow-hidden">
+                                    <div
+                                      className={`h-2.5 rounded-full overflow-hidden ${isSecondary ? "bg-muted/40 ring-1 ring-dashed ring-border/80" : "bg-muted/50"}`}
+                                    >
                                       <div
-                                        className="h-full rounded-full transition-all duration-700 ease-out"
+                                        className={`h-full rounded-full transition-all duration-700 ease-out ${isSecondary ? "ring-1 ring-inset ring-white/20" : ""}`}
                                         style={{
                                           width: `${barWidth}%`,
-                                          backgroundColor:
-                                            item.value === 0 ? "var(--muted-foreground)" : color,
-                                          opacity: item.value === 0 ? 0.2 : item.isMain ? 1 : 0.7,
+                                          opacity: isSecondary ? 0.55 : item.isMain ? 1 : 0.7,
+                                          ...(isSecondary
+                                            ? {
+                                                background: `linear-gradient(90deg, ${color}aa 0%, ${color}55 100%)`,
+                                              }
+                                            : { backgroundColor: color }),
                                         }}
                                       />
                                     </div>
