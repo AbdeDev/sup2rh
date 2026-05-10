@@ -31,6 +31,7 @@ import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { AppLogo } from "../components/AppLogo";
 import { ChartContainer, type ChartConfig } from "../components/ui/chart";
 import {
+  calculateDomainAffinityScore,
   distributePercentagesAmongWeights,
   formatDomainPercent,
 } from "../lib/domainChartPercentages";
@@ -234,17 +235,21 @@ export function ResultPage() {
   const domainChartData = useMemo(() => {
     const scores = analysis?.scores;
     if (!scores || typeof scores !== "object" || allJobs.length === 0) return [];
-    const byCategory: Record<string, number> = {};
+    const byCategory: Record<string, number[]> = {};
     for (const [jobId, score] of Object.entries(scores)) {
       const job = allJobs.find((j) => j.id === jobId);
       const cat = job?.category?.trim();
       if (!cat) continue;
-      const current = byCategory[cat] ?? 0;
-      byCategory[cat] = Math.max(current, Number(score) || 0);
+      byCategory[cat] = [...(byCategory[cat] ?? []), Number(score) || 0];
     }
     const mainCategory = analysis?.job?.category ?? null;
     const sorted = Object.entries(byCategory)
-      .map(([category, rawValue]) => ({ category, rawValue, isMain: category === mainCategory }))
+      .map(([category, categoryScores]) => ({
+        category,
+        rawValue: calculateDomainAffinityScore(categoryScores),
+        isMain: category === mainCategory,
+      }))
+      .filter((item) => item.rawValue > 0)
       .sort((a, b) => b.rawValue - a.rawValue);
 
     const top5 = sorted.slice(0, TOP_DOMAINS);
