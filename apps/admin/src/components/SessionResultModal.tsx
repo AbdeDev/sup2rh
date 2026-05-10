@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { getAdminSessionDetail, getJobs, type AdminSessionDetail, type Job } from "../lib/api";
 import {
+  calculateDomainAffinityScore,
   distributePercentagesAmongWeights,
   formatDomainPercent,
 } from "../lib/domainChartPercentages";
@@ -59,17 +60,21 @@ export function SessionResultModal({ sessionId, onClose }: SessionResultModalPro
   const domainData = useMemo(() => {
     const scores = detail?.analysis?.scores;
     if (!scores || typeof scores !== "object" || allJobs.length === 0) return [];
-    const byCategory: Record<string, number> = {};
+    const byCategory: Record<string, number[]> = {};
     for (const [jobId, score] of Object.entries(scores)) {
       const job = allJobs.find((j) => j.id === jobId);
       const cat = job?.category?.trim();
       if (!cat) continue;
-      const current = byCategory[cat] ?? 0;
-      byCategory[cat] = Math.max(current, Number(score) || 0);
+      byCategory[cat] = [...(byCategory[cat] ?? []), Number(score) || 0];
     }
     const mainCategory = detail.analysis?.job?.category ?? null;
     const sorted = Object.entries(byCategory)
-      .map(([category, rawValue]) => ({ category, rawValue, isMain: category === mainCategory }))
+      .map(([category, categoryScores]) => ({
+        category,
+        rawValue: calculateDomainAffinityScore(categoryScores),
+        isMain: category === mainCategory,
+      }))
+      .filter((item) => item.rawValue > 0)
       .sort((a, b) => b.rawValue - a.rawValue);
 
     const top5 = sorted.slice(0, TOP_DOMAINS);
